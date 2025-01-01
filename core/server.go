@@ -62,6 +62,7 @@ func SetupServer(Static embed.FS) http.Handler {
 		r.Get("/api/v1/public/action/oauth/github", api.GitHubOAuthStartAction)             // start GitHub OAuth
 		r.Get("/api/v1/public/action/oauth/github/callback", api.GitHubOAuthCallbackAction) // GitHub OAuth callback
 		r.Post("/api/v1/public/action/stripe/webhook", api.StripeWebhookAction)             // Stripe billing webhook
+		r.Post("/api/v1/public/action/github/webhook", api.GitHubWebhookAction)             // GitHub App webhook
 	})
 	r.Get("/api/v1/me", api.GetMeAction) // current authenticated user
 	r.Group(func(r chi.Router) {         // user profile and workspace invites

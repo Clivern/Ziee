@@ -345,6 +345,9 @@ msgstr "Plan de facturation invalide."
 msgid "invalid_stripe_webhook"
 msgstr "Webhook Stripe invalide."
 
+msgid "invalid_github_webhook"
+msgstr "Webhook GitHub invalide."
+
 msgid "invalid_webhook_payload"
 msgstr "Charge utile du webhook invalide."
 

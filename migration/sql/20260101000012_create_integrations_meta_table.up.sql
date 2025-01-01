@@ -1,0 +1,9 @@
+CREATE TABLE integrations_meta (
+	id UUID PRIMARY KEY,
+	integration_id UUID NOT NULL REFERENCES integrations(id) ON DELETE CASCADE,
+	key VARCHAR(60) NOT NULL,
+	value JSONB,
+	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	UNIQUE (integration_id, key)
+);

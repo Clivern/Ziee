@@ -1,0 +1,14 @@
+CREATE TABLE user_invites (
+	id UUID PRIMARY KEY,
+	email VARCHAR(60) NOT NULL,
+	role VARCHAR(20) NOT NULL DEFAULT 'regular',
+	token VARCHAR(100) NOT NULL UNIQUE,
+	status VARCHAR(20) NOT NULL DEFAULT 'pending',
+	inviter_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+	expires_at TIMESTAMP NOT NULL,
+	accepted_at TIMESTAMP NULL,
+	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+);
+CREATE INDEX idx_user_invites_token ON user_invites(token);

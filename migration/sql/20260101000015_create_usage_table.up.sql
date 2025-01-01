@@ -1,0 +1,13 @@
+CREATE TABLE usage (
+	id UUID PRIMARY KEY,
+	workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+	type VARCHAR(60) NOT NULL,
+	quantity BIGINT NOT NULL DEFAULT 1,
+	unit VARCHAR(20),
+	period_start TIMESTAMP NOT NULL,
+	period_end TIMESTAMP NOT NULL,
+	meta JSONB,
+	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	UNIQUE (workspace_id, type, period_start)
+);

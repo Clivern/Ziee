@@ -1,0 +1,18 @@
+CREATE TABLE users (
+	id UUID PRIMARY KEY,
+	name VARCHAR(60) NOT NULL,
+	email VARCHAR(60) NOT NULL UNIQUE,
+	pwd_hash VARCHAR(200) NOT NULL,
+	provider VARCHAR(20) NOT NULL DEFAULT 'local',
+	provider_user_id VARCHAR(255),
+	role VARCHAR(20) NOT NULL DEFAULT 'regular',
+	is_active BOOLEAN DEFAULT true,
+	is_email_verified BOOLEAN DEFAULT false,
+	email_verify_token VARCHAR(100) NULL UNIQUE,
+	last_login_at TIMESTAMP NULL,
+	language VARCHAR(20) NOT NULL DEFAULT 'en',
+	theme VARCHAR(20) NOT NULL DEFAULT 'default',
+	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+);
+CREATE INDEX idx_users_email ON users(email);

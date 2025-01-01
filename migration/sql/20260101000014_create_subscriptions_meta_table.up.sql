@@ -1,0 +1,9 @@
+CREATE TABLE subscriptions_meta (
+	id UUID PRIMARY KEY,
+	subscription_id UUID NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
+	key VARCHAR(60) NOT NULL,
+	value JSONB,
+	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	UNIQUE (subscription_id, key)
+);

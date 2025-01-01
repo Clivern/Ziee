@@ -78,17 +78,18 @@ func (a *Auth) LoginWithOAuth(ctx context.Context, identity *OAuthIdentity) (*Lo
 	}
 
 	if foundByProvider && lo.IsNotEmpty(identity.Email) && identity.Email != user.Email {
-		existingUser, err := a.UserRepository.GetByEmail(identity.Email)
+		existing, err := a.UserRepository.GetByEmail(identity.Email)
 		if err != nil {
 			return nil, fmt.Errorf("sync oauth email: %w", err)
 		}
-		if existingUser != nil && existingUser.Id != user.Id {
+		if existing != nil && existing.Id != user.Id {
 			return nil, ErrUserEmailAlreadyExists
 		}
 
 		user.Email = identity.Email
 		user.IsEmailVerified = true
 		err = a.UserRepository.Update(user)
+
 		if err != nil {
 			return nil, fmt.Errorf("sync oauth email: %w", err)
 		}

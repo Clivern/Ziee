@@ -272,7 +272,7 @@
 import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppNav from '@/components/AppNav.vue'
-import { billingAPI } from '@/api'
+import { billing_api } from '@/api'
 import { useWorkspaceContext } from '@/lib/permission'
 
 const { t, locale } = useI18n()
@@ -537,8 +537,8 @@ const loadBilling = async () => {
   errorMessage.value = ''
   try {
     const [statusRes, usageRes] = await Promise.all([
-      billingAPI.status(currentWorkspace.id),
-      billingAPI.usage(currentWorkspace.id)
+      billing_api.status(currentWorkspace.id),
+      billing_api.usage(currentWorkspace.id)
     ])
     billingStatus.value = statusRes.data
     usageData.value = usageRes.data
@@ -555,7 +555,7 @@ const choosePlan = async (plan) => {
   checkoutPlan.value = plan.id
   errorMessage.value = ''
   try {
-    const res = await billingAPI.checkout(currentWorkspace.id, { plan: plan.id })
+    const res = await billing_api.checkout(currentWorkspace.id, { plan: plan.id })
     window.location.href = res.data.url
   } catch (err) {
     errorMessage.value = err.response?.data?.errorMessage || t('billing_page.failed_checkout')
@@ -570,7 +570,7 @@ const openPortal = async () => {
   portalLoading.value = true
   errorMessage.value = ''
   try {
-    const res = await billingAPI.portal(currentWorkspace.id)
+    const res = await billing_api.portal(currentWorkspace.id)
     window.location.href = res.data.url
   } catch (err) {
     errorMessage.value = err.response?.data?.errorMessage || t('billing_page.failed_portal')

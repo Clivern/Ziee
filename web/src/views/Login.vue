@@ -49,7 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { authAPI, setupAPI } from '@/api'
+import { auth_api, setup_api } from '@/api'
 import { saveUser } from '@/lib/auth'
 import { applyUserPreferences } from '@/lib/preferences'
 
@@ -78,7 +78,7 @@ const finishOAuthLogin = async () => {
   error.value = null
 
   try {
-    const response = await authAPI.getProfile()
+    const response = await auth_api.getProfile()
     saveUser(response.data?.user)
     applyUserPreferences(response.data?.user)
     router.replace(getRedirectTarget())
@@ -90,7 +90,7 @@ const finishOAuthLogin = async () => {
 
 onMounted(async () => {
   try {
-    const response = await setupAPI.checkInstalled()
+    const response = await setup_api.checkInstalled()
     if (!response.data.installed) {
       router.push('/setup')
       return

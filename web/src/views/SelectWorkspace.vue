@@ -111,7 +111,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { workspaceAPI } from '@/api'
+import { workspace_api } from '@/api'
 import { loadWorkspaceFromStorage, saveWorkspaceToStorage } from '@/utils/storage'
 
 const router = useRouter()
@@ -151,7 +151,7 @@ function selectWorkspace(workspace) {
 async function loadWorkspaces() {
   error.value = null
   try {
-    const res = await workspaceAPI.list({})
+    const res = await workspace_api.list({})
     workspaces.value = res.data?.workspaces ?? []
   } catch (err) {
     error.value = err.response?.data?.errorMessage || 'Failed to load workspaces'
@@ -164,7 +164,7 @@ async function handleCreate() {
   createModalError.value = null
 
   try {
-    const res = await workspaceAPI.create({ name: newWorkspaceName.value })
+    const res = await workspace_api.create({ name: newWorkspaceName.value })
     if (res.data?.id) {
       saveWorkspaceToStorage({ ...res.data, role: 'owner', status: 'active' })
       closeCreateModal()

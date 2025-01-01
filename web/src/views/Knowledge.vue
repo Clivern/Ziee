@@ -246,7 +246,7 @@ import { useI18n } from 'vue-i18n'
 import AppNav from '@/components/AppNav.vue'
 import { showFlash } from '@/lib/flash'
 import { useUrlPagination } from '@/lib/pagination'
-import { documentAPI } from '@/api'
+import { document_api } from '@/api'
 import { useWorkspaceContext } from '@/lib/permission'
 
 const KNOWLEDGE_STATUS = {
@@ -421,7 +421,7 @@ async function loadDocs({ silent = false } = {}) {
   errorMessage.value = null
 
   try {
-    const res = await documentAPI.list(currentWorkspace.id, {
+    const res = await document_api.list(currentWorkspace.id, {
       limit,
       offset: offset.value,
     })
@@ -507,7 +507,7 @@ async function doUpload() {
       if (labels.length) {
         formData.append('labels', JSON.stringify(labels))
       }
-      await documentAPI.upload(currentWorkspace.id, formData)
+      await document_api.upload(currentWorkspace.id, formData)
     }
 
     resetUpload()
@@ -533,7 +533,7 @@ async function doDelete() {
   errorMessage.value = null
 
   try {
-    await documentAPI.delete(currentWorkspace.id, deleteDoc.value.id)
+    await document_api.delete(currentWorkspace.id, deleteDoc.value.id)
     deleteDoc.value = null
 
     if (offset.value >= total.value - 1 && offset.value > 0) {

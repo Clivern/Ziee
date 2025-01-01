@@ -109,7 +109,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { inviteAPI } from '@/api'
+import { invite_api } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,7 +146,7 @@ async function loadInvite() {
   invite.value = null
 
   try {
-    const res = await inviteAPI.getByToken(route.params.token)
+    const res = await invite_api.getByToken(route.params.token)
     if (!isValidInvite(res.data)) {
       error.value = t('invite.not_found')
       return
@@ -168,7 +168,7 @@ async function acceptInvite() {
   actionError.value = null
 
   try {
-    await inviteAPI.acceptByToken(route.params.token)
+    await invite_api.acceptByToken(route.params.token)
     router.push('/select-workspace')
   } catch (err) {
     actionError.value = err.response?.data?.errorMessage || t('invite.failed_accept')
@@ -182,7 +182,7 @@ async function rejectInvite() {
   actionError.value = null
 
   try {
-    await inviteAPI.rejectByToken(route.params.token)
+    await invite_api.rejectByToken(route.params.token)
     router.push('/select-workspace')
   } catch (err) {
     actionError.value = err.response?.data?.errorMessage || t('invite.failed_reject')

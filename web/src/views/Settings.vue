@@ -342,7 +342,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppNav from '@/components/AppNav.vue'
-import { workspaceAPI, workspaceAccessKeyAPI } from '@/api'
+import { workspace_api, workspace_access_key_api } from '@/api'
 import { showFlash } from '@/lib/flash'
 import { WORKSPACE_KEY_PERMISSIONS, useWorkspaceContext } from '@/lib/permission'
 import { saveWorkspaceToStorage } from '@/utils/storage'
@@ -430,7 +430,7 @@ async function confirmRevokeKey() {
   errorMessage.value = null
 
   try {
-    await workspaceAccessKeyAPI.delete(currentWorkspace.id, key.id)
+    await workspace_access_key_api.delete(currentWorkspace.id, key.id)
     await loadAccessKeys()
     newlyCreatedKey.value = null
     revokeModalKey.value = null
@@ -458,7 +458,7 @@ async function loadWorkspace() {
   errorMessage.value = null
 
   try {
-    const res = await workspaceAPI.get(currentWorkspace.id)
+    const res = await workspace_api.get(currentWorkspace.id)
     workspace.value = res.data
     workspaceName.value = res.data.name ?? ''
     saveWorkspaceToStorage({ ...currentWorkspace, ...res.data, role: res.data.role ?? currentWorkspace.role })
@@ -476,7 +476,7 @@ async function handleSaveWorkspace() {
   errorMessage.value = null
 
   try {
-    const res = await workspaceAPI.update(currentWorkspace.id, { name: workspaceName.value.trim() })
+    const res = await workspace_api.update(currentWorkspace.id, { name: workspaceName.value.trim() })
     workspace.value = res.data
     workspaceName.value = res.data.name
     saveWorkspaceToStorage({ ...currentWorkspace, ...res.data, role: res.data.role ?? currentWorkspace.role })
@@ -493,7 +493,7 @@ async function loadAccessKeys() {
   errorMessage.value = null
 
   try {
-    const res = await workspaceAccessKeyAPI.list(currentWorkspace.id, { limit: 100, offset: 0 })
+    const res = await workspace_access_key_api.list(currentWorkspace.id, { limit: 100, offset: 0 })
     accessKeys.value = res.data.keys ?? []
   } catch (err) {
     errorMessage.value = err.response?.data?.errorMessage || t('workspace_settings_page.failed_load_keys')
@@ -511,7 +511,7 @@ async function handleCreateKey() {
   newlyCreatedKey.value = null
 
   try {
-    const res = await workspaceAccessKeyAPI.create(currentWorkspace.id, {
+    const res = await workspace_access_key_api.create(currentWorkspace.id, {
       name,
       expiresAt: newKeyExpiresAt.value ? new Date(newKeyExpiresAt.value).toISOString() : '',
       permissions: selectedPermissions.value,

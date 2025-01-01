@@ -220,9 +220,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  statsAPI,
-  billingAPI,
-  workspaceAPI,
+  stats_api,
+  billing_api,
+  workspace_api,
 } from '@/api'
 import AppNav from '@/components/AppNav.vue'
 import { user } from '@/lib/auth'
@@ -395,7 +395,7 @@ async function loadDashboard() {
   loading.value = true
 
   const tasks = [
-    statsAPI.get(currentWorkspace.id)
+    stats_api.get(currentWorkspace.id)
       .then((res) => {
         stats.value = {
           apiCallsMonth: res.data.apiCallsMonth ?? 0,
@@ -404,7 +404,7 @@ async function loadDashboard() {
       })
       .catch(() => {}),
 
-    workspaceAPI.get(currentWorkspace.id)
+    workspace_api.get(currentWorkspace.id)
       .then((res) => {
         workspace.value = { ...currentWorkspace, ...res.data, role: res.data.role ?? currentWorkspace.role }
         saveWorkspaceToStorage(workspace.value)
@@ -414,7 +414,7 @@ async function loadDashboard() {
 
   if (canManage.value) {
     tasks.push(
-      billingAPI.status(currentWorkspace.id)
+      billing_api.status(currentWorkspace.id)
         .then((res) => { plan.value = res.data.plan || 'hobby' })
         .catch(() => {}),
     )

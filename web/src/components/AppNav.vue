@@ -118,7 +118,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { authAPI } from '@/api'
+import { auth_api } from '@/api'
 import { removeWorkspaceFromStorage, loadWorkspaceFromStorage } from '@/utils/storage'
 import { user, clearUser } from '@/lib/auth'
 import { applyLocale, applyTheme, applyUserPreferences, readStoredLocale, readStoredTheme } from '@/lib/preferences'
@@ -179,7 +179,7 @@ async function handleLogout() {
   clearUser()
 
   try {
-    await authAPI.logout()
+    await auth_api.logout()
   } catch (err) {
     console.error('Logout failed:', err)
   }

@@ -121,7 +121,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { setupAPI } from '@/api'
+import { setup_api } from '@/api'
 import { showFlash } from '@/lib/flash'
 
 const { t } = useI18n()
@@ -138,7 +138,7 @@ const error = ref(null)
 
 onMounted(async () => {
   try {
-    const response = await setupAPI.checkInstalled()
+    const response = await setup_api.checkInstalled()
     if (response.data.installed) {
       router.push('/login')
     }
@@ -171,7 +171,7 @@ const handleSetup = async () => {
   }
 
   try {
-    await setupAPI.install({
+    await setup_api.install({
       platformEmail: form.platformEmail,
       adminEmail: form.adminEmail,
       adminPassword: form.adminPassword

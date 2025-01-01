@@ -46,17 +46,18 @@ func (d Delivery) VerifySignature(secret string) bool {
 	}
 
 	if d.SignatureSHA256 != "" {
-		return verifySignature(secret, d.Body, "sha256", d.SignatureSHA256, sha256.New)
+		return VerifySignature(secret, d.Body, "sha256", d.SignatureSHA256, sha256.New)
 	}
 
 	if d.SignatureSHA1 != "" {
-		return verifySignature(secret, d.Body, "sha1", d.SignatureSHA1, sha1.New)
+		return VerifySignature(secret, d.Body, "sha1", d.SignatureSHA1, sha1.New)
 	}
 
 	return false
 }
 
-func verifySignature(secret string, body []byte, prefix, signature string, newHash func() hash.Hash) bool {
+// VerifySignature validates the webhook HMAC using SHA-256 or SHA-1.
+func VerifySignature(secret string, body []byte, prefix, signature string, newHash func() hash.Hash) bool {
 	expectedPrefix := prefix + "="
 	if !strings.HasPrefix(signature, expectedPrefix) {
 		return false

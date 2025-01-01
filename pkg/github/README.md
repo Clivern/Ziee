@@ -17,9 +17,9 @@ oauth := github.NewOAuth(github.OAuthConfig{
     ClientSecret: clientSecret,
     RedirectURL:  redirectURL,
     Scopes:       []string{"read:user", "user:email"},
-}, nil)
+})
 
-url, err := oauth.AuthorizeURL(state)
+url := oauth.AuthorizeURL(state)
 token, err := oauth.Exchange(ctx, code, state, expectedState)
 user, err := oauth.User(ctx, token.AccessToken)
 emails, err := oauth.Emails(ctx, token.AccessToken)

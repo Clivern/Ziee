@@ -12,31 +12,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDeliveryVerifySignatureSHA256(t *testing.T) {
-	secret := "test-secret"
-	body := []byte(`{"action":"opened"}`)
-	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write(body)
-	signature := "sha256=" + hex.EncodeToString(mac.Sum(nil))
-
-	delivery := Delivery{
-		Body:            body,
-		SignatureSHA256: signature,
-	}
-
-	assert.True(t, delivery.VerifySignature(secret))
-	assert.False(t, delivery.VerifySignature("wrong-secret"))
-}
-
-func TestDeliveryVerifySignatureSHA1(t *testing.T) {
+func TestDeliveryVerifySignature(t *testing.T) {
 	secret := "test-secret"
 	body := []byte(`{"action":"opened"}`)
 
-	delivery := Delivery{
-		Body:          body,
-		SignatureSHA1: SignBodyHex(secret, body),
-	}
+	t.Run("SHA256", func(t *testing.T) {
+		mac := hmac.New(sha256.New, []byte(secret))
+		mac.Write(body)
+		signature := "sha256=" + hex.EncodeToString(mac.Sum(nil))
 
-	assert.True(t, delivery.VerifySignature(secret))
-	assert.False(t, delivery.VerifySignature("wrong-secret"))
+		delivery := Delivery{
+			Body:            body,
+			SignatureSHA256: signature,
+		}
+
+		assert.True(t, delivery.VerifySignature(secret))
+		assert.False(t, delivery.VerifySignature("wrong-secret"))
+	})
+
+	t.Run("SHA1", func(t *testing.T) {
+		delivery := Delivery{
+			Body:          body,
+			SignatureSHA1: SignBodyHex(secret, body),
+		}
+
+		assert.True(t, delivery.VerifySignature(secret))
+		assert.False(t, delivery.VerifySignature("wrong-secret"))
+	})
 }

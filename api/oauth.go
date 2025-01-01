@@ -30,7 +30,7 @@ func GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
 		RedirectURL:  viper.GetString("app.oauth.github.redirect_url"),
 		Scopes:       []string{"read:user", "user:email"},
 		AllowSignup:  true,
-	}, nil)
+	})
 
 	state, err := util.GenerateSecureToken(24)
 	if err != nil {
@@ -39,12 +39,7 @@ func GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorizeURL, err := oauth.AuthorizeURL(state)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to build github authorize url")
-		http.Redirect(w, r, errorURL, http.StatusFound)
-		return
-	}
+	authorizeURL := oauth.AuthorizeURL(state)
 
 	opts := lo.Ternary(
 		strings.HasPrefix(util.AppURL(""), "https://"),
@@ -74,7 +69,7 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 		RedirectURL:  viper.GetString("app.oauth.github.redirect_url"),
 		Scopes:       []string{"read:user", "user:email"},
 		AllowSignup:  true,
-	}, nil)
+	})
 
 	token, err := oauth.Exchange(r.Context(), code, state, expectedState)
 	if err != nil {

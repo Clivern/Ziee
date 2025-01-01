@@ -6,7 +6,6 @@ package module
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -143,19 +142,4 @@ func (a *Auth) LoginWithOAuth(ctx context.Context, identity *OAuthIdentity) (*Lo
 		Session:       session,
 		CookieOptions: cookieOptions,
 	}, nil
-}
-
-// OAuthDisplayName returns a display name from optional name and login.
-func OAuthDisplayName(name, login string) string {
-	name = strings.TrimSpace(name)
-	if lo.IsNotEmpty(name) {
-		return name
-	}
-
-	return login
-}
-
-// OAuthProviderUserID formats a numeric provider user id.
-func OAuthProviderUserID(id int64) string {
-	return strconv.FormatInt(id, 10)
 }

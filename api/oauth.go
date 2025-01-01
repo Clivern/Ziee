@@ -5,6 +5,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -93,7 +94,11 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := github.PrimaryEmail(emails, ghUser.Email)
-	name := module.OAuthDisplayName(ghUser.Name, ghUser.Login)
+	name := lo.Ternary(
+		lo.IsNotEmpty(ghUser.Name),
+		ghUser.Name,
+		ghUser.Login,
+	)
 
 	auth := module.NewAuth(
 		db.NewUserRepository(db.GetDB()),
@@ -103,7 +108,7 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 
 	result, err := auth.LoginWithOAuth(r.Context(), &module.OAuthIdentity{
 		Provider:       db.UserProviderGithub,
-		ProviderUserID: module.OAuthProviderUserID(ghUser.ID),
+		ProviderUserID: strconv.FormatInt(ghUser.ID, 10),
 		Email:          email,
 		Name:           name,
 	})

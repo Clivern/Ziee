@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/migration"
-	"github.com/clivern/actx0/pkg/chunk"
-	"github.com/clivern/actx0/pkg/util"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/migration"
+	"github.com/actx0/ziee/pkg/chunk"
+	"github.com/actx0/ziee/pkg/util"
 
 	"github.com/samber/lo"
 )

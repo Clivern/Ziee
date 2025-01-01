@@ -4,9 +4,9 @@
 package module
 
 import (
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/ai"
-	"github.com/clivern/actx0/pkg/util"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/ai"
+	"github.com/actx0/ziee/pkg/util"
 )
 
 const bytesPerGB = 1024 * 1024 * 1024

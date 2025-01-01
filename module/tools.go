@@ -6,7 +6,7 @@ package module
 import (
 	"context"
 
-	"github.com/clivern/actx0/pkg/meteo"
+	"github.com/actx0/ziee/pkg/meteo"
 )
 
 // Tools runs external tool integrations.

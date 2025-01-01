@@ -4,9 +4,9 @@
 package agent
 
 import (
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/ai"
-	"github.com/clivern/actx0/service/knowledge"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/ai"
+	"github.com/actx0/ziee/service/knowledge"
 )
 
 const (

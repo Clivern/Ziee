@@ -12,9 +12,9 @@ package agent
 import (
 	"context"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/ai"
-	"github.com/clivern/actx0/pkg/qdrant"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/ai"
+	"github.com/actx0/ziee/pkg/qdrant"
 )
 
 // Dependencies are the collaborators required by the agent service.

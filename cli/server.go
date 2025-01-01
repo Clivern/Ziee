@@ -6,7 +6,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/clivern/actx0/core"
+	"github.com/actx0/ziee/core"
 
 	"github.com/spf13/cobra"
 )

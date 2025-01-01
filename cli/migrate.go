@@ -6,10 +6,10 @@ package cli
 import (
 	"context"
 
-	"github.com/clivern/actx0/core"
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/migration"
-	"github.com/clivern/actx0/pkg/qdrant"
+	"github.com/actx0/ziee/core"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/migration"
+	"github.com/actx0/ziee/pkg/qdrant"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"

@@ -6,7 +6,7 @@ package migration
 import (
 	"context"
 
-	"github.com/clivern/actx0/pkg/qdrant"
+	"github.com/actx0/ziee/pkg/qdrant"
 )
 
 const (

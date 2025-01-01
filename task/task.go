@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/module"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/module"
 )
 
 // Knowledge indexes and deletes workspace documents.

@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/clivern/actx0/conf"
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/async"
+	"github.com/actx0/ziee/conf"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/async"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"

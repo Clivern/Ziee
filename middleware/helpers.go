@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/module"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/module"
 )
 
 const (

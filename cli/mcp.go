@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/clivern/actx0/core"
-	"github.com/clivern/actx0/mcp"
+	"github.com/actx0/ziee/core"
+	"github.com/actx0/ziee/mcp"
 
 	"github.com/spf13/cobra"
 )

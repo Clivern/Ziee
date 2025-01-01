@@ -1,4 +1,4 @@
-module github.com/clivern/actx0
+module github.com/actx0/ziee
 
 go 1.26.5
 

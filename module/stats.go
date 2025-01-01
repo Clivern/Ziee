@@ -4,7 +4,7 @@
 package module
 
 import (
-	"github.com/clivern/actx0/db"
+	"github.com/actx0/ziee/db"
 )
 
 // Stats is the module for workspace dashboard metrics.

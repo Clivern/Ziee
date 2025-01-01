@@ -6,7 +6,7 @@ package module
 import (
 	"time"
 
-	"github.com/clivern/actx0/db"
+	"github.com/actx0/ziee/db"
 )
 
 // WorkspaceMemberResponse is a workspace member shaped for API responses.

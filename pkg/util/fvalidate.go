@@ -15,7 +15,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/clivern/actx0/conf"
+	"github.com/actx0/ziee/conf"
 
 	"github.com/samber/lo"
 )

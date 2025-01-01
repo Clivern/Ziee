@@ -12,10 +12,10 @@ package knowledge
 import (
 	"time"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/ai"
-	"github.com/clivern/actx0/pkg/qdrant"
-	"github.com/clivern/actx0/pkg/storage"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/ai"
+	"github.com/actx0/ziee/pkg/qdrant"
+	"github.com/actx0/ziee/pkg/storage"
 )
 
 // Dependencies are the collaborators required by the knowledge service.

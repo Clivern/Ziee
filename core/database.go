@@ -4,7 +4,7 @@
 package core
 
 import (
-	"github.com/clivern/actx0/db"
+	"github.com/actx0/ziee/db"
 
 	"github.com/spf13/viper"
 )

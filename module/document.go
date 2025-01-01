@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/storage"
-	"github.com/clivern/actx0/pkg/util"
-	"github.com/clivern/actx0/service/knowledge"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/storage"
+	"github.com/actx0/ziee/pkg/util"
+	"github.com/actx0/ziee/service/knowledge"
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"

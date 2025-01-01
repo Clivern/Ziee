@@ -9,9 +9,9 @@ import (
 	"embed"
 	"io/fs"
 
-	"github.com/clivern/actx0/cli"
-	"github.com/clivern/actx0/locale"
-	"github.com/clivern/actx0/pkg/resend"
+	"github.com/actx0/ziee/cli"
+	"github.com/actx0/ziee/locale"
+	"github.com/actx0/ziee/pkg/resend"
 )
 
 var (

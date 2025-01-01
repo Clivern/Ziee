@@ -6,8 +6,8 @@ package module
 import (
 	"context"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/event"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/event"
 
 	"github.com/rs/zerolog/log"
 )

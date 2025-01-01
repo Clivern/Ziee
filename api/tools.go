@@ -7,10 +7,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/clivern/actx0/locale"
-	"github.com/clivern/actx0/module"
-	"github.com/clivern/actx0/pkg/meteo"
-	"github.com/clivern/actx0/pkg/util"
+	"github.com/actx0/ziee/locale"
+	"github.com/actx0/ziee/module"
+	"github.com/actx0/ziee/pkg/meteo"
+	"github.com/actx0/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 )

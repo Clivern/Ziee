@@ -6,7 +6,7 @@ package module
 import (
 	"context"
 
-	"github.com/clivern/actx0/db"
+	"github.com/actx0/ziee/db"
 )
 
 // AppCtx carries request-scoped metadata that can be passed through handlers and services.

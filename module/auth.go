@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/clivern/actx0/conf"
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/util"
+	"github.com/actx0/ziee/conf"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/util"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"

@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/pkg/stripe"
-	"github.com/clivern/actx0/pkg/util"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/pkg/stripe"
+	"github.com/actx0/ziee/pkg/util"
 )
 
 var (

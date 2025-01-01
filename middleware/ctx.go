@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/clivern/actx0/module"
+	"github.com/actx0/ziee/module"
 
 	"github.com/samber/lo"
 )

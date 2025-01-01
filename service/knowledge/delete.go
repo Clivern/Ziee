@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/clivern/actx0/db"
-	"github.com/clivern/actx0/migration"
-	"github.com/clivern/actx0/pkg/storage"
+	"github.com/actx0/ziee/db"
+	"github.com/actx0/ziee/migration"
+	"github.com/actx0/ziee/pkg/storage"
 
 	"github.com/rs/zerolog/log"
 )

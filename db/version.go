@@ -7,7 +7,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/clivern/actx0/pkg/util"
+	"github.com/actx0/ziee/pkg/util"
 )
 
 // PromptVersion is a single row in the prompt_versions table.

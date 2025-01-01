@@ -43,7 +43,7 @@ func (a *Auth) LoginWithOAuth(ctx context.Context, identity *OAuthIdentity) (*Lo
 	}
 
 	if user == nil {
-		pwd, err := util.GenerateSecureToken(32)
+		pwd, err := util.GenerateSecureToken(20)
 		if err != nil {
 			return nil, fmt.Errorf("generate oauth password: %w", err)
 		}

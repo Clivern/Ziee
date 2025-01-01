@@ -40,3 +40,6 @@ docs/
 # Local commit helper
 commit
 
+# Local tunnel config (contains authtoken)
+ngrok.yml
+ngrok

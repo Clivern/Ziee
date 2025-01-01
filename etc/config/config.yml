@@ -6,9 +6,6 @@ app:
   timeout: ${ACTX0_SERVER_TIMEOUT:-50}
   worker_pool: ${ACTX0_SERVER_WORKER_POOL:-50}
 
-  mcp:
-    port: ${ACTX0_MCP_PORT:-8001}
-    path: ${ACTX0_MCP_PATH:-/mcp}
 
   metrics:
     username: ${ACTX0_SERVER_PROM_METRICS_USERNAME:-admin}

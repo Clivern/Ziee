@@ -128,12 +128,6 @@ run:
 	$(go) run ziee.go server -c config.test.yml
 
 
-## mcp: Run the MCP Server
-.PHONY: mcp
-mcp:
-	@echo ">> ============= Run MCP Server ============= <<"
-	$(go) run ziee.go mcp -c config.test.yml
-
 
 ## ci: Run all CI tests.
 .PHONY: ci

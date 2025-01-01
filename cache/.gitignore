@@ -1,0 +1,5 @@
+*
+!.gitignore
+
+# Do not use this tree as GOMODCACHE; go ./... commands will scan it.
+go-mod/

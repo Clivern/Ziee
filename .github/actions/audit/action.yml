@@ -1,0 +1,51 @@
+name: Audit
+description: Post a workflow run summary to Basecamp chat
+
+inputs:
+  webhook_url:
+    description: Basecamp chat webhook URL
+    required: false
+    default: ""
+  workflow:
+    description: Workflow name
+    required: true
+  repository:
+    description: Repository name
+    required: true
+  actor:
+    description: User who triggered the workflow
+    required: true
+  event_name:
+    description: GitHub event that triggered the workflow
+    required: true
+  ref_name:
+    description: Branch or tag name
+    required: true
+  run_url:
+    description: URL to the workflow run
+    required: true
+  status:
+    description: Job status (success, failure, cancelled, etc.)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Post audit
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.webhook_url }}" ]; then
+          echo "BASECAMP_CHAT_WEBHOOK_URL not configured, skipping audit"
+          exit 0
+        fi
+
+        MESSAGE="[Initdeck] ${{ inputs.workflow }}
+        Repo: ${{ inputs.repository }}
+        Status: ${{ inputs.status }}
+        Triggered by: ${{ inputs.actor }} (${{ inputs.event_name }})
+        Branch: ${{ inputs.ref_name }}
+        Run: ${{ inputs.run_url }}"
+
+        curl --fail --silent --show-error \
+          --data-urlencode "content=${MESSAGE}" \
+          "${{ inputs.webhook_url }}"

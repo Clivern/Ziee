@@ -1,0 +1,53 @@
+// Copyright 2026 Clivern. All rights reserved.
+// License can be found in the LICENSE file.
+
+package module
+
+import (
+	"github.com/clivern/actx0/db"
+)
+
+// Stats is the module for workspace dashboard metrics.
+type Stats struct {
+	WorkspaceRepository db.WorkspaceRepository
+	StatsRepository     db.WorkspaceStatsRepository
+}
+
+// NewStats creates a stats module with the given repositories.
+func NewStats(workspaces db.WorkspaceRepository, stats db.WorkspaceStatsRepository) *Stats {
+	return &Stats{
+		WorkspaceRepository: workspaces,
+		StatsRepository:     stats,
+	}
+}
+
+// WorkspaceStatsResponse is workspace metrics shaped for API responses.
+type WorkspaceStatsResponse struct {
+	MemoriesStored int64 `json:"memoriesStored"`
+	APICallsMonth  int64 `json:"apiCallsMonth"`
+	ActiveAgents   int64 `json:"activeAgents"`
+	Prompts        int64 `json:"prompts"`
+}
+
+// GetWorkspaceStats returns dashboard metrics for a workspace.
+func (s *Stats) GetWorkspaceStats(workspaceId db.Id) (*WorkspaceStatsResponse, error) {
+	workspace, err := s.WorkspaceRepository.GetById(workspaceId)
+	if err != nil {
+		return nil, err
+	}
+	if workspace == nil {
+		return nil, ErrWorkspaceNotFound
+	}
+
+	stats, err := s.StatsRepository.GetByWorkspaceId(workspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &WorkspaceStatsResponse{
+		MemoriesStored: stats.MemoriesStored,
+		APICallsMonth:  stats.APICallsMonth,
+		ActiveAgents:   stats.ActiveAgents,
+		Prompts:        stats.Prompts,
+	}, nil
+}

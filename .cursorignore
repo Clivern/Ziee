@@ -1,0 +1,40 @@
+# Dependencies & build output (biggest token savings)
+web/node_modules/
+web/dist/
+dist/
+.ruff_cache/
+
+# Lock files & generated artifacts
+web/package-lock.json
+coverage.html
+*.out
+*.test
+*.db
+
+# Binaries & OS junk
+actx0
+*.exe
+*.dll
+*.so
+*.dylib
+.DS_Store
+
+# Local / secret config (agent rarely needs these)
+config.prod.yml
+config.test.yml
+sync/
+
+# Legal & meta docs (low signal for coding tasks)
+LICENSE
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md
+
+# Static assets (images rarely help the agent)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.svg

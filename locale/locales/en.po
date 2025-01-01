@@ -1,0 +1,520 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "access_denied_to_workspace"
+msgstr "Access denied to workspace."
+
+msgid "account_not_active"
+msgstr "Account is not active."
+
+msgid "account_with_email_already_exists"
+msgstr "An account with this email already exists."
+
+msgid "account_with_email_exists"
+msgstr "An account with this email already exists."
+
+msgid "audit_event_not_found"
+msgstr "Audit event not found."
+
+msgid "access_key_not_found"
+msgstr "Access key not found."
+
+msgid "api_key_not_found"
+msgstr "API key not found."
+
+msgid "agent_not_found"
+msgstr "Agent not found."
+
+msgid "agent_session_already_exists"
+msgstr "An agent session with these labels already exists."
+
+msgid "agent_session_not_found"
+msgstr "Agent session not found."
+
+msgid "city_not_found"
+msgstr "City not found."
+
+msgid "city_required"
+msgstr "City is required."
+
+msgid "cannot_delete_own_account"
+msgstr "You cannot delete your own account."
+
+msgid "current_password_incorrect"
+msgstr "Current password is incorrect."
+
+msgid "current_password_required"
+msgstr "Current password is required."
+
+msgid "failed_check_access"
+msgstr "Failed to check access."
+
+msgid "failed_load_workspace"
+msgstr "Failed to load workspace."
+
+msgid "failed_check_maintenance"
+msgstr "Failed to check maintenance mode."
+
+msgid "failed_accept_invite"
+msgstr "Failed to accept invite."
+
+msgid "failed_complete_registration"
+msgstr "Failed to complete registration."
+
+msgid "failed_complete_setup"
+msgstr "Failed to complete setup."
+
+msgid "failed_create_access_key"
+msgstr "Failed to create access key."
+
+msgid "failed_create_agent"
+msgstr "Failed to create agent."
+
+msgid "failed_create_agent_session"
+msgstr "Failed to create agent session."
+
+msgid "failed_create_session_message"
+msgstr "Failed to create session message."
+
+msgid "failed_create_session_memory"
+msgstr "Failed to create session memory."
+
+msgid "failed_create_api_key"
+msgstr "Failed to create API key."
+
+msgid "failed_create_invite"
+msgstr "Failed to create invite."
+
+msgid "failed_create_prompt"
+msgstr "Failed to create prompt."
+
+msgid "failed_create_session"
+msgstr "Failed to create session."
+
+msgid "failed_create_user"
+msgstr "Failed to create user."
+
+msgid "failed_create_workspace"
+msgstr "Failed to create workspace."
+
+msgid "failed_upload_document"
+msgstr "Failed to upload document."
+
+msgid "failed_list_documents"
+msgstr "Failed to list documents."
+
+msgid "failed_search_documents"
+msgstr "Failed to search documents."
+
+msgid "failed_update_document"
+msgstr "Failed to update document."
+
+msgid "failed_delete_document"
+msgstr "Failed to delete document."
+
+msgid "document_not_found"
+msgstr "Document not found."
+
+msgid "invalid_document_id"
+msgstr "Invalid document ID."
+
+msgid "invalid_prompt_version"
+msgstr "Invalid prompt version."
+
+msgid "not_implemented"
+msgstr "Not implemented."
+
+msgid "insufficient_permissions"
+msgstr "Insufficient permissions."
+
+msgid "no_permission_manage_documents"
+msgstr "You do not have permission to manage documents in this workspace."
+
+msgid "failed_delete_access_key"
+msgstr "Failed to delete access key."
+
+msgid "failed_delete_agent"
+msgstr "Failed to delete agent."
+
+msgid "failed_delete_agent_session"
+msgstr "Failed to delete agent session."
+
+msgid "failed_delete_session_message"
+msgstr "Failed to delete session message."
+
+msgid "failed_delete_session_memory"
+msgstr "Failed to delete session memory."
+
+msgid "failed_delete_api_key"
+msgstr "Failed to delete API key."
+
+msgid "failed_delete_invite"
+msgstr "Failed to delete invite."
+
+msgid "failed_delete_prompt"
+msgstr "Failed to delete prompt."
+
+msgid "failed_delete_user"
+msgstr "Failed to delete user."
+
+msgid "failed_delete_workspace"
+msgstr "Failed to delete workspace."
+
+msgid "failed_get_audit"
+msgstr "Failed to get audit event."
+
+msgid "failed_get_access_key"
+msgstr "Failed to get access key."
+
+msgid "failed_get_agent"
+msgstr "Failed to get agent."
+
+msgid "failed_get_agent_session"
+msgstr "Failed to get agent session."
+
+msgid "failed_get_session_message"
+msgstr "Failed to get session message."
+
+msgid "failed_get_session_memory"
+msgstr "Failed to get session memory."
+
+msgid "failed_get_api_key"
+msgstr "Failed to get API key."
+
+msgid "failed_get_invite"
+msgstr "Failed to get invite."
+
+msgid "failed_get_prompt"
+msgstr "Failed to get prompt."
+
+msgid "failed_get_settings"
+msgstr "Failed to get settings."
+
+msgid "failed_get_user"
+msgstr "Failed to get user."
+
+msgid "failed_get_workspace"
+msgstr "Failed to get workspace."
+
+msgid "failed_get_workspace_stats"
+msgstr "Failed to get workspace stats."
+
+msgid "failed_get_profile"
+msgstr "Failed to get profile."
+
+msgid "failed_get_me"
+msgstr "Failed to get authenticated principal."
+
+msgid "failed_list_audits"
+msgstr "Failed to list audit events."
+
+msgid "failed_list_access_keys"
+msgstr "Failed to list access keys."
+
+msgid "failed_list_agents"
+msgstr "Failed to list agents."
+
+msgid "failed_list_agent_sessions"
+msgstr "Failed to list agent sessions."
+
+msgid "failed_list_session_messages"
+msgstr "Failed to list session messages."
+
+msgid "failed_list_session_memories"
+msgstr "Failed to list session memories."
+
+msgid "failed_list_api_keys"
+msgstr "Failed to list API keys."
+
+msgid "failed_list_invites"
+msgstr "Failed to list invites."
+
+msgid "failed_list_prompts"
+msgstr "Failed to list prompts."
+
+msgid "failed_list_workspace_members"
+msgstr "Failed to list workspace members."
+
+msgid "failed_list_users"
+msgstr "Failed to list users."
+
+msgid "failed_list_workspaces"
+msgstr "Failed to list workspaces."
+
+msgid "failed_process_request"
+msgstr "Failed to process request."
+
+msgid "failed_reject_invite"
+msgstr "Failed to reject invite."
+
+msgid "failed_run_tool"
+msgstr "Failed to run tool."
+
+msgid "failed_reset_password"
+msgstr "Failed to reset password."
+
+msgid "failed_update_profile"
+msgstr "Failed to update profile."
+
+msgid "failed_update_agent"
+msgstr "Failed to update agent."
+
+msgid "failed_update_agent_session"
+msgstr "Failed to update agent session."
+
+msgid "failed_update_session_message"
+msgstr "Failed to update session message."
+
+msgid "failed_update_session_memory"
+msgstr "Failed to update session memory."
+
+msgid "failed_update_prompt"
+msgstr "Failed to update prompt."
+
+msgid "failed_set_prompt_production"
+msgstr "Failed to promote prompt to production."
+
+msgid "failed_update_settings"
+msgstr "Failed to update settings."
+
+msgid "failed_update_user"
+msgstr "Failed to update user."
+
+msgid "failed_update_workspace"
+msgstr "Failed to update workspace."
+
+msgid "failed_update_workspace_member"
+msgstr "Failed to update workspace member."
+
+msgid "failed_delete_workspace_member"
+msgstr "Failed to delete workspace member."
+
+msgid "forgot_password_success"
+msgstr "If an account exists for this email, you will receive a password reset link shortly."
+
+msgid "invalid_audit_id"
+msgstr "Invalid audit id."
+
+msgid "invalid_access_key_id"
+msgstr "Invalid access key ID."
+
+msgid "invalid_access_key"
+msgstr "Invalid access key."
+
+msgid "invalid_agent_id"
+msgstr "Invalid agent ID."
+
+msgid "invalid_message_id"
+msgstr "Invalid message ID."
+
+msgid "invalid_memory_id"
+msgstr "Invalid memory ID."
+
+msgid "invalid_session_labels"
+msgstr "Invalid session labels."
+
+msgid "invalid_session_reference"
+msgstr "Session id or labels are required."
+
+msgid "invalid_access_key_permissions"
+msgstr "Invalid access key permissions."
+
+msgid "invalid_api_key_id"
+msgstr "Invalid API key ID."
+
+msgid "invalid_api_key"
+msgstr "Invalid API key."
+
+msgid "invalid_or_expired_session"
+msgstr "Invalid or expired session."
+
+msgid "invalid_route_configuration"
+msgstr "Invalid route configuration."
+
+msgid "invalid_expires_at_format"
+msgstr "Invalid expiresAt format."
+
+msgid "invalid_invite_id"
+msgstr "Invalid invite ID."
+
+msgid "invalid_prompt_id"
+msgstr "Invalid prompt ID."
+
+msgid "invalid_prompt_version_id"
+msgstr "Invalid prompt version ID."
+
+msgid "prompt_version_not_found"
+msgstr "Prompt version not found."
+
+msgid "failed_create_prompt_version"
+msgstr "Failed to create prompt version."
+
+msgid "failed_get_prompt_version"
+msgstr "Failed to get prompt version."
+
+msgid "failed_update_prompt_version"
+msgstr "Failed to update prompt version."
+
+msgid "failed_delete_prompt_version"
+msgstr "Failed to delete prompt version."
+
+msgid "failed_set_prompt_version_production"
+msgstr "Failed to set prompt version production."
+
+msgid "invalid_prompt_name"
+msgstr "Invalid prompt name."
+
+msgid "invalid_prompt_handle"
+msgstr "Name must contain letters or numbers to generate a handle."
+
+msgid "prompt_handle_taken"
+msgstr "A prompt with this handle already exists. Choose a different name."
+
+msgid "invalid_or_expired_invite_token"
+msgstr "Invalid or expired invite token."
+
+msgid "invalid_token"
+msgstr "Invalid token."
+
+msgid "invalid_user_id"
+msgstr "Invalid user ID."
+
+msgid "invalid_username_or_password"
+msgstr "Invalid username or password."
+
+msgid "invalid_workspace_id"
+msgstr "Invalid workspace ID."
+
+msgid "invalid_tool_request"
+msgstr "Invalid tool request."
+
+msgid "invite_email_mismatch"
+msgstr "This invite was sent to a different email address."
+
+msgid "invite_expired"
+msgstr "Invite has expired."
+
+msgid "invite_no_longer_valid"
+msgstr "Invite is no longer valid."
+
+msgid "invite_not_found"
+msgstr "Invite not found."
+
+msgid "login_successful"
+msgstr "Login successful."
+
+msgid "logout_successful"
+msgstr "Logout successful."
+
+msgid "me_requires_key_header"
+msgstr "X-API-Key or X-Access-Key header is required."
+
+msgid "maintenance_mode_enabled"
+msgstr "Maintenance mode is enabled."
+
+msgid "no_permission_delete_workspace"
+msgstr "You do not have permission to delete this workspace."
+
+msgid "no_permission_update_workspace"
+msgstr "You do not have permission to update this workspace."
+
+msgid "no_permission_manage_workspace_members"
+msgstr "You do not have permission to manage workspace members."
+
+msgid "no_permission_manage_workspace_access_keys"
+msgstr "You do not have permission to manage workspace access keys."
+
+msgid "no_permission_manage_prompts"
+msgstr "You do not have permission to manage prompts."
+
+msgid "no_permission_manage_agents"
+msgstr "You do not have permission to manage agents."
+
+msgid "not_authenticated"
+msgstr "Not authenticated."
+
+msgid "password_reset_success"
+msgstr "Password reset successfully."
+
+msgid "pending_invite_already_exists"
+msgstr "A pending invite already exists."
+
+msgid "platform_already_installed"
+msgstr "Platform is already installed."
+
+msgid "profile_updated_successfully"
+msgstr "Profile updated successfully."
+
+msgid "prompt_not_found"
+msgstr "Prompt not found."
+
+msgid "session_message_not_found"
+msgstr "Session message not found."
+
+msgid "session_memory_not_found"
+msgstr "Session memory not found."
+
+msgid "registration_successful"
+msgstr "Registration successful."
+
+msgid "reset_link_invalid_or_expired"
+msgstr "Reset link is invalid or expired."
+
+msgid "settings_updated_successfully"
+msgstr "Settings updated successfully."
+
+msgid "setup_completed_successfully"
+msgstr "Setup completed successfully."
+
+msgid "tool_not_found"
+msgstr "Tool not found."
+
+msgid "user_not_found"
+msgstr "User not found."
+
+msgid "user_with_email_already_registered"
+msgstr "A user with this email is already registered."
+
+msgid "user_with_email_exists"
+msgstr "A user with this email already exists."
+
+msgid "workspace_not_found"
+msgstr "Workspace not found."
+
+msgid "billing_free_plan_default"
+msgstr "Hobby is already the free default plan."
+
+msgid "failed_create_billing_checkout_session"
+msgstr "Failed to create billing checkout session."
+
+msgid "failed_create_billing_portal_session"
+msgstr "Failed to create billing portal session."
+
+msgid "failed_get_billing_status"
+msgstr "Failed to get billing status."
+
+msgid "failed_get_billing_usage"
+msgstr "Failed to get billing usage."
+
+msgid "invalid_billing_plan"
+msgstr "Invalid billing plan."
+
+msgid "invalid_stripe_webhook"
+msgstr "Invalid Stripe webhook."
+
+msgid "invalid_webhook_payload"
+msgstr "Invalid webhook payload."
+
+msgid "stripe_billing_available_after_upgrade"
+msgstr "Stripe billing is available after upgrading."
+
+msgid "stripe_billing_not_configured"
+msgstr "Stripe billing is not configured."
+
+msgid "workspace_subscription_not_found"
+msgstr "Workspace subscription not found."
+
+msgid "workspace_member_not_found"
+msgstr "Workspace member not found."

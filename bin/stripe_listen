@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+stripe listen \
+  --forward-to http://127.0.0.1:8000/api/v1/public/action/stripe/webhook \
+  --events customer.subscription.created,customer.subscription.updated,customer.subscription.deleted

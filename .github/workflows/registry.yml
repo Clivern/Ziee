@@ -1,0 +1,97 @@
+name: Publish to DigitalOcean Registry
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+
+env:
+  REGISTRY: registry.digitalocean.com
+  DO_REGISTRY_NAME: actx0
+  IMAGE: actx0/actx0
+
+jobs:
+  push_to_registry:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_TOKEN }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@b13d25e5fcf2e04305d8aedc9a6c28ebe258e934
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
+          tags: |
+            type=ref,event=tag
+            type=ref,event=branch,enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=semver,pattern={{version}},prefix=v
+            type=semver,pattern={{major}}.{{minor}},prefix=v
+            type=semver,pattern={{major}},prefix=v
+            type=sha,prefix=sha-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@dbac3ca1e5410ec04d2cce48cfbcfa3175fb8f4f
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            ACTX0_VERSION=${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.ref_name, github.sha) }}
+            ACTX0_COMMIT=${{ github.sha }}
+            ACTX0_BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            ACTX0_BUILT_BY=github-actions
+
+      - name: Prune old image tags
+        env:
+          REGISTRY_NAME: ${{ env.DO_REGISTRY_NAME }}
+          REPOSITORY: actx0
+        run: |
+          keep=3
+          tags=$(doctl registries repository list-tags "$REGISTRY_NAME" "$REPOSITORY" -o json \
+            | jq -r '(if type == "array" then . else .tags end) | sort_by(.updated_at) | reverse | map(select(.tag != "latest")) | .[].tag')
+
+          i=0
+          while IFS= read -r tag; do
+            [[ -z "$tag" ]] && continue
+            i=$((i + 1))
+            if (( i > keep )); then
+              echo "Deleting $REPOSITORY:$tag"
+              doctl registries repository delete-tag "$REGISTRY_NAME" "$REPOSITORY" "$tag" --force
+            fi
+          done <<< "$tags"
+
+      - name: Reclaim registry storage
+        run: doctl registry garbage-collection start ${{ env.DO_REGISTRY_NAME }} --include-untagged-manifests --force
+
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    needs: push_to_registry
+    if: always()
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - uses: ./.github/actions/audit
+        with:
+          webhook_url: ${{ secrets.BASECAMP_CHAT_WEBHOOK_URL }}
+          workflow: ${{ github.workflow }}
+          repository: ${{ github.repository }}
+          actor: ${{ github.actor }}
+          event_name: ${{ github.event_name }}
+          ref_name: ${{ github.ref_name }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          status: ${{ needs.push_to_registry.result }}

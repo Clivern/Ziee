@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# dist dir
+dist
+
+!web/dist
+
+sync
+
+*.db
+
+config.test.yml
+coverage.html
+
+# Binary
+actx0
+
+# Documentation (clone from git@github.com:actx0/adoc.git)
+docs/
+.ruff_cache/
+
+# Local commit helper
+commit
+

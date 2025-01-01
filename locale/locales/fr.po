@@ -1,0 +1,508 @@
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "access_denied_to_workspace"
+msgstr "Accès refusé à l'espace de travail."
+
+msgid "account_not_active"
+msgstr "Le compte n'est pas actif."
+
+msgid "account_with_email_already_exists"
+msgstr "Un compte avec cet e-mail existe déjà."
+
+msgid "account_with_email_exists"
+msgstr "Un compte avec cet e-mail existe déjà."
+
+msgid "access_key_not_found"
+msgstr "Clé d'accès introuvable."
+
+msgid "api_key_not_found"
+msgstr "Clé API introuvable."
+
+msgid "agent_not_found"
+msgstr "Agent introuvable."
+
+msgid "agent_session_already_exists"
+msgstr "Une session d'agent avec ces libellés existe déjà."
+
+msgid "agent_session_not_found"
+msgstr "Session d'agent introuvable."
+
+msgid "city_not_found"
+msgstr "Ville introuvable."
+
+msgid "city_required"
+msgstr "La ville est requise."
+
+msgid "cannot_delete_own_account"
+msgstr "Vous ne pouvez pas supprimer votre propre compte."
+
+msgid "current_password_incorrect"
+msgstr "Le mot de passe actuel est incorrect."
+
+msgid "current_password_required"
+msgstr "Le mot de passe actuel est requis."
+
+msgid "failed_check_access"
+msgstr "Impossible de vérifier l'accès."
+
+msgid "failed_load_workspace"
+msgstr "Impossible de charger l'espace de travail."
+
+msgid "failed_check_maintenance"
+msgstr "Impossible de vérifier le mode maintenance."
+
+msgid "failed_accept_invite"
+msgstr "Échec de l'acceptation de l'invitation."
+
+msgid "failed_complete_registration"
+msgstr "Impossible de finaliser l'inscription."
+
+msgid "failed_complete_setup"
+msgstr "Impossible de finaliser la configuration."
+
+msgid "failed_create_access_key"
+msgstr "Impossible de créer la clé d'accès."
+
+msgid "failed_create_agent"
+msgstr "Impossible de créer l'agent."
+
+msgid "failed_create_agent_session"
+msgstr "Impossible de créer la session d'agent."
+
+msgid "failed_create_session_message"
+msgstr "Impossible de créer le message de session."
+
+msgid "failed_create_session_memory"
+msgstr "Impossible de créer la mémoire de session."
+
+msgid "failed_create_api_key"
+msgstr "Impossible de créer la clé API."
+
+msgid "failed_create_invite"
+msgstr "Impossible de créer l'invitation."
+
+msgid "failed_create_prompt"
+msgstr "Impossible de créer le prompt."
+
+msgid "failed_create_session"
+msgstr "Impossible de créer la session."
+
+msgid "failed_create_user"
+msgstr "Impossible de créer l'utilisateur."
+
+msgid "failed_create_workspace"
+msgstr "Impossible de créer l'espace de travail."
+
+msgid "failed_upload_document"
+msgstr "Impossible de téléverser le document."
+
+msgid "failed_list_documents"
+msgstr "Impossible de lister les documents."
+
+msgid "failed_search_documents"
+msgstr "Impossible de rechercher dans les documents."
+
+msgid "failed_update_document"
+msgstr "Impossible de mettre à jour le document."
+
+msgid "failed_delete_document"
+msgstr "Impossible de supprimer le document."
+
+msgid "document_not_found"
+msgstr "Document introuvable."
+
+msgid "invalid_document_id"
+msgstr "Identifiant de document invalide."
+
+msgid "invalid_prompt_version"
+msgstr "Version de prompt invalide."
+
+msgid "not_implemented"
+msgstr "Non implémenté."
+
+msgid "insufficient_permissions"
+msgstr "Permissions insuffisantes."
+
+msgid "no_permission_manage_documents"
+msgstr "Vous n'avez pas la permission de gérer les documents dans cet espace de travail."
+
+msgid "failed_delete_access_key"
+msgstr "Impossible de supprimer la clé d'accès."
+
+msgid "failed_delete_agent"
+msgstr "Impossible de supprimer l'agent."
+
+msgid "failed_delete_agent_session"
+msgstr "Impossible de supprimer la session d'agent."
+
+msgid "failed_delete_session_message"
+msgstr "Impossible de supprimer le message de session."
+
+msgid "failed_delete_session_memory"
+msgstr "Impossible de supprimer la mémoire de session."
+
+msgid "failed_delete_api_key"
+msgstr "Impossible de supprimer la clé API."
+
+msgid "failed_delete_invite"
+msgstr "Impossible de supprimer l'invitation."
+
+msgid "failed_delete_prompt"
+msgstr "Impossible de supprimer le prompt."
+
+msgid "failed_delete_user"
+msgstr "Impossible de supprimer l'utilisateur."
+
+msgid "failed_delete_workspace"
+msgstr "Impossible de supprimer l'espace de travail."
+
+msgid "failed_get_access_key"
+msgstr "Impossible de récupérer la clé d'accès."
+
+msgid "failed_get_agent"
+msgstr "Impossible de récupérer l'agent."
+
+msgid "failed_get_agent_session"
+msgstr "Impossible de récupérer la session d'agent."
+
+msgid "failed_get_session_message"
+msgstr "Impossible de récupérer le message de session."
+
+msgid "failed_get_session_memory"
+msgstr "Impossible de récupérer la mémoire de session."
+
+msgid "failed_get_api_key"
+msgstr "Impossible de récupérer la clé API."
+
+msgid "failed_get_invite"
+msgstr "Impossible de récupérer l'invitation."
+
+msgid "failed_get_prompt"
+msgstr "Impossible de récupérer le prompt."
+
+msgid "failed_get_settings"
+msgstr "Impossible de récupérer les paramètres."
+
+msgid "failed_get_user"
+msgstr "Impossible de récupérer l'utilisateur."
+
+msgid "failed_get_workspace"
+msgstr "Impossible de récupérer l'espace de travail."
+
+msgid "failed_get_workspace_stats"
+msgstr "Impossible de récupérer les statistiques de l'espace."
+
+msgid "failed_get_profile"
+msgstr "Impossible de récupérer le profil."
+
+msgid "failed_get_me"
+msgstr "Impossible de récupérer le principal authentifié."
+
+msgid "failed_list_access_keys"
+msgstr "Impossible de lister les clés d'accès."
+
+msgid "failed_list_agents"
+msgstr "Impossible de lister les agents."
+
+msgid "failed_list_agent_sessions"
+msgstr "Impossible de lister les sessions d'agent."
+
+msgid "failed_list_session_messages"
+msgstr "Impossible de lister les messages de session."
+
+msgid "failed_list_session_memories"
+msgstr "Impossible de lister les mémoires de session."
+
+msgid "failed_list_api_keys"
+msgstr "Impossible de lister les clés API."
+
+msgid "failed_list_invites"
+msgstr "Impossible de lister les invitations."
+
+msgid "failed_list_prompts"
+msgstr "Impossible de lister les prompts."
+
+msgid "failed_list_workspace_members"
+msgstr "Impossible de lister les membres de l'espace de travail."
+
+msgid "failed_list_users"
+msgstr "Impossible de lister les utilisateurs."
+
+msgid "failed_list_workspaces"
+msgstr "Impossible de lister les espaces de travail."
+
+msgid "failed_process_request"
+msgstr "Impossible de traiter la demande."
+
+msgid "failed_reject_invite"
+msgstr "Échec du refus de l'invitation."
+
+msgid "failed_run_tool"
+msgstr "Échec de l'exécution de l'outil."
+
+msgid "failed_reset_password"
+msgstr "Impossible de réinitialiser le mot de passe."
+
+msgid "failed_update_profile"
+msgstr "Impossible de mettre à jour le profil."
+
+msgid "failed_update_agent"
+msgstr "Impossible de mettre à jour l'agent."
+
+msgid "failed_update_agent_session"
+msgstr "Impossible de mettre à jour la session d'agent."
+
+msgid "failed_update_session_message"
+msgstr "Impossible de mettre à jour le message de session."
+
+msgid "failed_update_session_memory"
+msgstr "Impossible de mettre à jour la mémoire de session."
+
+msgid "failed_update_prompt"
+msgstr "Impossible de mettre à jour le prompt."
+
+msgid "failed_set_prompt_production"
+msgstr "Impossible de promouvoir le prompt en production."
+
+msgid "failed_update_settings"
+msgstr "Impossible de mettre à jour les paramètres."
+
+msgid "failed_update_user"
+msgstr "Impossible de mettre à jour l'utilisateur."
+
+msgid "failed_update_workspace"
+msgstr "Impossible de mettre à jour l'espace de travail."
+
+msgid "failed_update_workspace_member"
+msgstr "Impossible de mettre à jour le membre de l'espace de travail."
+
+msgid "failed_delete_workspace_member"
+msgstr "Impossible de supprimer le membre de l'espace de travail."
+
+msgid "forgot_password_success"
+msgstr "Si un compte existe pour cet e-mail, vous recevrez bientôt un lien de réinitialisation."
+
+msgid "invalid_access_key_id"
+msgstr "ID de clé d'accès invalide."
+
+msgid "invalid_access_key"
+msgstr "Clé d'accès invalide."
+
+msgid "invalid_agent_id"
+msgstr "ID d'agent invalide."
+
+msgid "invalid_message_id"
+msgstr "ID de message invalide."
+
+msgid "invalid_memory_id"
+msgstr "ID de mémoire invalide."
+
+msgid "invalid_session_labels"
+msgstr "Libellés de session invalides."
+
+msgid "invalid_session_reference"
+msgstr "L'identifiant ou les libellés de session sont requis."
+
+msgid "invalid_access_key_permissions"
+msgstr "Permissions de clé d'accès invalides."
+
+msgid "invalid_api_key_id"
+msgstr "ID de clé API invalide."
+
+msgid "invalid_api_key"
+msgstr "Clé API invalide."
+
+msgid "invalid_or_expired_session"
+msgstr "Session invalide ou expirée."
+
+msgid "invalid_route_configuration"
+msgstr "Configuration de route invalide."
+
+msgid "invalid_expires_at_format"
+msgstr "Format expiresAt invalide."
+
+msgid "invalid_invite_id"
+msgstr "ID d'invitation invalide."
+
+msgid "invalid_prompt_id"
+msgstr "ID de prompt invalide."
+
+msgid "invalid_prompt_version_id"
+msgstr "ID de version de prompt invalide."
+
+msgid "prompt_version_not_found"
+msgstr "Version de prompt introuvable."
+
+msgid "failed_create_prompt_version"
+msgstr "Échec de la création de la version du prompt."
+
+msgid "failed_get_prompt_version"
+msgstr "Échec de la récupération de la version du prompt."
+
+msgid "failed_update_prompt_version"
+msgstr "Échec de la mise à jour de la version du prompt."
+
+msgid "failed_delete_prompt_version"
+msgstr "Échec de la suppression de la version du prompt."
+
+msgid "failed_set_prompt_version_production"
+msgstr "Échec de la mise en production de la version du prompt."
+
+msgid "invalid_prompt_name"
+msgstr "Nom de prompt invalide."
+
+msgid "invalid_prompt_handle"
+msgstr "Le nom doit contenir des lettres ou des chiffres pour générer un identifiant."
+
+msgid "prompt_handle_taken"
+msgstr "Un prompt avec cet identifiant existe déjà. Choisissez un autre nom."
+
+msgid "invalid_or_expired_invite_token"
+msgstr "Jeton d'invitation invalide ou expiré."
+
+msgid "invalid_token"
+msgstr "Jeton invalide."
+
+msgid "invalid_user_id"
+msgstr "ID utilisateur invalide."
+
+msgid "invalid_username_or_password"
+msgstr "Identifiant ou mot de passe invalide."
+
+msgid "invalid_workspace_id"
+msgstr "ID d'espace de travail invalide."
+
+msgid "invalid_tool_request"
+msgstr "Requête d'outil invalide."
+
+msgid "invite_email_mismatch"
+msgstr "Cette invitation a été envoyée à une autre adresse e-mail."
+
+msgid "invite_expired"
+msgstr "L'invitation a expiré."
+
+msgid "invite_no_longer_valid"
+msgstr "L'invitation n'est plus valide."
+
+msgid "invite_not_found"
+msgstr "Invitation introuvable."
+
+msgid "login_successful"
+msgstr "Connexion réussie."
+
+msgid "me_requires_key_header"
+msgstr "L'en-tête X-API-Key ou X-Access-Key est requis."
+
+msgid "logout_successful"
+msgstr "Déconnexion réussie."
+
+msgid "maintenance_mode_enabled"
+msgstr "Le mode maintenance est activé."
+
+msgid "no_permission_delete_workspace"
+msgstr "Vous n'avez pas l'autorisation de supprimer cet espace de travail."
+
+msgid "no_permission_update_workspace"
+msgstr "Vous n'avez pas l'autorisation de mettre à jour cet espace de travail."
+
+msgid "no_permission_manage_workspace_members"
+msgstr "Vous n'avez pas l'autorisation de gérer les membres de cet espace de travail."
+
+msgid "no_permission_manage_workspace_access_keys"
+msgstr "Vous n'avez pas l'autorisation de gérer les clés d'accès de cet espace de travail."
+
+msgid "no_permission_manage_prompts"
+msgstr "Vous n'avez pas l'autorisation de gérer les prompts."
+
+msgid "no_permission_manage_agents"
+msgstr "Vous n'avez pas l'autorisation de gérer les agents."
+
+msgid "not_authenticated"
+msgstr "Non authentifié."
+
+msgid "password_reset_success"
+msgstr "Mot de passe réinitialisé avec succès."
+
+msgid "pending_invite_already_exists"
+msgstr "Une invitation en attente existe déjà."
+
+msgid "platform_already_installed"
+msgstr "La plateforme est déjà installée."
+
+msgid "profile_updated_successfully"
+msgstr "Profil mis à jour avec succès."
+
+msgid "prompt_not_found"
+msgstr "Prompt introuvable."
+
+msgid "session_message_not_found"
+msgstr "Message de session introuvable."
+
+msgid "session_memory_not_found"
+msgstr "Mémoire de session introuvable."
+
+msgid "registration_successful"
+msgstr "Inscription réussie."
+
+msgid "reset_link_invalid_or_expired"
+msgstr "Le lien de réinitialisation est invalide ou expiré."
+
+msgid "settings_updated_successfully"
+msgstr "Paramètres mis à jour avec succès."
+
+msgid "setup_completed_successfully"
+msgstr "Configuration terminée avec succès."
+
+msgid "tool_not_found"
+msgstr "Outil introuvable."
+
+msgid "user_not_found"
+msgstr "Utilisateur introuvable."
+
+msgid "user_with_email_already_registered"
+msgstr "Un utilisateur avec cet e-mail est déjà inscrit."
+
+msgid "user_with_email_exists"
+msgstr "Un utilisateur avec cet e-mail existe déjà."
+
+msgid "workspace_not_found"
+msgstr "Espace de travail introuvable."
+
+msgid "billing_free_plan_default"
+msgstr "Hobby est déjà le plan gratuit par défaut."
+
+msgid "failed_create_billing_checkout_session"
+msgstr "Échec de la création de la session de paiement."
+
+msgid "failed_create_billing_portal_session"
+msgstr "Échec de la création de la session du portail de facturation."
+
+msgid "failed_get_billing_status"
+msgstr "Échec de la récupération de l'état de facturation."
+
+msgid "failed_get_billing_usage"
+msgstr "Échec de la récupération de l'utilisation de facturation."
+
+msgid "invalid_billing_plan"
+msgstr "Plan de facturation invalide."
+
+msgid "invalid_stripe_webhook"
+msgstr "Webhook Stripe invalide."
+
+msgid "invalid_webhook_payload"
+msgstr "Charge utile du webhook invalide."
+
+msgid "stripe_billing_available_after_upgrade"
+msgstr "La facturation Stripe est disponible après une mise à niveau."
+
+msgid "stripe_billing_not_configured"
+msgstr "La facturation Stripe n'est pas configurée."
+
+msgid "workspace_subscription_not_found"
+msgstr "Abonnement de l'espace de travail introuvable."
+
+msgid "workspace_member_not_found"
+msgstr "Membre de l'espace de travail introuvable."

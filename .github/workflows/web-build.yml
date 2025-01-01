@@ -1,0 +1,59 @@
+name: Dashboard Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build Dashboard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required for git push
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: |
+          npm install -g npm@10.9.8
+          npm ci
+
+      - name: Build web assets
+        run: make web
+
+      - name: Check build artifacts
+        run: |
+          echo "Checking if build artifacts exist..."
+          ls -la web/dist/
+          if [ ! -f "web/dist/index.html" ]; then
+            echo "Error: index.html not found in build output"
+            exit 1
+          fi
+          echo "✓ Build successful - artifacts verified"
+
+      - name: Commit and push changes
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add web/dist/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: rebuild web assets [skip ci]"
+            git push
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

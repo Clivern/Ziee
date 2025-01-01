@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: actx0
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d actx0"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ACTX0_DATABASE_DRIVER: postgres
+      ACTX0_DATABASE_HOST: localhost
+      ACTX0_DATABASE_PORT: 5432
+      ACTX0_DATABASE_USERNAME: postgres
+      ACTX0_DATABASE_PASSWORD: postgres
+      ACTX0_DATABASE_NAME: actx0
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.26.5"]
+    name: Go ${{ matrix.go }} run
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Get dependencies
+        run: |
+          export PATH=${PATH}:`go env GOPATH`/bin
+          make revive
+
+      - name: Run make ci
+        run: |
+          export CGO_CFLAGS="-g -O2 -Wno-return-local-addr"
+          export PATH=${PATH}:`go env GOPATH`/bin
+          go get -t .
+          make ci
+          make integration
+          git status
+          git diff > diff.log
+          cat diff.log
+          git clean -fd
+          git reset --hard
+          make verify

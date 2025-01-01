@@ -32,4 +32,4 @@ gh run list --workflow=registry.yml --limit 1
 ## Notes
 
 - Do not ask for confirmation before dispatching unless the ref is ambiguous.
-- The workflow builds and pushes `registry.digitalocean.com/<DO_REGISTRY_NAME>/actx0` and prunes old tags (keeps 3).
+- The workflow builds and pushes `registry.digitalocean.com/<DO_REGISTRY_NAME>/ziee` and prunes old tags (keeps 3).

@@ -87,7 +87,7 @@ func Auth() func(http.Handler) http.Handler {
 			}
 
 			// Session Token Check
-			sessionToken := util.GetCookie(r, "_actx0_session")
+			sessionToken := util.GetCookie(r, "_ziee_session")
 			if lo.IsEmpty(sessionToken) {
 				log.Info().
 					Str("path", r.URL.Path).
@@ -105,7 +105,7 @@ func Auth() func(http.Handler) http.Handler {
 
 			user, _, err := sessionManager.ValidateSession(sessionToken)
 			if err != nil {
-				util.DeleteCookie(w, "_actx0_session")
+				util.DeleteCookie(w, "_ziee_session")
 				if user != nil {
 					sessionManager.RevokeUserSessions(user.Id)
 				}

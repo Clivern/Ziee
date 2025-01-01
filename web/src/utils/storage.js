@@ -1,5 +1,5 @@
-const USER_STORAGE_KEY = 'actx0_user'
-const WORKSPACE_STORAGE_KEY = 'actx0_workspace'
+const USER_STORAGE_KEY = 'ziee_user'
+const WORKSPACE_STORAGE_KEY = 'ziee_workspace'
 
 export const loadUserFromStorage = () => {
   try {

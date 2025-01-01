@@ -8,7 +8,7 @@ import (
 	stripesdk "github.com/stripe/stripe-go/v82"
 )
 
-// Client wraps the Stripe SDK using actx0 billing configuration.
+// Client wraps the Stripe SDK using ziee billing configuration.
 type Client struct {
 	api    *stripesdk.Client
 	config Config

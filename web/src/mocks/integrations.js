@@ -2,7 +2,7 @@ export const INTEGRATION_TYPES = {
   WEBHOOK: 'webhook',
 }
 
-export const WEBHOOK_SIGNATURE_HEADER = 'X-Actx0-Signature-256'
+export const WEBHOOK_SIGNATURE_HEADER = 'X-Ziee-Signature-256'
 
 export const WEBHOOK_EVENTS = [
   { value: 'memory.add', labelKey: 'integrations_page.event_memory_add' },
@@ -98,7 +98,7 @@ export const MOCK_INTEGRATIONS = [
     type: INTEGRATION_TYPES.WEBHOOK,
     name: 'Legacy CRM sync',
     config: {
-      url: 'https://crm.example.com/webhooks/actx0',
+      url: 'https://crm.example.com/webhooks/ziee',
       events: ['memory.add'],
       enabled: false,
     },

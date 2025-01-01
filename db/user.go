@@ -12,25 +12,26 @@ import (
 
 // User role and provider constants
 const (
-	UserRoleAdmin     = "admin"
-	UserRoleRegular   = "regular"
-	UserRoleOwner     = "owner"
-	UserRoleReadOnly  = "readonly"
-	UserRoleBot       = "bot"
-	UserProviderLocal = "local"
-	UserLanguageEN    = "en"
-	UserLanguageFR    = "fr"
-	UserThemeDefault  = "default"
-	UserThemeBlue     = "blue"
-	UserThemeSlate    = "slate"
-	UserThemeEmerald  = "emerald"
-	UserThemeDark     = "dark"
+	UserRoleAdmin      = "admin"
+	UserRoleRegular    = "regular"
+	UserRoleOwner      = "owner"
+	UserRoleReadOnly   = "readonly"
+	UserRoleBot        = "bot"
+	UserProviderLocal  = "local"
+	UserProviderGithub = "github"
+	UserLanguageEN     = "en"
+	UserLanguageFR     = "fr"
+	UserThemeDefault   = "default"
+	UserThemeBlue      = "blue"
+	UserThemeSlate     = "slate"
+	UserThemeEmerald   = "emerald"
+	UserThemeDark      = "dark"
 )
 
 const BotUserId Id = "00000000-0000-0000-0000-000000000000"
 
 const (
-	BotUserEmail = "hello@actx0.com"
+	BotUserEmail = "hello@ziee.com"
 	BotUserName  = "Ziee"
 )
 
@@ -59,6 +60,7 @@ type UserRepository interface {
 	GetById(id Id) (*User, error)
 	GetByAPIKey(apiKey string) (*User, error)
 	GetByEmail(email string) (*User, error)
+	GetByProvider(provider, providerUserId string) (*User, error)
 	Update(user *User) error
 	UpdateLastLogin(id Id) error
 	Delete(id Id) error
@@ -215,6 +217,40 @@ func (r *UserRepositoryPostgres) GetByEmail(email string) (*User, error) {
 		FROM users
 		WHERE email = $1`,
 		email,
+	).Scan(
+		&user.Id,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.Provider,
+		&user.ProviderUserId,
+		&user.Role,
+		&user.IsActive,
+		&user.IsEmailVerified,
+		&user.EmailVerifyToken,
+		&user.LastLoginAt,
+		&user.Language,
+		&user.Theme,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if isNotFound(err) {
+		return nil, nil
+	}
+	return user, err
+}
+
+// GetByProvider returns a user by OAuth provider identity
+func (r *UserRepositoryPostgres) GetByProvider(provider, providerUserId string) (*User, error) {
+	user := &User{}
+	err := r.db.QueryRow(
+		`SELECT
+			id, name, email, pwd_hash, provider, provider_user_id, role, is_active,
+			is_email_verified, email_verify_token, last_login_at, language, theme, created_at, updated_at
+		FROM users
+		WHERE provider = $1 AND provider_user_id = $2`,
+		provider,
+		providerUserId,
 	).Scan(
 		&user.Id,
 		&user.Name,

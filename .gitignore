@@ -31,9 +31,9 @@ config.test.yml
 coverage.html
 
 # Binary
-actx0
+ziee
 
-# Documentation (clone from git@github.com:actx0/adoc.git)
+# Documentation (clone from git@github.com:ziee/adoc.git)
 docs/
 .ruff_cache/
 

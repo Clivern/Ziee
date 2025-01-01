@@ -13,10 +13,8 @@ import (
 )
 
 const (
-	EventUserLoggedIn       = "user.logged_in"
-	EventUserLoggedOut      = "user.logged_out"
-	EventUserForgotPassword = "user.forgot_password"
-	EventUserResetPassword  = "user.reset_password"
+	EventUserLoggedIn  = "user.logged_in"
+	EventUserLoggedOut = "user.logged_out"
 )
 
 // UserLoggedInData is emitted after a successful login.
@@ -30,21 +28,9 @@ type UserLoggedOutData struct {
 	UserID db.Id
 }
 
-// UserForgotPasswordData is emitted after a password reset token is created.
-type UserForgotPasswordData struct {
-	UserID db.Id
-}
-
-// UserResetPasswordData is emitted after a password is reset.
-type UserResetPasswordData struct {
-	UserID db.Id
-}
-
 var (
-	UserLoggedIn       = event.New[UserLoggedInData](EventUserLoggedIn)
-	UserLoggedOut      = event.New[UserLoggedOutData](EventUserLoggedOut)
-	UserForgotPassword = event.New[UserForgotPasswordData](EventUserForgotPassword)
-	UserResetPassword  = event.New[UserResetPasswordData](EventUserResetPassword)
+	UserLoggedIn  = event.New[UserLoggedInData](EventUserLoggedIn)
+	UserLoggedOut = event.New[UserLoggedOutData](EventUserLoggedOut)
 )
 
 // RegisterEventListeners wires application event handlers.
@@ -60,20 +46,6 @@ func RegisterEventListeners() {
 	UserLoggedOut.On(func(_ context.Context, e UserLoggedOutData) {
 		log.Debug().
 			Str("event", EventUserLoggedOut).
-			Str("userId", e.UserID.String()).
-			Msg("Event emitted")
-	})
-
-	UserForgotPassword.On(func(_ context.Context, e UserForgotPasswordData) {
-		log.Debug().
-			Str("event", EventUserForgotPassword).
-			Str("userId", e.UserID.String()).
-			Msg("Event emitted")
-	})
-
-	UserResetPassword.On(func(_ context.Context, e UserResetPasswordData) {
-		log.Debug().
-			Str("event", EventUserResetPassword).
 			Str("userId", e.UserID.String()).
 			Msg("Event emitted")
 	})

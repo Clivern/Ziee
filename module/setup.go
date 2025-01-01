@@ -79,7 +79,7 @@ func (s *Setup) Install(req *SetupRequest) error {
 		return fmt.Errorf("%w: create admin user: %v", ErrFailedCompleteSetup, err)
 	}
 
-	botPassword, err := util.HashPassword("actx0-bot-user-no-login")
+	botPassword, err := util.HashPassword("ziee-bot-user-no-login")
 	if err != nil {
 		return fmt.Errorf("%w: hash bot password: %v", ErrFailedCompleteSetup, err)
 	}

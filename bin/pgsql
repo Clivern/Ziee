@@ -31,14 +31,14 @@ from pathlib import Path
 
 
 DEFAULT_IMAGE = "docker.io/library/postgres:16-alpine"
-DEFAULT_CONTAINER = "actx0-postgres"
-DEFAULT_VOLUME = "actx0-postgres-data"
+DEFAULT_CONTAINER = "ziee-postgres"
+DEFAULT_VOLUME = "ziee-postgres-data"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_HOST_PORT = 5433
 DEFAULT_CONTAINER_PORT = 5432
 DEFAULT_USER = "postgres"
 DEFAULT_PASSWORD = "postgres"
-DEFAULT_DATABASE = "actx0"
+DEFAULT_DATABASE = "ziee"
 DEFAULT_DATA_MOUNT = "/var/lib/postgresql"
 DEFAULT_PGDATA = f"{DEFAULT_DATA_MOUNT}/pgdata"
 
@@ -73,12 +73,12 @@ HELP_TEXT = f"""examples:
   ./bin/pgsql remove --with-volume
 
 default app environment:
-  export ACTX0_DATABASE_DRIVER=postgres
-  export ACTX0_DATABASE_HOST={DEFAULT_HOST}
-  export ACTX0_DATABASE_PORT={DEFAULT_HOST_PORT}
-  export ACTX0_DATABASE_USERNAME={DEFAULT_USER}
-  export ACTX0_DATABASE_PASSWORD={DEFAULT_PASSWORD}
-  export ACTX0_DATABASE_NAME={DEFAULT_DATABASE}
+  export ZIEE_DATABASE_DRIVER=postgres
+  export ZIEE_DATABASE_HOST={DEFAULT_HOST}
+  export ZIEE_DATABASE_PORT={DEFAULT_HOST_PORT}
+  export ZIEE_DATABASE_USERNAME={DEFAULT_USER}
+  export ZIEE_DATABASE_PASSWORD={DEFAULT_PASSWORD}
+  export ZIEE_DATABASE_NAME={DEFAULT_DATABASE}
 """
 
 
@@ -184,12 +184,12 @@ Image:     {cfg.image}
 DSN:       {dsn}
 
 App environment:
-export ACTX0_DATABASE_DRIVER=postgres
-export ACTX0_DATABASE_HOST={cfg.host}
-export ACTX0_DATABASE_PORT={cfg.port}
-export ACTX0_DATABASE_USERNAME={cfg.user}
-export ACTX0_DATABASE_PASSWORD={cfg.password}
-export ACTX0_DATABASE_NAME={cfg.database}
+export ZIEE_DATABASE_DRIVER=postgres
+export ZIEE_DATABASE_HOST={cfg.host}
+export ZIEE_DATABASE_PORT={cfg.port}
+export ZIEE_DATABASE_USERNAME={cfg.user}
+export ZIEE_DATABASE_PASSWORD={cfg.password}
+export ZIEE_DATABASE_NAME={cfg.database}
 """
 
 
@@ -400,7 +400,7 @@ def add_common_options(parser: argparse.ArgumentParser) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run a local PostgreSQL database for actx0 with Apple Container.",
+        description="Run a local PostgreSQL database for ziee with Apple Container.",
         epilog=HELP_TEXT,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

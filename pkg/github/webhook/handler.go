@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/actx0/ziee/pkg/github/event"
 	"github.com/rs/zerolog/log"
+	"github.com/actx0/ziee/pkg/github/event"
 )
 
 // Handler verifies and dispatches GitHub webhook payloads.

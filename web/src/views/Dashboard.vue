@@ -149,12 +149,6 @@
               <p class="mt-1 text-sm leading-relaxed text-theme-textLight">
                 {{ $t('dashboard.whats_new_tip_body') }}
               </p>
-              <router-link
-                to="/docs"
-                class="btn-secondary mt-4 inline-flex items-center px-3 py-1.5 text-sm"
-              >
-                {{ $t('dashboard.whats_new_tip_action') }}
-              </router-link>
             </div>
           </div>
         </div>

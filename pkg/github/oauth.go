@@ -122,3 +122,82 @@ func (o *OAuth) Exchange(ctx context.Context, code, state, expectedState string)
 
 	return &token, nil
 }
+
+// UserInfo is the authenticated GitHub user.
+type UserInfo struct {
+	ID    int64  `json:"id"`
+	Login string `json:"login"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+// Email is a GitHub account email address.
+type Email struct {
+	Email    string `json:"email"`
+	Primary  bool   `json:"primary"`
+	Verified bool   `json:"verified"`
+}
+
+// User fetches the authenticated GitHub user.
+func (o *OAuth) User(ctx context.Context, accessToken string) (*UserInfo, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/user", nil)
+	if err != nil {
+		return nil, fmt.Errorf("github oauth user request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	resp, err := o.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("github oauth user: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("github oauth user body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, newAPIError(resp.StatusCode, body)
+	}
+
+	var user UserInfo
+	if err := json.Unmarshal(body, &user); err != nil {
+		return nil, fmt.Errorf("github oauth user decode: %w", err)
+	}
+
+	return &user, nil
+}
+
+// Emails fetches the authenticated user's email addresses.
+func (o *OAuth) Emails(ctx context.Context, accessToken string) ([]Email, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/user/emails", nil)
+	if err != nil {
+		return nil, fmt.Errorf("github oauth emails request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	resp, err := o.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("github oauth emails: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("github oauth emails body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, newAPIError(resp.StatusCode, body)
+	}
+
+	var emails []Email
+	if err := json.Unmarshal(body, &emails); err != nil {
+		return nil, fmt.Errorf("github oauth emails decode: %w", err)
+	}
+
+	return emails, nil
+}

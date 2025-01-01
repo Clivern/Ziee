@@ -20,26 +20,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginEndpoint = error.config?.url === 'public/action/login'
     const isProfileEndpoint = error.config?.url === '/action/profile'
     const isLogoutEndpoint = error.config?.url === 'public/action/logout'
-    const isForgotPasswordEndpoint = error.config?.url === 'public/action/forgot-password'
-    const isResetPasswordEndpoint = error.config?.url === 'public/action/reset-password'
     const isOnPublicPage = window.location.pathname === '/' ||
-                           window.location.pathname === '/status' ||
-                           window.location.pathname === '/docs' ||
                            window.location.pathname === '/login' ||
-                           window.location.pathname === '/setup' ||
-                           window.location.pathname.startsWith('/forgot-password') ||
-                           window.location.pathname.startsWith('/reset-password') ||
-                           window.location.pathname === '/register'
+                           window.location.pathname === '/setup'
 
     if (error.response?.status === 401 &&
-        !isLoginEndpoint &&
         !isProfileEndpoint &&
         !isLogoutEndpoint &&
-        !isForgotPasswordEndpoint &&
-        !isResetPasswordEndpoint &&
         !isOnPublicPage) {
       removeUserFromStorage()
       removeWorkspaceFromStorage()
@@ -57,13 +46,9 @@ export const healthAPI = {
 }
 
 export const authAPI = {
-  login: (data) => api.post('public/action/login', data),
   logout: () => api.post('public/action/logout'),
   getProfile: () => api.get('/action/profile'),
   updateProfile: (data) => api.put('/action/profile', data),
-  forgotPassword: (data) => api.post('public/action/forgot-password', data),
-  resetPassword: (data) => api.post('public/action/reset-password', data),
-  register: (data) => api.post('public/action/register', data),
 }
 
 export const setupAPI = {

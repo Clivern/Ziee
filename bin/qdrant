@@ -25,8 +25,8 @@ from pathlib import Path
 
 
 DEFAULT_IMAGE = "docker.io/qdrant/qdrant:latest"
-DEFAULT_CONTAINER = "actx0-qdrant"
-DEFAULT_VOLUME = "actx0-qdrant-data"
+DEFAULT_CONTAINER = "ziee-qdrant"
+DEFAULT_VOLUME = "ziee-qdrant-data"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_HTTP_PORT = 6333
 DEFAULT_GRPC_PORT = 6334
@@ -47,12 +47,12 @@ HELP_TEXT = f"""examples:
   ./bin/qdrant remove --with-volume
 
 default app environment:
-  export ACTX0_AI_QDRANT_HOST={DEFAULT_HOST}
-  export ACTX0_AI_QDRANT_PORT={DEFAULT_GRPC_PORT}
-  export ACTX0_AI_QDRANT_API_KEY=
-  export ACTX0_AI_QDRANT_USE_TLS=false
-  export ACTX0_AI_QDRANT_VECTOR_SIZE={DEFAULT_VECTOR_SIZE}
-  export ACTX0_AI_QDRANT_POOL_SIZE={DEFAULT_POOL_SIZE}
+  export ZIEE_AI_QDRANT_HOST={DEFAULT_HOST}
+  export ZIEE_AI_QDRANT_PORT={DEFAULT_GRPC_PORT}
+  export ZIEE_AI_QDRANT_API_KEY=
+  export ZIEE_AI_QDRANT_USE_TLS=false
+  export ZIEE_AI_QDRANT_VECTOR_SIZE={DEFAULT_VECTOR_SIZE}
+  export ZIEE_AI_QDRANT_POOL_SIZE={DEFAULT_POOL_SIZE}
 """
 
 
@@ -158,15 +158,15 @@ Image:       {cfg.image}
 REST API:    http://{cfg.host}:{cfg.http_port}
 gRPC API:    {cfg.host}:{cfg.grpc_port}
 Dashboard:   http://{cfg.host}:{cfg.http_port}/dashboard
-Collections: run `actx0 migrate up -c <config>`
+Collections: run `ziee migrate up -c <config>`
 
 App environment:
-export ACTX0_AI_QDRANT_HOST={cfg.host}
-export ACTX0_AI_QDRANT_PORT={cfg.grpc_port}
-export ACTX0_AI_QDRANT_API_KEY={cfg.api_key}
-export ACTX0_AI_QDRANT_USE_TLS=false
-export ACTX0_AI_QDRANT_VECTOR_SIZE={cfg.vector_size}
-export ACTX0_AI_QDRANT_POOL_SIZE={cfg.pool_size}
+export ZIEE_AI_QDRANT_HOST={cfg.host}
+export ZIEE_AI_QDRANT_PORT={cfg.grpc_port}
+export ZIEE_AI_QDRANT_API_KEY={cfg.api_key}
+export ZIEE_AI_QDRANT_USE_TLS=false
+export ZIEE_AI_QDRANT_VECTOR_SIZE={cfg.vector_size}
+export ZIEE_AI_QDRANT_POOL_SIZE={cfg.pool_size}
 """
 
 
@@ -360,7 +360,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_common_options(common_parser)
 
     parser = argparse.ArgumentParser(
-        description="Run a local Qdrant vector database for actx0 with Apple Container.",
+        description="Run a local Qdrant vector database for ziee with Apple Container.",
         epilog=HELP_TEXT,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

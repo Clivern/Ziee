@@ -15,9 +15,6 @@ const (
 	// RememberMeSessionDuration is the auth session TTL with remember-me.
 	RememberMeSessionDuration = 30 * 24 * time.Hour
 
-	// PasswordResetTokenTTL is how long a password reset token stays valid.
-	PasswordResetTokenTTL = 24 * time.Hour
-
 	// InviteExpiry is how long a workspace invite stays valid.
 	InviteExpiry = 7 * 24 * time.Hour
 

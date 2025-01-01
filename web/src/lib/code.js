@@ -54,7 +54,7 @@ const goSpecs = [
   { pattern: /^:=|,|\{|\}|\(|\)/, cls: null },
   { pattern: /^\.[A-Z][A-Za-z0-9_]*/, cls: 'token-fn' },
   { pattern: /^ziee\.[A-Za-z0-9_]+/, cls: 'token-fn' },
-  { pattern: /^actx0\.[A-Za-z0-9_]+/, cls: 'token-fn' },
+  { pattern: /^ziee\.[A-Za-z0-9_]+/, cls: 'token-fn' },
   { pattern: /^\s+/, cls: null },
 ]
 

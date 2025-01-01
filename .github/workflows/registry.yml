@@ -8,8 +8,8 @@ on:
 
 env:
   REGISTRY: registry.digitalocean.com
-  DO_REGISTRY_NAME: actx0
-  IMAGE: actx0/actx0
+  DO_REGISTRY_NAME: ziee
+  IMAGE: ziee/ziee
 
 jobs:
   push_to_registry:
@@ -49,15 +49,15 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ACTX0_VERSION=${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.ref_name, github.sha) }}
-            ACTX0_COMMIT=${{ github.sha }}
-            ACTX0_BUILD_DATE=${{ github.event.head_commit.timestamp }}
-            ACTX0_BUILT_BY=github-actions
+            ZIEE_VERSION=${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.ref_name, github.sha) }}
+            ZIEE_COMMIT=${{ github.sha }}
+            ZIEE_BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            ZIEE_BUILT_BY=github-actions
 
       - name: Prune old image tags
         env:
           REGISTRY_NAME: ${{ env.DO_REGISTRY_NAME }}
-          REPOSITORY: actx0
+          REPOSITORY: ziee
         run: |
           keep=3
           tags=$(doctl registries repository list-tags "$REGISTRY_NAME" "$REPOSITORY" -o json \

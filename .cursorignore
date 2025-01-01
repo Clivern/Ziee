@@ -12,7 +12,7 @@ coverage.html
 *.db
 
 # Binaries & OS junk
-actx0
+ziee
 *.exe
 *.dll
 *.so

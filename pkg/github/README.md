@@ -19,7 +19,7 @@ All API methods accept a `context.Context` and return structured `*github.APIErr
 ```go
 client := github.New(github.Config{
     Token:      os.Getenv("GITHUB_TOKEN"),
-    Owner:      "actx0",
+    Owner:      "ziee",
     Repository: "ziee",
 })
 

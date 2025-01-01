@@ -18,9 +18,6 @@
             </p>
             <p id="cookie-banner-desc" class="mt-1.5 text-sm leading-relaxed text-theme-textLight">
               {{ $t('cookies.banner_desc') }}
-              <router-link to="/docs" class="font-medium text-primary-800 hover:text-primary-900 underline-offset-2 hover:underline">
-                {{ $t('cookies.learn_more') }}
-              </router-link>
             </p>
           </div>
           <div class="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">

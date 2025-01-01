@@ -19,7 +19,7 @@ func TestClientNewComment(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method)
-		assert.Equal(t, "/repos/actx0/ziee/issues/42/comments", r.URL.Path)
+		assert.Equal(t, "/repos/ziee/ziee/issues/42/comments", r.URL.Path)
 		assert.Equal(t, "Bearer token", r.Header.Get("Authorization"))
 
 		var body map[string]string
@@ -33,7 +33,7 @@ func TestClientNewComment(t *testing.T) {
 
 	client := New(Config{
 		Token:      "token",
-		Owner:      "actx0",
+		Owner:      "ziee",
 		Repository: "ziee",
 	}, WithBaseURL(server.URL), WithHTTPClient(server.Client()))
 
@@ -48,14 +48,14 @@ func TestClientDeleteLabel(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method)
-		assert.Equal(t, "/repos/actx0/ziee/labels/bug", r.URL.Path)
+		assert.Equal(t, "/repos/ziee/ziee/labels/bug", r.URL.Path)
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	t.Cleanup(server.Close)
 
 	client := New(Config{
 		Token:      "token",
-		Owner:      "actx0",
+		Owner:      "ziee",
 		Repository: "ziee",
 	}, WithBaseURL(server.URL), WithHTTPClient(server.Client()))
 

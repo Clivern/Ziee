@@ -51,6 +51,13 @@ test_short:
 	$(go) test -mod=readonly -short $(pkgs)
 
 
+## web: Build the web assets.
+.PHONY: web
+web:
+	@echo ">> ============= Building Web Assets ============= <<"
+	cd web && npm run build
+
+
 ## test: Run test cases.
 .PHONY: test
 test:

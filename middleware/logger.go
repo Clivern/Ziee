@@ -55,7 +55,6 @@ func Logger(next http.Handler) http.Handler {
 				Str("path", r.URL.Path).
 				Int("status", wrapped.statusCode).
 				Dur("duration", elapsed).
-				Int64("latency_ms", elapsed.Milliseconds()).
 				Msg("Request completed")
 		}
 	})

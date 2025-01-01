@@ -10,7 +10,7 @@ const (
 	PlanStarter = "starter"
 )
 
-// Prices maps actx0 plan names to Stripe Price IDs.
+// Prices maps ziee plan names to Stripe Price IDs.
 type Prices struct {
 	Hobby   string
 	Pro     string
@@ -50,7 +50,7 @@ func (c Config) PriceId(plan string) string {
 	}
 }
 
-// PlanForPriceId returns the actx0 plan name for a Stripe Price Id.
+// PlanForPriceId returns the ziee plan name for a Stripe Price Id.
 func (c Config) PlanForPriceId(priceId string) string {
 	switch priceId {
 	case c.Prices.Hobby:

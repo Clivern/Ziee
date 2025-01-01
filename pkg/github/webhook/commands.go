@@ -5,8 +5,9 @@
 package webhook
 
 import (
-	"github.com/actx0/ziee/pkg/github/event"
 	"regexp"
+
+	"github.com/actx0/ziee/pkg/github/event"
 )
 
 // Commands struct

@@ -5,79 +5,13 @@ import { canManageWorkspace } from '@/lib/permission'
 const routes = [
   {
     path: '/',
-    name: 'Landing',
-    component: () => import('@/views/Landing.vue'),
-    meta: {
-      title: 'The Autonomous Merge Layer for Agent-Scale Delivery',
-      description:
-        'The autonomous merge layer for agent-scale delivery. Merge agent branches safely, resolve conflicts automatically, and keep shipping continuous.',
-    },
-  },
-  {
-    path: '/cases/customer-support',
-    name: 'CaseCustomerSupport',
-    component: () => import('@/views/cases/CustomerSupport.vue'),
-  },
-  {
-    path: '/cases/sales',
-    name: 'CaseSales',
-    component: () => import('@/views/cases/Sales.vue'),
-  },
-  {
-    path: '/cases/healthcare',
-    name: 'CaseHealthcare',
-    component: () => import('@/views/cases/Healthcare.vue'),
-  },
-  {
-    path: '/cases/education',
-    name: 'CaseEducation',
-    component: () => import('@/views/cases/Education.vue'),
-  },
-  {
-    path: '/cases/devtools',
-    name: 'CaseDevTools',
-    component: () => import('@/views/cases/DevTools.vue'),
-  },
-  {
-    path: '/cases/e-commerce',
-    name: 'CaseECommerce',
-    component: () => import('@/views/cases/ECommerce.vue'),
-  },
-  {
-    path: '/status',
-    name: 'Status',
-    component: () => import('@/views/Status.vue'),
-    meta: { title: 'Status', description: 'Ziee platform status' }
-  },
-  {
-    path: '/docs',
-    name: 'Docs',
-    component: () => import('@/views/Docs.vue'),
-    meta: { title: 'Docs', description: 'Ziee documentation' }
+    redirect: '/login',
   },
   {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
     meta: { requiresGuest: true, title: 'Login', description: 'Login to platform' }
-  },
-  {
-    path: '/forgot-password',
-    name: 'ForgotPassword',
-    component: () => import('@/views/ForgotPassword.vue'),
-    meta: { requiresGuest: true, title: 'Forgot password', description: 'Request password reset' }
-  },
-  {
-    path: '/reset-password/:token',
-    name: 'ResetPassword',
-    component: () => import('@/views/ResetPassword.vue'),
-    meta: { requiresGuest: true, title: 'Reset password', description: 'Set new password' }
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/views/Register.vue'),
-    meta: { requiresGuest: true, title: 'Register', description: 'Create an account' }
   },
   {
     path: '/setup',

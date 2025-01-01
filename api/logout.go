@@ -10,7 +10,6 @@ import (
 	"github.com/actx0/ziee/locale"
 	"github.com/actx0/ziee/middleware"
 	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/resend"
 	"github.com/actx0/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
@@ -18,7 +17,7 @@ import (
 
 // LogoutAction logs the user out and revokes their session.
 func LogoutAction(w http.ResponseWriter, r *http.Request) {
-	util.DeleteCookie(w, "_actx0_session")
+	util.DeleteCookie(w, "_ziee_session")
 
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok {
@@ -37,8 +36,6 @@ func LogoutAction(w http.ResponseWriter, r *http.Request) {
 		db.NewUserRepository(db.GetDB()),
 		db.NewSessionRepository(db.GetDB()),
 		db.NewConfigRepository(db.GetDB()),
-		db.NewPasswordResetTokenRepository(db.GetDB()),
-		resend.NewMailer(),
 	)
 
 	err := am.Logout(r.Context(), user.Id)

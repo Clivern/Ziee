@@ -35,11 +35,11 @@ func TestUnitLoader(t *testing.T) {
 		t.Cleanup(viper.Reset)
 
 		configPath := filepath.Join(t.TempDir(), "config.yaml")
-		content := []byte("app:\n  name: actx0\n  port: 8080\n")
+		content := []byte("app:\n  name: ziee\n  port: 8080\n")
 		assert.NoError(t, os.WriteFile(configPath, content, 0644))
 
 		assert.NoError(t, LoadConfigs(configPath))
-		assert.Equal(t, "actx0", viper.GetString("app.name"))
+		assert.Equal(t, "ziee", viper.GetString("app.name"))
 		assert.Equal(t, 8080, viper.GetInt("app.port"))
 
 		assert.Error(t, LoadConfigs(filepath.Join(t.TempDir(), "missing.yaml")))

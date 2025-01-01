@@ -57,14 +57,14 @@ func (s *Setup) Install(req *SetupRequest) error {
 		return fmt.Errorf("%w: admin email reserved", ErrFailedCompleteSetup)
 	}
 
-	hashedPassword, err := util.HashPassword(req.AdminPassword)
+	hpass, err := util.HashPassword(req.AdminPassword)
 	if err != nil {
 		return fmt.Errorf("%w: hash admin password: %v", ErrFailedCompleteSetup, err)
 	}
 	user := &db.User{
 		Name:            "V",
 		Email:           req.AdminEmail,
-		Password:        hashedPassword,
+		Password:        hpass,
 		Provider:        db.UserProviderLocal,
 		Role:            db.UserRoleAdmin,
 		IsActive:        true,

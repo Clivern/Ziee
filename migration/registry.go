@@ -96,15 +96,15 @@ func loadMigrations() ([]Migration, error) {
 			return nil, fmt.Errorf("migration %s missing .down.sql", version)
 		}
 
-		upSQL, downSQL := p.up, p.down
+		up, down := p.up, p.down
 		migrations = append(migrations, Migration{
 			Version:     version,
 			Description: descriptionFromSlug(p.slug),
 			Up: func(db *sql.DB) error {
-				return exec(db, upSQL)
+				return exec(db, up)
 			},
 			Down: func(db *sql.DB) error {
-				return exec(db, downSQL)
+				return exec(db, down)
 			},
 		})
 	}

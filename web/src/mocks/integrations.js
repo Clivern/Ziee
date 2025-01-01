@@ -8,7 +8,6 @@ export const WEBHOOK_EVENTS = [
   { value: 'memory.add', labelKey: 'integrations_page.event_memory_add' },
   { value: 'memory.search', labelKey: 'integrations_page.event_memory_search' },
   { value: 'memory.delete', labelKey: 'integrations_page.event_memory_delete' },
-  { value: 'prompt.updated', labelKey: 'integrations_page.event_prompt_updated' },
   { value: 'access_key.created', labelKey: 'integrations_page.event_access_key_created' },
   { value: 'member.invited', labelKey: 'integrations_page.event_member_invited' },
 ]
@@ -61,7 +60,7 @@ export const MOCK_INTEGRATIONS = [
     name: 'CI pipeline',
     config: {
       url: 'https://api.github.com/repos/acme/app/dispatches',
-      events: ['prompt.updated', 'access_key.created'],
+      events: ['access_key.created'],
       enabled: true,
     },
     createdAt: '2026-06-20T16:44:00Z',

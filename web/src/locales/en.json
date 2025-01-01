@@ -443,7 +443,6 @@
     "select_workspace": "Select Workspace",
     "logout": "Logout",
     "dashboard": "Dashboard",
-    "prompts": "Prompts",
     "settings": "Settings",
     "audits": "Audits",
     "billing": "Billing"
@@ -598,12 +597,10 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Your workspace at a glance — memory, prompts, and integrations.",
+    "subtitle": "Your workspace at a glance — knowledge, usage, and integrations.",
     "welcome_back": "Welcome back,",
-    "memories_stored": "Memories stored",
     "api_calls_month": "API calls (this month)",
-    "active_agents": "Active agents",
-    "prompts": "Prompts",
+    "documents_stored": "Documents stored",
     "mock_badge": "Mock",
     "attention_title": "Alerts",
     "attention_subtitle": "Issues that may block or slow this workspace.",

@@ -17,22 +17,14 @@
       </header>
 
       <section class="mb-8" aria-label="Key metrics">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="stat-card">
-            <p class="stat-label">{{ $t('dashboard.memories_stored') }}</p>
-            <p class="stat-value mt-1">{{ loading ? '…' : stats.memoriesStored.toLocaleString() }}</p>
-          </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="stat-card">
             <p class="stat-label">{{ $t('dashboard.api_calls_month') }}</p>
             <p class="stat-value mt-1">{{ loading ? '…' : stats.apiCallsMonth.toLocaleString() }}</p>
           </div>
           <div class="stat-card">
-            <p class="stat-label">{{ $t('dashboard.active_agents') }}</p>
-            <p class="stat-value mt-1">{{ loading ? '…' : stats.activeAgents.toLocaleString() }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">{{ $t('dashboard.prompts') }}</p>
-            <p class="stat-value mt-1">{{ loading ? '…' : stats.prompts.toLocaleString() }}</p>
+            <p class="stat-label">{{ $t('dashboard.documents_stored') }}</p>
+            <p class="stat-value mt-1">{{ loading ? '…' : stats.documentsStored.toLocaleString() }}</p>
           </div>
         </div>
       </section>
@@ -165,59 +157,6 @@
               </router-link>
             </div>
           </div>
-
-          <div class="section overflow-hidden !p-0">
-            <div class="border-b border-theme-border px-6 py-4">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h2 class="text-lg font-semibold text-theme-text">{{ $t('dashboard.top_agents_title') }}</h2>
-                  <p class="mt-0.5 text-sm text-theme-textLight">{{ $t('dashboard.top_agents_subtitle') }}</p>
-                </div>
-                <span class="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-                  {{ $t('dashboard.mock_badge') }}
-                </span>
-              </div>
-            </div>
-
-            <ul class="divide-y divide-theme-border">
-              <li
-                v-for="(agent, index) in topAgents"
-                :key="agent.id"
-                class="flex items-center gap-4 px-6 py-4"
-              >
-                <span class="w-6 shrink-0 text-sm font-medium text-theme-textLight tabular-nums">
-                  {{ index + 1 }}
-                </span>
-                <div class="min-w-0 flex-1">
-                  <router-link
-                    :to="agentDetailPath(agent.id)"
-                    class="text-sm font-medium text-theme-text hover:text-primary-800 hover:underline"
-                  >
-                    {{ agent.name }}
-                  </router-link>
-                  <p class="mt-0.5 font-mono text-xs text-theme-textLight">{{ agent.handle }}</p>
-                </div>
-                <div class="hidden sm:block text-right shrink-0">
-                  <p class="text-sm font-medium text-theme-text tabular-nums">
-                    {{ agent.sessions.toLocaleString() }}
-                  </p>
-                  <p class="text-xs text-theme-textLight">{{ $t('dashboard.top_agents_sessions') }}</p>
-                </div>
-                <div class="text-right shrink-0 min-w-[4.5rem]">
-                  <p class="text-sm font-medium text-theme-text tabular-nums">
-                    {{ agent.memories.toLocaleString() }}
-                  </p>
-                  <p class="text-xs text-theme-textLight">{{ $t('dashboard.top_agents_memories') }}</p>
-                </div>
-              </li>
-            </ul>
-
-            <div class="border-t border-theme-border px-6 py-3">
-              <router-link to="/agents" class="text-sm font-medium text-primary-800 hover:underline">
-                {{ $t('dashboard.top_agents_view_all') }}
-              </router-link>
-            </div>
-          </div>
         </div>
 
         <div class="space-y-6">
@@ -293,7 +232,6 @@ import {
 } from '@/api'
 import AppNav from '@/components/AppNav.vue'
 import { user } from '@/lib/auth'
-import { agentDetailPath } from '@/lib/agent'
 import { saveWorkspaceToStorage } from '@/utils/storage'
 import { useWorkspaceContext } from '@/lib/permission'
 
@@ -313,19 +251,9 @@ function dismissWhatsNew() {
   localStorage.setItem(WHATS_NEW_KEY, '1')
 }
 
-const topAgents = [
-  { id: 'agt_support', name: 'Support bot', handle: 'support-bot', sessions: 1842, memories: 9210 },
-  { id: 'agt_sales', name: 'Sales assistant', handle: 'sales-assistant', sessions: 963, memories: 4104 },
-  { id: 'agt_onboard', name: 'Onboarding guide', handle: 'onboarding-guide', sessions: 511, memories: 1880 },
-  { id: 'agt_docs', name: 'Docs helper', handle: 'docs-helper', sessions: 287, memories: 940 },
-  { id: 'agt_billing', name: 'Billing FAQ', handle: 'billing-faq', sessions: 124, memories: 356 },
-]
-
 const stats = ref({
-  memoriesStored: 0,
   apiCallsMonth: 0,
-  activeAgents: 0,
-  prompts: 0,
+  documentsStored: 0,
 })
 
 const PLAN_LABELS = {
@@ -371,22 +299,6 @@ const attentionItems = computed(() => [
     to: '/settings',
   },
   {
-    id: 'agent',
-    level: 'warn',
-    title: t('dashboard.attention_agent_title'),
-    description: t('dashboard.attention_agent_desc'),
-    action: t('dashboard.attention_agent_action'),
-    to: '/agents',
-  },
-  {
-    id: 'prompt',
-    level: 'warn',
-    title: t('dashboard.attention_prompt_title'),
-    description: t('dashboard.attention_prompt_desc'),
-    action: t('dashboard.attention_prompt_action'),
-    to: '/prompts',
-  },
-  {
     id: 'invite',
     level: 'info',
     title: t('dashboard.attention_invite_title'),
@@ -403,28 +315,12 @@ const attentionItems = computed(() => [
     to: '/integrations',
   },
   {
-    id: 'errors',
-    level: 'error',
-    title: t('dashboard.attention_errors_title'),
-    description: t('dashboard.attention_errors_desc'),
-    action: t('dashboard.attention_errors_action'),
-    to: '/agents',
-  },
-  {
     id: 'queue',
     level: 'error',
     title: t('dashboard.attention_queue_title'),
     description: t('dashboard.attention_queue_desc'),
     action: t('dashboard.attention_queue_action'),
     to: '/knowledge',
-  },
-  {
-    id: 'empty_memory',
-    level: 'warn',
-    title: t('dashboard.attention_empty_memory_title'),
-    description: t('dashboard.attention_empty_memory_desc'),
-    action: t('dashboard.attention_empty_memory_action'),
-    to: '/agents',
   },
   {
     id: 'trial',
@@ -469,25 +365,14 @@ function attentionDotClass(level) {
 }
 
 const activityIcons = {
-  prompt: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-  agent: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
   doc: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z',
   member: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
   key: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z',
-  memory: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4',
 }
 
 const recentActivity = computed(() => [
   {
     id: 1,
-    icon: 'prompt',
-    actor: 'Ahmed',
-    action: t('dashboard.activity_published'),
-    target: 'customer-support v3',
-    time: t('dashboard.activity_time_2m'),
-  },
-  {
-    id: 2,
     icon: 'doc',
     actor: 'System',
     action: t('dashboard.activity_indexed'),
@@ -495,15 +380,7 @@ const recentActivity = computed(() => [
     time: t('dashboard.activity_time_18m'),
   },
   {
-    id: 3,
-    icon: 'agent',
-    actor: 'Sara',
-    action: t('dashboard.activity_created_agent'),
-    target: 'support-bot',
-    time: t('dashboard.activity_time_1h'),
-  },
-  {
-    id: 4,
+    id: 2,
     icon: 'member',
     actor: 'Ahmed',
     action: t('dashboard.activity_invited'),
@@ -511,19 +388,11 @@ const recentActivity = computed(() => [
     time: t('dashboard.activity_time_3h'),
   },
   {
-    id: 5,
+    id: 3,
     icon: 'key',
     actor: 'Ahmed',
     action: t('dashboard.activity_created_key'),
     target: 'production-ci',
-    time: t('dashboard.activity_time_1d'),
-  },
-  {
-    id: 6,
-    icon: 'memory',
-    actor: 'support-bot',
-    action: t('dashboard.activity_stored'),
-    target: '128 memories',
     time: t('dashboard.activity_time_1d'),
   },
 ])
@@ -535,10 +404,8 @@ async function loadDashboard() {
     statsAPI.get(currentWorkspace.id)
       .then((res) => {
         stats.value = {
-          memoriesStored: res.data.memoriesStored ?? 0,
           apiCallsMonth: res.data.apiCallsMonth ?? 0,
-          activeAgents: res.data.activeAgents ?? 0,
-          prompts: res.data.prompts ?? 0,
+          documentsStored: res.data.documentsStored ?? 0,
         }
       })
       .catch(() => {}),

@@ -146,40 +146,10 @@ const routes = [
     meta: { requiresAuth: true, requiresWorkspace: true, requiresWorkspaceAdmin: true, title: 'Audits', description: 'Workspace audit log' }
   },
   {
-    path: '/agents',
-    name: 'Agents',
-    component: () => import('@/views/Agents.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Agents', description: 'Agents' }
-  },
-  {
-    path: '/agents/:agentId',
-    name: 'Agent',
-    component: () => import('@/views/Agent.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Agent', description: 'Agent detail' }
-  },
-  {
-    path: '/agents/:agentId/sessions/:sessionId',
-    name: 'Session',
-    component: () => import('@/views/Session.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Session', description: 'Session detail' }
-  },
-  {
     path: '/knowledge',
     name: 'Knowledge',
     component: () => import('@/views/Knowledge.vue'),
     meta: { requiresAuth: true, requiresWorkspace: true, title: 'Knowledge', description: 'Knowledge' }
-  },
-  {
-    path: '/prompts',
-    name: 'Prompts',
-    component: () => import('@/views/Prompts.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Prompts', description: 'Prompts' }
-  },
-  {
-    path: '/prompts/:promptId',
-    name: 'PromptDetail',
-    component: () => import('@/views/PromptDetail.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Prompt', description: 'Prompt versions' }
   },
   {
     path: '/404',

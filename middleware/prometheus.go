@@ -134,24 +134,6 @@ var (
 
 	_ = promauto.NewGaugeFunc(
 		prometheus.GaugeOpts{
-			Name: "db_prompts_total",
-			Help: "Current number of prompts in database.",
-		},
-		func() float64 {
-			conn := db.GetDB()
-			if conn == nil {
-				return 0
-			}
-			count, err := db.NewPromptRepository(conn).Count()
-			if err != nil {
-				return 0
-			}
-			return float64(count)
-		},
-	)
-
-	_ = promauto.NewGaugeFunc(
-		prometheus.GaugeOpts{
 			Name: "db_access_keys_total",
 			Help: "Current number of non-expired workspace access keys in database.",
 		},

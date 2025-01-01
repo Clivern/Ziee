@@ -36,40 +36,10 @@ const (
 	CanGetWorkspaceAccessKey    = "CAN_GET_WORKSPACE_ACCESS_KEY"
 	CanDeleteWorkspaceAccessKey = "CAN_DELETE_WORKSPACE_ACCESS_KEY"
 
-	CanListPrompts  = "CAN_LIST_PROMPTS"
-	CanGetPrompt    = "CAN_GET_PROMPT"
-	CanCreatePrompt = "CAN_CREATE_PROMPT"
-	CanUpdatePrompt = "CAN_UPDATE_PROMPT"
-	CanDeletePrompt = "CAN_DELETE_PROMPT"
-
 	CanCreateWorkspaceDocument = "CAN_CREATE_WORKSPACE_DOCUMENT"
 	CanListWorkspaceDocuments  = "CAN_LIST_WORKSPACE_DOCUMENTS"
 	CanQueryWorkspaceDocuments = "CAN_QUERY_WORKSPACE_DOCUMENTS"
 	CanDeleteWorkspaceDocument = "CAN_DELETE_WORKSPACE_DOCUMENT"
-
-	CanListAgents  = "CAN_LIST_AGENTS"
-	CanGetAgent    = "CAN_GET_AGENT"
-	CanCreateAgent = "CAN_CREATE_AGENT"
-	CanUpdateAgent = "CAN_UPDATE_AGENT"
-	CanDeleteAgent = "CAN_DELETE_AGENT"
-
-	CanListAgentSessions  = "CAN_LIST_AGENT_SESSIONS"
-	CanGetAgentSession    = "CAN_GET_AGENT_SESSION"
-	CanCreateAgentSession = "CAN_CREATE_AGENT_SESSION"
-	CanUpdateAgentSession = "CAN_UPDATE_AGENT_SESSION"
-	CanDeleteAgentSession = "CAN_DELETE_AGENT_SESSION"
-
-	CanListSessionMessages  = "CAN_LIST_SESSION_MESSAGES"
-	CanGetSessionMessage    = "CAN_GET_SESSION_MESSAGE"
-	CanCreateSessionMessage = "CAN_CREATE_SESSION_MESSAGE"
-	CanUpdateSessionMessage = "CAN_UPDATE_SESSION_MESSAGE"
-	CanDeleteSessionMessage = "CAN_DELETE_SESSION_MESSAGE"
-
-	CanListSessionMemories = "CAN_LIST_SESSION_MEMORIES"
-	CanGetSessionMemory    = "CAN_GET_SESSION_MEMORY"
-	CanCreateSessionMemory = "CAN_CREATE_SESSION_MEMORY"
-	CanUpdateSessionMemory = "CAN_UPDATE_SESSION_MEMORY"
-	CanDeleteSessionMemory = "CAN_DELETE_SESSION_MEMORY"
 
 	CanListWorkspaceAudits = "CAN_LIST_WORKSPACE_AUDITS"
 	CanGetWorkspaceAudit   = "CAN_GET_WORKSPACE_AUDIT"
@@ -82,29 +52,8 @@ var (
 
 // AccessKeyPermissions lists permissions that may be assigned to workspace access keys.
 var AccessKeyPermissions = map[string]bool{
-	CanListPrompts:             true,
-	CanGetPrompt:               true,
 	CanListWorkspaceDocuments:  true,
 	CanQueryWorkspaceDocuments: true,
-	CanListAgents:              true,
-	CanGetAgent:                true,
-	CanCreateAgent:             true,
-	CanDeleteAgent:             true,
-	CanListAgentSessions:       true,
-	CanGetAgentSession:         true,
-	CanCreateAgentSession:      true,
-	CanUpdateAgentSession:      true,
-	CanDeleteAgentSession:      true,
-	CanListSessionMessages:     true,
-	CanGetSessionMessage:       true,
-	CanCreateSessionMessage:    true,
-	CanUpdateSessionMessage:    true,
-	CanDeleteSessionMessage:    true,
-	CanListSessionMemories:     true,
-	CanGetSessionMemory:        true,
-	CanCreateSessionMemory:     true,
-	CanUpdateSessionMemory:     true,
-	CanDeleteSessionMemory:     true,
 }
 
 // Perm checks workspace permissions for users and workspace access keys.
@@ -177,18 +126,8 @@ func (p *Perm) CanAsUser(permission string) (bool, error) {
 	switch permission {
 	case CanGetWorkspace,
 		CanGetWorkspaceBilling,
-		CanListPrompts,
-		CanGetPrompt,
 		CanListWorkspaceDocuments,
-		CanQueryWorkspaceDocuments,
-		CanListAgents,
-		CanGetAgent,
-		CanListAgentSessions,
-		CanGetAgentSession,
-		CanListSessionMessages,
-		CanGetSessionMessage,
-		CanListSessionMemories,
-		CanGetSessionMemory:
+		CanQueryWorkspaceDocuments:
 		return true, nil
 	case CanUpdateWorkspace,
 		CanDeleteWorkspace,
@@ -206,23 +145,8 @@ func (p *Perm) CanAsUser(permission string) (bool, error) {
 		CanDeleteWorkspaceAccessKey,
 		CanListWorkspaceAudits,
 		CanGetWorkspaceAudit,
-		CanCreatePrompt,
-		CanUpdatePrompt,
-		CanDeletePrompt,
 		CanCreateWorkspaceDocument,
-		CanDeleteWorkspaceDocument,
-		CanCreateAgent,
-		CanUpdateAgent,
-		CanDeleteAgent,
-		CanCreateAgentSession,
-		CanUpdateAgentSession,
-		CanDeleteAgentSession,
-		CanCreateSessionMessage,
-		CanUpdateSessionMessage,
-		CanDeleteSessionMessage,
-		CanCreateSessionMemory,
-		CanUpdateSessionMemory,
-		CanDeleteSessionMemory:
+		CanDeleteWorkspaceDocument:
 		return membership.Role == db.UserRoleAdmin || membership.Role == db.UserRoleOwner, nil
 	default:
 		return false, nil

@@ -21,21 +21,6 @@ msgstr "Clé d'accès introuvable."
 msgid "api_key_not_found"
 msgstr "Clé API introuvable."
 
-msgid "agent_not_found"
-msgstr "Agent introuvable."
-
-msgid "agent_session_already_exists"
-msgstr "Une session d'agent avec ces libellés existe déjà."
-
-msgid "agent_session_not_found"
-msgstr "Session d'agent introuvable."
-
-msgid "city_not_found"
-msgstr "Ville introuvable."
-
-msgid "city_required"
-msgstr "La ville est requise."
-
 msgid "cannot_delete_own_account"
 msgstr "Vous ne pouvez pas supprimer votre propre compte."
 
@@ -66,26 +51,11 @@ msgstr "Impossible de finaliser la configuration."
 msgid "failed_create_access_key"
 msgstr "Impossible de créer la clé d'accès."
 
-msgid "failed_create_agent"
-msgstr "Impossible de créer l'agent."
-
-msgid "failed_create_agent_session"
-msgstr "Impossible de créer la session d'agent."
-
-msgid "failed_create_session_message"
-msgstr "Impossible de créer le message de session."
-
-msgid "failed_create_session_memory"
-msgstr "Impossible de créer la mémoire de session."
-
 msgid "failed_create_api_key"
 msgstr "Impossible de créer la clé API."
 
 msgid "failed_create_invite"
 msgstr "Impossible de créer l'invitation."
-
-msgid "failed_create_prompt"
-msgstr "Impossible de créer le prompt."
 
 msgid "failed_create_session"
 msgstr "Impossible de créer la session."
@@ -117,9 +87,6 @@ msgstr "Document introuvable."
 msgid "invalid_document_id"
 msgstr "Identifiant de document invalide."
 
-msgid "invalid_prompt_version"
-msgstr "Version de prompt invalide."
-
 msgid "not_implemented"
 msgstr "Non implémenté."
 
@@ -132,26 +99,11 @@ msgstr "Vous n'avez pas la permission de gérer les documents dans cet espace de
 msgid "failed_delete_access_key"
 msgstr "Impossible de supprimer la clé d'accès."
 
-msgid "failed_delete_agent"
-msgstr "Impossible de supprimer l'agent."
-
-msgid "failed_delete_agent_session"
-msgstr "Impossible de supprimer la session d'agent."
-
-msgid "failed_delete_session_message"
-msgstr "Impossible de supprimer le message de session."
-
-msgid "failed_delete_session_memory"
-msgstr "Impossible de supprimer la mémoire de session."
-
 msgid "failed_delete_api_key"
 msgstr "Impossible de supprimer la clé API."
 
 msgid "failed_delete_invite"
 msgstr "Impossible de supprimer l'invitation."
-
-msgid "failed_delete_prompt"
-msgstr "Impossible de supprimer le prompt."
 
 msgid "failed_delete_user"
 msgstr "Impossible de supprimer l'utilisateur."
@@ -162,26 +114,11 @@ msgstr "Impossible de supprimer l'espace de travail."
 msgid "failed_get_access_key"
 msgstr "Impossible de récupérer la clé d'accès."
 
-msgid "failed_get_agent"
-msgstr "Impossible de récupérer l'agent."
-
-msgid "failed_get_agent_session"
-msgstr "Impossible de récupérer la session d'agent."
-
-msgid "failed_get_session_message"
-msgstr "Impossible de récupérer le message de session."
-
-msgid "failed_get_session_memory"
-msgstr "Impossible de récupérer la mémoire de session."
-
 msgid "failed_get_api_key"
 msgstr "Impossible de récupérer la clé API."
 
 msgid "failed_get_invite"
 msgstr "Impossible de récupérer l'invitation."
-
-msgid "failed_get_prompt"
-msgstr "Impossible de récupérer le prompt."
 
 msgid "failed_get_settings"
 msgstr "Impossible de récupérer les paramètres."
@@ -204,15 +141,6 @@ msgstr "Impossible de récupérer le principal authentifié."
 msgid "failed_list_access_keys"
 msgstr "Impossible de lister les clés d'accès."
 
-msgid "failed_list_agents"
-msgstr "Impossible de lister les agents."
-
-msgid "failed_list_agent_sessions"
-msgstr "Impossible de lister les sessions d'agent."
-
-msgid "failed_list_session_messages"
-msgstr "Impossible de lister les messages de session."
-
 msgid "failed_list_session_memories"
 msgstr "Impossible de lister les mémoires de session."
 
@@ -221,9 +149,6 @@ msgstr "Impossible de lister les clés API."
 
 msgid "failed_list_invites"
 msgstr "Impossible de lister les invitations."
-
-msgid "failed_list_prompts"
-msgstr "Impossible de lister les prompts."
 
 msgid "failed_list_workspace_members"
 msgstr "Impossible de lister les membres de l'espace de travail."
@@ -240,32 +165,11 @@ msgstr "Impossible de traiter la demande."
 msgid "failed_reject_invite"
 msgstr "Échec du refus de l'invitation."
 
-msgid "failed_run_tool"
-msgstr "Échec de l'exécution de l'outil."
-
 msgid "failed_reset_password"
 msgstr "Impossible de réinitialiser le mot de passe."
 
 msgid "failed_update_profile"
 msgstr "Impossible de mettre à jour le profil."
-
-msgid "failed_update_agent"
-msgstr "Impossible de mettre à jour l'agent."
-
-msgid "failed_update_agent_session"
-msgstr "Impossible de mettre à jour la session d'agent."
-
-msgid "failed_update_session_message"
-msgstr "Impossible de mettre à jour le message de session."
-
-msgid "failed_update_session_memory"
-msgstr "Impossible de mettre à jour la mémoire de session."
-
-msgid "failed_update_prompt"
-msgstr "Impossible de mettre à jour le prompt."
-
-msgid "failed_set_prompt_production"
-msgstr "Impossible de promouvoir le prompt en production."
 
 msgid "failed_update_settings"
 msgstr "Impossible de mettre à jour les paramètres."
@@ -290,9 +194,6 @@ msgstr "ID de clé d'accès invalide."
 
 msgid "invalid_access_key"
 msgstr "Clé d'accès invalide."
-
-msgid "invalid_agent_id"
-msgstr "ID d'agent invalide."
 
 msgid "invalid_message_id"
 msgstr "ID de message invalide."
@@ -326,39 +227,6 @@ msgstr "Format expiresAt invalide."
 
 msgid "invalid_invite_id"
 msgstr "ID d'invitation invalide."
-
-msgid "invalid_prompt_id"
-msgstr "ID de prompt invalide."
-
-msgid "invalid_prompt_version_id"
-msgstr "ID de version de prompt invalide."
-
-msgid "prompt_version_not_found"
-msgstr "Version de prompt introuvable."
-
-msgid "failed_create_prompt_version"
-msgstr "Échec de la création de la version du prompt."
-
-msgid "failed_get_prompt_version"
-msgstr "Échec de la récupération de la version du prompt."
-
-msgid "failed_update_prompt_version"
-msgstr "Échec de la mise à jour de la version du prompt."
-
-msgid "failed_delete_prompt_version"
-msgstr "Échec de la suppression de la version du prompt."
-
-msgid "failed_set_prompt_version_production"
-msgstr "Échec de la mise en production de la version du prompt."
-
-msgid "invalid_prompt_name"
-msgstr "Nom de prompt invalide."
-
-msgid "invalid_prompt_handle"
-msgstr "Le nom doit contenir des lettres ou des chiffres pour générer un identifiant."
-
-msgid "prompt_handle_taken"
-msgstr "Un prompt avec cet identifiant existe déjà. Choisissez un autre nom."
 
 msgid "invalid_or_expired_invite_token"
 msgstr "Jeton d'invitation invalide ou expiré."
@@ -414,12 +282,6 @@ msgstr "Vous n'avez pas l'autorisation de gérer les membres de cet espace de tr
 msgid "no_permission_manage_workspace_access_keys"
 msgstr "Vous n'avez pas l'autorisation de gérer les clés d'accès de cet espace de travail."
 
-msgid "no_permission_manage_prompts"
-msgstr "Vous n'avez pas l'autorisation de gérer les prompts."
-
-msgid "no_permission_manage_agents"
-msgstr "Vous n'avez pas l'autorisation de gérer les agents."
-
 msgid "not_authenticated"
 msgstr "Non authentifié."
 
@@ -434,15 +296,6 @@ msgstr "La plateforme est déjà installée."
 
 msgid "profile_updated_successfully"
 msgstr "Profil mis à jour avec succès."
-
-msgid "prompt_not_found"
-msgstr "Prompt introuvable."
-
-msgid "session_message_not_found"
-msgstr "Message de session introuvable."
-
-msgid "session_memory_not_found"
-msgstr "Mémoire de session introuvable."
 
 msgid "registration_successful"
 msgstr "Inscription réussie."

@@ -19,10 +19,7 @@ type WorkspaceUsageMetrics struct {
 	APICalls         int64   `json:"apiCalls"`
 	WorkspaceMembers int64   `json:"workspaceMembers"`
 	DocumentsCount   int64   `json:"documentsCount"`
-	PromptsCount     int64   `json:"promptsCount"`
 	StorageGB        float64 `json:"storageGB"`
-	HistoryRecords   int64   `json:"historyRecords"`
-	MemoryRecords    int64   `json:"memoryRecords"`
 	AITokens         int64   `json:"aiTokens"`
 	AICost           float64 `json:"aiCost"`
 }
@@ -31,11 +28,8 @@ type WorkspaceUsageMetrics struct {
 type UsageSnapshotDeps struct {
 	WorkspaceUserRepository     db.WorkspaceUserRepository
 	WorkspaceDocumentRepository db.WorkspaceDocumentRepository
-	PromptRepository            db.PromptRepository
 	UsageRepository             db.UsageRepository
 	SubscriptionRepository      db.SubscriptionRepository
-	SessionMessageRepository    db.SessionMessageRepository
-	SessionMemoryRepository     db.SessionMemoryRepository
 }
 
 // NewUsage returns a usage module.
@@ -64,21 +58,6 @@ func (u *Usage) APICalls(usage db.UsageRepository, workspaceId db.Id) (int64, er
 	return usage.GetQuantityByPeriod(workspaceId, db.UsageTypeAPICalls, start)
 }
 
-// PromptsCount returns the number of prompts in a workspace.
-func (u *Usage) PromptsCount(prompts db.PromptRepository, workspaceId db.Id) (int64, error) {
-	return prompts.CountByWorkspaceId(workspaceId)
-}
-
-// HistoryRecords returns session message rows stored across a workspace.
-func (u *Usage) HistoryRecords(messages db.SessionMessageRepository, workspaceId db.Id) (int64, error) {
-	return messages.CountByWorkspaceId(workspaceId)
-}
-
-// MemoryRecords returns session memory rows stored across a workspace.
-func (u *Usage) MemoryRecords(memories db.SessionMemoryRepository, workspaceId db.Id) (int64, error) {
-	return memories.CountByWorkspaceId(workspaceId)
-}
-
 // GetWorkspaceUsage returns all billing usage metrics for a workspace.
 func (u *Usage) GetWorkspaceUsage(deps UsageSnapshotDeps, workspaceId db.Id) (*WorkspaceUsageMetrics, error) {
 	apiCalls, err := u.APICalls(deps.UsageRepository, workspaceId)
@@ -96,22 +75,7 @@ func (u *Usage) GetWorkspaceUsage(deps UsageSnapshotDeps, workspaceId db.Id) (*W
 		return nil, err
 	}
 
-	prompts, err := u.PromptsCount(deps.PromptRepository, workspaceId)
-	if err != nil {
-		return nil, err
-	}
-
 	storageBytes, err := u.StorageUsed(deps.WorkspaceDocumentRepository, workspaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	historyRecords, err := u.HistoryRecords(deps.SessionMessageRepository, workspaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	memoryRecords, err := u.MemoryRecords(deps.SessionMemoryRepository, workspaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -130,10 +94,7 @@ func (u *Usage) GetWorkspaceUsage(deps UsageSnapshotDeps, workspaceId db.Id) (*W
 		APICalls:         apiCalls,
 		WorkspaceMembers: members,
 		DocumentsCount:   documents,
-		PromptsCount:     prompts,
 		StorageGB:        float64(storageBytes) / bytesPerGB,
-		HistoryRecords:   historyRecords,
-		MemoryRecords:    memoryRecords,
 		AITokens:         aiTokens,
 		AICost:           aiCost,
 	}, nil

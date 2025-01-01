@@ -23,7 +23,6 @@ import (
 	"github.com/actx0/ziee/pkg/ai"
 	"github.com/actx0/ziee/pkg/qdrant"
 	"github.com/actx0/ziee/pkg/storage"
-	"github.com/actx0/ziee/service/agent"
 	"github.com/actx0/ziee/service/knowledge"
 	"github.com/actx0/ziee/task"
 
@@ -134,74 +133,14 @@ func SetupServer(Static embed.FS) http.Handler {
 			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetWorkspaceAudit})).Get("/{auditId}", api.GetWorkspaceAuditAction) // get audit event
 		})
 
-		r.Route("/prompts", func(r chi.Router) {
-			r.With(middleware.Protect(middleware.Config{Perm: module.CanListPrompts})).Get("/", api.ListPromptsAction)                            // list prompts
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreatePrompt})).Post("/", api.CreatePromptAction)             // create prompt
-			r.With(middleware.Protect(middleware.Config{Perm: module.CanGetPrompt})).Get("/{promptId}", api.GetPromptAction)                      // get prompt
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeletePrompt})).Delete("/{promptId}", api.DeletePromptAction) // delete prompt
-
-			r.Route("/{promptId}/versions", func(r chi.Router) {
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanListPrompts})).Get("/", api.ListPromptVersionsAction)                                   // list prompt versions
-				r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreatePrompt})).Post("/", api.CreatePromptVersionAction)                    // create prompt version
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanGetPrompt})).Get("/{promptVersionId}", api.GetPromptVersionAction)                      // get prompt version
-				r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdatePrompt})).Put("/{promptVersionId}", api.UpdatePromptVersionAction)    // update prompt version
-				r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeletePrompt})).Delete("/{promptVersionId}", api.DeletePromptVersionAction) // delete prompt version
-			})
-		})
-
-		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetPrompt})).Get("/promptsByName/{promptName}", api.GetPromptByNameAction) // get prompt by name
-
 		r.Route("/documents", func(r chi.Router) {
 			r.With(middleware.Protect(middleware.Config{Perm: module.CanListWorkspaceDocuments})).Get("/", api.ListDocumentsAction)                              // list knowledge documents
 			r.With(middleware.Protect(middleware.Config{Perm: module.CanQueryWorkspaceDocuments})).Post("/search", api.SearchDocumentsAction)                    // semantic document search
 			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreateWorkspaceDocument})).Post("/", api.UploadDocumentAction)               // upload knowledge document
 			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeleteWorkspaceDocument})).Delete("/{documentId}", api.DeleteDocumentAction) // delete knowledge document
 		})
-
-		r.Route("/agents", func(r chi.Router) {
-			r.With(middleware.Protect(middleware.Config{Perm: module.CanListAgents})).Get("/", api.ListAgentsAction)                        // list agents
-			r.With(middleware.Protect(middleware.Config{Perm: module.CanCreateAgent})).Post("/", api.CreateAgentAction)                     // create agent
-			r.With(middleware.Protect(middleware.Config{Perm: module.CanGetAgent})).Get("/{agentId}", api.GetAgentAction)                   // get agent
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateAgent})).Put("/{agentId}", api.UpdateAgentAction) // update agent
-			r.With(middleware.Protect(middleware.Config{Perm: module.CanDeleteAgent})).Delete("/{agentId}", api.DeleteAgentAction)          // delete agent
-
-			r.Route("/{agentId}/sessions", func(r chi.Router) {
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanListAgentSessions})).Get("/", api.ListAgentSessionsAction)                       // list agent sessions
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanGetAgentSession})).Get("/by-labels", api.GetAgentSessionByLabelsAction)          // get session by labels
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanGetAgentSession})).Get("/{sessionId}", api.GetAgentSessionAction)                // get agent session
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanCreateAgentSession})).Post("/", api.CreateAgentSessionAction)                    // create agent session
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanUpdateAgentSession})).Put("/by-labels", api.UpdateAgentSessionByLabelsAction)    // update session by labels
-				r.With(middleware.Protect(middleware.Config{Perm: module.CanDeleteAgentSession})).Delete("/by-labels", api.DeleteAgentSessionByLabelsAction) // delete session by labels
-
-				r.Route("/{sessionId}/messages", func(r chi.Router) {
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanListSessionMessages})).Get("/", api.ListSessionMessagesAction)                 // list session messages
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanCreateSessionMessage})).Post("/", api.CreateSessionMessageAction)              // create session message
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanCreateSessionMessage})).Post("/batch", api.BatchCreateSessionMessagesAction)   // batch create session messages
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanDeleteSessionMessage})).Delete("/batch", api.BatchDeleteSessionMessagesAction) // batch delete session messages
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanGetSessionMessage})).Get("/{messageId}", api.GetSessionMessageAction)          // get session message
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanUpdateSessionMessage})).Put("/{messageId}", api.UpdateSessionMessageAction)    // update session message
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanDeleteSessionMessage})).Delete("/{messageId}", api.DeleteSessionMessageAction) // delete session message
-				})
-
-				r.Route("/{sessionId}/memories", func(r chi.Router) {
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanListSessionMemories})).Get("/", api.ListSessionMemoriesAction)                // list session memories
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanCreateSessionMemory})).Post("/", api.CreateSessionMemoryAction)               // create session memory
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanCreateSessionMemory})).Post("/batch", api.BatchCreateSessionMemoriesAction)   // batch create session memories
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanDeleteSessionMemory})).Delete("/batch", api.BatchDeleteSessionMemoriesAction) // batch delete session memories
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanGetSessionMemory})).Get("/{memoryId}", api.GetSessionMemoryAction)            // get session memory
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanUpdateSessionMemory})).Put("/{memoryId}", api.UpdateSessionMemoryAction)      // update session memory
-					r.With(middleware.Protect(middleware.Config{Perm: module.CanDeleteSessionMemory})).Delete("/{memoryId}", api.DeleteSessionMemoryAction)   // delete session memory
-				})
-			})
-		})
 	})
 
-	r.Group(func(r chi.Router) { // demo weather tools
-		r.Use(middleware.Protect(middleware.Config{Roles: []string{db.UserRoleAdmin, db.UserRoleRegular}}))
-		r.Post("/api/v1/tool/getCityInformation", api.GetCityInformationAction)           // get city info by name
-		r.Post("/api/v1/tool/getWeatherByCity", api.GetWeatherByCityAction)               // get weather by city name
-		r.Post("/api/v1/tool/getWeatherByCoordinates", api.GetWeatherByCoordinatesAction) // get weather by coordinates
-	})
 
 	r.With(middleware.BasicAuth(
 		viper.GetString("app.metrics.username"),
@@ -284,20 +223,8 @@ func RunServer(handler http.Handler) error {
 		Subscriptions: db.NewSubscriptionRepository(db.GetDB(false)),
 	})
 
-	asvc := agent.New(agent.Dependencies{
-		Embed:    ai.NewEmbedClient(),
-		Vectors:  vdb,
-		LiteLLM:  ai.NewLiteClient(),
-		LargeLLM: ai.NewLargeClient(),
-		Agents:   db.NewAgentRepository(db.GetDB(true)),
-		Sessions: db.NewAgentSessionRepository(db.GetDB(true)),
-		Messages: db.NewSessionMessageRepository(db.GetDB(true)),
-		Memories: db.NewSessionMemoryRepository(db.GetDB(true)),
-	})
-
 	task.Register(asyr, task.Dependencies{
 		Knowledge: ksvc,
-		Agent:     asvc,
 	})
 
 	defer func() {

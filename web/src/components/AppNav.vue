@@ -151,9 +151,7 @@ const canManageWorkspaceNav = computed(() => {
 const navItems = computed(() => {
   return [
     { to: '/dashboard', label: t('nav.dashboard') },
-    { to: '/agents', label: 'Agents' },
     { to: '/knowledge', label: 'Knowledge' },
-    { to: '/prompts', label: t('nav.prompts') },
     { to: '/integrations', label: 'Integrations', requiresManage: true },
     { to: '/audits', label: t('nav.audits'), requiresManage: true },
     { to: '/billing', label: t('nav.billing'), requiresManage: true },

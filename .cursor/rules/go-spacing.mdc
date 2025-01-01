@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Go Inline Spacing
 
-Separate logical steps with a blank line so code does not stick together. Match `api/agent.go` and `api/knowledge.go`.
+Separate logical steps with a blank line so code does not stick together. Match `api/knowledge.go`.
 
 ## Handlers and actions
 
@@ -20,33 +20,42 @@ Put a blank line between each phase:
 
 ```go
 // ✅ GOOD
-func CreateAgentAction(w http.ResponseWriter, r *http.Request) {
+func UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
-	if wid == "" {
-		util.WriteJSON(w, http.StatusBadRequest, map[string]interface{}{
+	if lo.IsEmpty(wid) {
+		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
 			"errorMessage": locale.TR(r, "invalid_workspace_id"),
 		})
 		return
 	}
-	workspaceId := db.Id(wid)
 
-	var req module.CreateAgentRequest
-	if err := util.DecodeAndValidate(r, &req); err != nil {
-		util.WriteValidationError(w, err)
+	form, err := util.ParseUploadForm(r)
+	if err != nil {
+		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
+			"errorMessage": err.Error(),
+		})
 		return
 	}
 
-	am := module.NewAgent(
-		db.NewAgentRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-	agent, err := am.CreateAgent(workspaceId, &req)
+	store, err := storage.New()
 	if err != nil {
 		// ...
 		return
 	}
 
-	util.WriteJSON(w, http.StatusCreated, agent)
+	dm := module.NewDocument(
+		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewWorkspaceRepository(db.GetDB()),
+		store,
+	)
+
+	doc, err := dm.UploadDocument(r.Context(), form, db.Id(wid))
+	if err != nil {
+		// ...
+		return
+	}
+
+	util.WriteJSON(w, http.StatusCreated, doc)
 }
 ```
 

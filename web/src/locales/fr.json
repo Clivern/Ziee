@@ -443,7 +443,6 @@
     "select_workspace": "Changer d'espace",
     "logout": "Déconnexion",
     "dashboard": "Tableau de bord",
-    "prompts": "Prompts",
     "settings": "Paramètres",
     "audits": "Audits",
     "billing": "Facturation"
@@ -598,12 +597,10 @@
   },
   "dashboard": {
     "title": "Tableau de bord",
-    "subtitle": "Votre espace en un coup d'œil — mémoire, prompts et intégrations.",
+    "subtitle": "Votre espace en un coup d'œil — connaissances, usage et intégrations.",
     "welcome_back": "Bon retour,",
-    "memories_stored": "Mémoires stockées",
     "api_calls_month": "Appels API (ce mois)",
-    "active_agents": "Agents actifs",
-    "prompts": "Prompts",
+    "documents_stored": "Documents stockés",
     "mock_badge": "Mock",
     "attention_title": "Alertes",
     "attention_subtitle": "Problèmes qui peuvent bloquer ou ralentir cet espace.",

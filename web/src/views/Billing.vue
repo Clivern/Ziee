@@ -295,10 +295,7 @@ const usageData = ref({
     apiCalls: 0,
     workspaceMembers: 0,
     documentsCount: 0,
-    promptsCount: 0,
     storageGB: 0,
-    historyRecords: 0,
-    memoryRecords: 0,
     aiTokens: 0,
     aiCost: 0
   },
@@ -306,10 +303,7 @@ const usageData = ref({
     apiCalls: 10_000,
     workspaceMembers: 3,
     documentsCount: 100,
-    promptsCount: 50,
     storageGB: 5,
-    historyRecords: 1_000,
-    memoryRecords: 500,
     aiTokens: 500_000
   },
   periodReset: ''
@@ -476,16 +470,6 @@ const buildUsageMetrics = (limits, used) => {
       displayLimit: formatNumber(limits.documentsCount)
     },
     {
-      id: 'promptsCount',
-      resetPolicy: 'capacity',
-      label: t('billing_page.metrics.prompts_count_label'),
-      hint: t('billing_page.metrics.prompts_count_hint'),
-      used: used.promptsCount,
-      limit: limits.promptsCount,
-      displayUsed: formatNumber(used.promptsCount),
-      displayLimit: formatNumber(limits.promptsCount)
-    },
-    {
       id: 'storageGB',
       resetPolicy: 'capacity',
       label: t('billing_page.metrics.storage_used_label'),
@@ -494,26 +478,6 @@ const buildUsageMetrics = (limits, used) => {
       limit: limits.storageGB,
       displayUsed: `${used.storageGB.toFixed(1)} GB`,
       displayLimit: `${limits.storageGB} GB`
-    },
-    {
-      id: 'historyRecords',
-      resetPolicy: 'capacity',
-      label: t('billing_page.metrics.history_records_label'),
-      hint: t('billing_page.metrics.history_records_hint'),
-      used: used.historyRecords,
-      limit: limits.historyRecords,
-      displayUsed: formatNumber(used.historyRecords),
-      displayLimit: formatNumber(limits.historyRecords)
-    },
-    {
-      id: 'memoryRecords',
-      resetPolicy: 'capacity',
-      label: t('billing_page.metrics.memory_records_label'),
-      hint: t('billing_page.metrics.memory_records_hint'),
-      used: used.memoryRecords,
-      limit: limits.memoryRecords,
-      displayUsed: formatNumber(used.memoryRecords),
-      displayLimit: formatNumber(limits.memoryRecords)
     },
     {
       id: 'aiCost',

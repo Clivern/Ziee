@@ -17,10 +17,8 @@ const UsageUnitNanoUSD = "nano_usd"
 
 // WorkspaceStats holds aggregate metrics for a workspace dashboard.
 type WorkspaceStats struct {
-	MemoriesStored int64
-	APICallsMonth  int64
-	ActiveAgents   int64
-	Prompts        int64
+	APICallsMonth   int64
+	DocumentsStored int64
 }
 
 // WorkspaceStatsRepository loads workspace dashboard metrics.
@@ -41,24 +39,11 @@ func NewWorkspaceStatsRepository(db *sql.DB) WorkspaceStatsRepository {
 func (r *WorkspaceStatsRepositoryPostgres) GetByWorkspaceId(workspaceId Id) (*WorkspaceStats, error) {
 	stats := &WorkspaceStats{}
 
-	// Memories Stored
-	err := r.db.QueryRow(
-		`SELECT COUNT(*)
-		FROM session_memories sm
-		INNER JOIN sessions s ON s.id = sm.session_id
-		WHERE s.workspace_id = $1`,
-		workspaceId.String(),
-	).Scan(&stats.MemoriesStored)
-	if err != nil {
-		return nil, err
-	}
-
 	now := time.Now().UTC()
 	monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	monthEnd := monthStart.AddDate(0, 1, 0)
 
-	// APICalls Month
-	err = r.db.QueryRow(
+	err := r.db.QueryRow(
 		`SELECT COALESCE(SUM(quantity), 0)
 		FROM usage
 		WHERE workspace_id = $1
@@ -74,24 +59,12 @@ func (r *WorkspaceStatsRepositoryPostgres) GetByWorkspaceId(workspaceId Id) (*Wo
 		return nil, err
 	}
 
-	// Active Agents
 	err = r.db.QueryRow(
 		`SELECT COUNT(*)
-		FROM agents
-		WHERE workspace_id = $1 AND status = 'active'`,
-		workspaceId.String(),
-	).Scan(&stats.ActiveAgents)
-	if err != nil {
-		return nil, err
-	}
-
-	// Prompts
-	err = r.db.QueryRow(
-		`SELECT COUNT(*)
-		FROM prompts
+		FROM workspace_documents
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
-	).Scan(&stats.Prompts)
+	).Scan(&stats.DocumentsStored)
 	if err != nil {
 		return nil, err
 	}

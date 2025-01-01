@@ -70,10 +70,7 @@ type PlanUsageLimits struct {
 	APICalls         int64   `json:"apiCalls"`
 	WorkspaceMembers int64   `json:"workspaceMembers"`
 	DocumentsCount   int64   `json:"documentsCount"`
-	PromptsCount     int64   `json:"promptsCount"`
 	StorageGB        float64 `json:"storageGB"`
-	HistoryRecords   int64   `json:"historyRecords"`
-	MemoryRecords    int64   `json:"memoryRecords"`
 	AITokens         int64   `json:"aiTokens"`
 }
 
@@ -90,40 +87,28 @@ var planUsageLimits = map[string]PlanUsageLimits{
 		APICalls:         10_000,
 		WorkspaceMembers: 3,
 		DocumentsCount:   100,
-		PromptsCount:     50,
 		StorageGB:        5,
-		HistoryRecords:   1_000,
-		MemoryRecords:    500,
 		AITokens:         500_000,
 	},
 	stripe.PlanStarter: {
 		APICalls:         50_000,
 		WorkspaceMembers: 10,
 		DocumentsCount:   500,
-		PromptsCount:     250,
 		StorageGB:        25,
-		HistoryRecords:   10_000,
-		MemoryRecords:    5_000,
 		AITokens:         2_000_000,
 	},
 	stripe.PlanGrowth: {
 		APICalls:         200_000,
 		WorkspaceMembers: 25,
 		DocumentsCount:   2_000,
-		PromptsCount:     1_000,
 		StorageGB:        100,
-		HistoryRecords:   50_000,
-		MemoryRecords:    25_000,
 		AITokens:         10_000_000,
 	},
 	stripe.PlanPro: {
 		APICalls:         1_000_000,
 		WorkspaceMembers: 100,
 		DocumentsCount:   10_000,
-		PromptsCount:     5_000,
 		StorageGB:        500,
-		HistoryRecords:   500_000,
-		MemoryRecords:    250_000,
 		AITokens:         50_000_000,
 	},
 }

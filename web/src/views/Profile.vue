@@ -40,16 +40,8 @@
                   >
                 </div>
                 <div>
-                  <label for="profile-email" class="block text-sm font-medium text-theme-text mb-1.5">{{ $t('profile.email') }}</label>
-                  <input
-                    id="profile-email"
-                    v-model="form.email"
-                    type="email"
-                    required
-                    class="input-field max-w-md"
-                    :placeholder="$t('profile.email_placeholder')"
-                    :disabled="loading"
-                  >
+                  <p class="block text-sm font-medium text-theme-text mb-1.5">{{ $t('profile.email') }}</p>
+                  <p class="text-sm text-theme-text">{{ user?.email }}</p>
                 </div>
               </div>
             </div>
@@ -84,52 +76,6 @@
                     <option value="en">{{ $t('nav.english') }}</option>
                     <option value="fr">{{ $t('nav.french') }}</option>
                   </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-4 border-t border-theme-border space-y-4">
-              <h3 class="text-sm font-semibold text-theme-text">{{ $t('profile.change_password') }}</h3>
-              <p class="text-xs text-theme-textLight">{{ $t('profile.change_password_hint') }}</p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl">
-                <div>
-                  <label for="profile-current-password" class="block text-sm font-medium text-theme-text mb-1.5">{{ $t('profile.current_password') }}</label>
-                  <input
-                    id="profile-current-password"
-                    v-model="form.currentPassword"
-                    type="password"
-                    autocomplete="current-password"
-                    class="input-field"
-                    :placeholder="$t('profile.current_password_placeholder')"
-                    :disabled="loading"
-                  >
-                </div>
-                <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label for="profile-new-password" class="block text-sm font-medium text-theme-text mb-1.5">{{ $t('profile.new_password') }}</label>
-                    <input
-                      id="profile-new-password"
-                      v-model="form.newPassword"
-                      type="password"
-                      autocomplete="new-password"
-                      class="input-field"
-                      :placeholder="$t('profile.new_password_placeholder')"
-                      :disabled="loading"
-                    >
-                  </div>
-                  <div>
-                    <label for="profile-confirm-password" class="block text-sm font-medium text-theme-text mb-1.5">{{ $t('profile.confirm_new_password') }}</label>
-                    <input
-                      id="profile-confirm-password"
-                      v-model="form.confirmPassword"
-                      type="password"
-                      autocomplete="new-password"
-                      class="input-field"
-                      :placeholder="$t('profile.confirm_new_password_placeholder')"
-                      :disabled="loading"
-                    >
-                    <p v-if="form.newPassword && form.newPassword !== form.confirmPassword" class="mt-1 text-xs text-red-600">{{ $t('profile.passwords_do_not_match') }}</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -365,12 +311,8 @@ const errorMessage = ref(null)
 
 const form = reactive({
   name: user.value?.name,
-  email: user.value?.email,
   language: user.value?.language ?? USER_LANGUAGE_EN,
   theme: user.value?.theme ?? USER_THEME_DEFAULT,
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: ''
 })
 
 const apiKeys = ref([])
@@ -389,15 +331,9 @@ const minExpiresAt = computed(() => {
   return d.toISOString().slice(0, 16)
 })
 
-const needsCurrentPassword = computed(() => {
-  const emailChanged = form.email.trim() !== user.value?.email
-  return emailChanged || !!form.newPassword.trim()
-})
-
 watch(user, (userData) => {
   if (userData) {
     form.name = userData.name
-    form.email = userData.email
     form.language = userData.language ?? USER_LANGUAGE_EN
     form.theme = userData.theme ?? USER_THEME_DEFAULT
   }
@@ -515,21 +451,15 @@ async function handleSave() {
 
   const payload = {
     name: form.name.trim(),
-    email: form.email.trim(),
     language: form.language,
     theme: form.theme,
   }
-  if (needsCurrentPassword.value) payload.currentPassword = form.currentPassword
-  if (form.newPassword.trim()) payload.newPassword = form.newPassword
 
   try {
     const res = await auth_api.updateProfile(payload)
     saveUser(res.data.user)
     applyUserPreferences(res.data.user)
     showFlash(t('common.saved'))
-    form.currentPassword = ''
-    form.newPassword = ''
-    form.confirmPassword = ''
   } catch (err) {
     errorMessage.value = err.response?.data?.errorMessage || t('profile.update_failed')
   } finally {

@@ -90,18 +90,6 @@ func UpdateProfileAction(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		switch {
-		case errors.Is(err, module.ErrCurrentPasswordRequired):
-			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
-				"errorMessage": locale.TR(r, "current_password_required"),
-			})
-		case errors.Is(err, module.ErrCurrentPasswordIncorrect):
-			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
-				"errorMessage": locale.TR(r, "current_password_incorrect"),
-			})
-		case errors.Is(err, module.ErrUserEmailAlreadyExists):
-			util.WriteJSON(w, http.StatusConflict, map[string]any{
-				"errorMessage": locale.TR(r, "account_with_email_exists"),
-			})
 		case errors.Is(err, module.ErrFailedUpdateProfile), errors.Is(err, module.ErrUserNotFound):
 			log.Error().
 				Err(err).

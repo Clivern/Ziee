@@ -33,6 +33,8 @@ func (a *Auth) LoginWithOAuth(ctx context.Context, identity *OAuthIdentity) (*Lo
 		return nil, fmt.Errorf("get user by provider: %w", err)
 	}
 
+	foundByProvider := user != nil
+
 	if user == nil {
 		user, err = a.UserRepository.GetByEmail(identity.Email)
 		if err != nil {
@@ -72,6 +74,23 @@ func (a *Auth) LoginWithOAuth(ctx context.Context, identity *OAuthIdentity) (*Lo
 		err = a.UserRepository.Create(user)
 		if err != nil {
 			return nil, fmt.Errorf("create oauth user: %w", err)
+		}
+	}
+
+	if foundByProvider && lo.IsNotEmpty(identity.Email) && identity.Email != user.Email {
+		existingUser, err := a.UserRepository.GetByEmail(identity.Email)
+		if err != nil {
+			return nil, fmt.Errorf("sync oauth email: %w", err)
+		}
+		if existingUser != nil && existingUser.Id != user.Id {
+			return nil, ErrUserEmailAlreadyExists
+		}
+
+		user.Email = identity.Email
+		user.IsEmailVerified = true
+		err = a.UserRepository.Update(user)
+		if err != nil {
+			return nil, fmt.Errorf("sync oauth email: %w", err)
 		}
 	}
 

@@ -5,7 +5,6 @@ package api
 
 import (
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -19,63 +18,86 @@ import (
 	"github.com/spf13/viper"
 )
 
-const oauthStateCookie = "_ziee_oauth_state"
+const OauthStateCookie = "_ziee_oauth_state"
 
 // GitHubOAuthStartAction redirects the browser to GitHub's authorize URL.
 func GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
-	oauth := newGitHubOAuth()
+	errorURL := util.AppURL("/login?oauth_error=github")
+
+	oauth := github.NewOAuth(github.OAuthConfig{
+		ClientID:     viper.GetString("app.oauth.github.client_id"),
+		ClientSecret: viper.GetString("app.oauth.github.client_secret"),
+		RedirectURL:  viper.GetString("app.oauth.github.redirect_url"),
+		Scopes:       []string{"read:user", "user:email"},
+		AllowSignup:  true,
+	}, nil)
+
 	state, err := util.GenerateSecureToken(24)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate oauth state")
-		http.Redirect(w, r, oauthLoginErrorURL(), http.StatusFound)
+		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
 	authorizeURL, err := oauth.AuthorizeURL(state)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to build github authorize url")
-		http.Redirect(w, r, oauthLoginErrorURL(), http.StatusFound)
+		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
-	opts := oauthStateCookieOptions()
+	opts := lo.Ternary(
+		strings.HasPrefix(util.AppURL(""), "https://"),
+		util.SecureCookieOptions(),
+		util.DefaultCookieOptions(),
+	)
+	opts.SameSite = http.SameSiteLaxMode
 	opts.MaxAge = int((10 * time.Minute) / time.Second)
-	util.SetCookie(w, oauthStateCookie, state, opts)
+	util.SetCookie(w, OauthStateCookie, state, opts)
 
 	http.Redirect(w, r, authorizeURL, http.StatusFound)
 }
 
 // GitHubOAuthCallbackAction completes GitHub OAuth and creates a session.
 func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
+	errorURL := util.AppURL("/login?oauth_error=github")
+
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
-	expectedState := util.GetCookie(r, oauthStateCookie)
+	expectedState := util.GetCookie(r, OauthStateCookie)
 
-	util.DeleteCookie(w, oauthStateCookie)
+	util.DeleteCookie(w, OauthStateCookie)
 
-	oauth := newGitHubOAuth()
+	oauth := github.NewOAuth(github.OAuthConfig{
+		ClientID:     viper.GetString("app.oauth.github.client_id"),
+		ClientSecret: viper.GetString("app.oauth.github.client_secret"),
+		RedirectURL:  viper.GetString("app.oauth.github.redirect_url"),
+		Scopes:       []string{"read:user", "user:email"},
+		AllowSignup:  true,
+	}, nil)
+
 	token, err := oauth.Exchange(r.Context(), code, state, expectedState)
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth exchange failed")
-		http.Redirect(w, r, oauthLoginErrorURL(), http.StatusFound)
+		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
 	ghUser, err := oauth.User(r.Context(), token.AccessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth user fetch failed")
-		http.Redirect(w, r, oauthLoginErrorURL(), http.StatusFound)
+		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
 	emails, err := oauth.Emails(r.Context(), token.AccessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth emails fetch failed")
-		http.Redirect(w, r, oauthLoginErrorURL(), http.StatusFound)
+		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
-	email := primaryGitHubEmail(emails, ghUser.Email)
+	email := GetPrimaryGitHubEmail(emails, ghUser.Email)
 	name := module.OAuthDisplayName(ghUser.Name, ghUser.Login)
 
 	auth := module.NewAuth(
@@ -92,65 +114,24 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth login failed")
-		http.Redirect(w, r, oauthLoginErrorURL(), http.StatusFound)
+		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
 	util.SetCookie(w, "_ziee_session", result.Session.Token, result.CookieOptions)
-	http.Redirect(w, r, oauthLoginSuccessURL(), http.StatusFound)
+	http.Redirect(w, r, util.AppURL("/login?oauth=github"), http.StatusFound)
 }
 
-func newGitHubOAuth() *github.OAuth {
-	redirectURL := viper.GetString("app.oauth.github.redirect_url")
-	if lo.IsEmpty(redirectURL) {
-		redirectURL = strings.TrimRight(viper.GetString("app.url"), "/") + "/api/v1/public/action/oauth/github/callback"
+func GetPrimaryGitHubEmail(emails []github.Email, fallback string) string {
+	verified := lo.Filter(emails, func(e github.Email, _ int) bool {
+		return e.Verified
+	})
+
+	if e, ok := lo.Find(verified, func(e github.Email) bool {
+		return e.Primary
+	}); ok {
+		return e.Email
 	}
 
-	return github.NewOAuth(github.OAuthConfig{
-		ClientID:     viper.GetString("app.oauth.github.client_id"),
-		ClientSecret: viper.GetString("app.oauth.github.client_secret"),
-		RedirectURL:  redirectURL,
-		Scopes:       []string{"read:user", "user:email"},
-		AllowSignup:  true,
-	}, nil)
-}
-
-func primaryGitHubEmail(emails []github.Email, fallback string) string {
-	var firstVerified string
-	for _, e := range emails {
-		if !e.Verified {
-			continue
-		}
-		if e.Primary {
-			return e.Email
-		}
-		if lo.IsEmpty(firstVerified) {
-			firstVerified = e.Email
-		}
-	}
-	if lo.IsNotEmpty(firstVerified) {
-		return firstVerified
-	}
-
-	return fallback
-}
-
-func oauthStateCookieOptions() *util.CookieOptions {
-	opts := util.DefaultCookieOptions()
-	if strings.HasPrefix(viper.GetString("app.url"), "https://") {
-		opts.Secure = true
-	}
-	opts.SameSite = http.SameSiteLaxMode
-
-	return opts
-}
-
-func oauthLoginSuccessURL() string {
-	return strings.TrimRight(viper.GetString("app.url"), "/") + "/login?oauth=github"
-}
-
-func oauthLoginErrorURL() string {
-	return strings.TrimRight(viper.GetString("app.url"), "/") + "/login?" + url.Values{
-		"oauth_error": {"github"},
-	}.Encode()
+	return lo.CoalesceOrEmpty(lo.FirstOrEmpty(verified).Email, fallback)
 }

@@ -17,7 +17,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
+	"github.com/spf13/viper"
 )
+
+// AppURL returns the configured app URL joined with a relative path.
+func AppURL(path string) string {
+	return strings.TrimRight(viper.GetString("app.url"), "/") + path
+}
 
 // CurrentMonthPeriod returns the UTC start and end of the current calendar month.
 func CurrentMonthPeriod() (time.Time, time.Time) {

@@ -8,12 +8,9 @@ import (
 	"fmt"
 )
 
-var (
-	ErrInvalidWebhookSignature = errors.New("invalid github webhook signature")
-	ErrInvalidOAuthState       = errors.New("invalid oauth state")
-)
+var ErrInvalidOAuthState = errors.New("invalid oauth state")
 
-// APIError is returned when the GitHub REST API responds with a non-success status.
+// APIError is returned when a GitHub API request responds with a non-success status.
 type APIError struct {
 	StatusCode int
 	Body       string

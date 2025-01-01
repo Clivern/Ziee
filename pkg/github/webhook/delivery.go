@@ -72,6 +72,3 @@ func verifySignature(secret string, body []byte, prefix, signature string, newHa
 
 	return hmac.Equal(mac.Sum(nil), expected)
 }
-
-// Parser is kept for compatibility with older Hamster call sites.
-type Parser = Delivery

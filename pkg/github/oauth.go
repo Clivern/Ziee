@@ -64,6 +64,27 @@ type Email struct {
 	Verified bool   `json:"verified"`
 }
 
+// PrimaryEmail returns the primary verified email, else the first verified, else fallback.
+func PrimaryEmail(emails []Email, fallback string) string {
+	var firstVerified string
+	for _, e := range emails {
+		if !e.Verified {
+			continue
+		}
+		if e.Primary {
+			return e.Email
+		}
+		if firstVerified == "" {
+			firstVerified = e.Email
+		}
+	}
+	if firstVerified != "" {
+		return firstVerified
+	}
+
+	return fallback
+}
+
 // NewOAuth returns an OAuth helper for the given app configuration.
 func NewOAuth(cfg OAuthConfig) *OAuth {
 	return &OAuth{cfg: cfg}

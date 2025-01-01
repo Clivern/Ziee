@@ -92,7 +92,7 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := GetPrimaryGitHubEmail(emails, ghUser.Email)
+	email := github.PrimaryEmail(emails, ghUser.Email)
 	name := module.OAuthDisplayName(ghUser.Name, ghUser.Login)
 
 	auth := module.NewAuth(
@@ -115,18 +115,4 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 
 	util.SetCookie(w, "_ziee_session", result.Session.Token, result.CookieOptions)
 	http.Redirect(w, r, util.AppURL("/login?oauth=github"), http.StatusFound)
-}
-
-func GetPrimaryGitHubEmail(emails []github.Email, fallback string) string {
-	verified := lo.Filter(emails, func(e github.Email, _ int) bool {
-		return e.Verified
-	})
-
-	if e, ok := lo.Find(verified, func(e github.Email) bool {
-		return e.Primary
-	}); ok {
-		return e.Email
-	}
-
-	return lo.CoalesceOrEmpty(lo.FirstOrEmpty(verified).Email, fallback)
 }

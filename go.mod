@@ -17,7 +17,7 @@ require (
 	github.com/lib/pq v1.12.3
 	github.com/panjf2000/ants/v2 v2.12.1
 	github.com/prometheus/client_golang v1.23.2
-	github.com/qdrant/go-client v1.18.3
+	github.com/qdrant/go-client v1.19.0
 	github.com/redis/go-redis/v9 v9.21.0
 	github.com/resend/resend-go/v2 v2.28.0
 	github.com/rs/zerolog v1.35.1

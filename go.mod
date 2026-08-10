@@ -3,7 +3,7 @@ module github.com/actx0/ziee
 go 1.26.5
 
 require (
-	github.com/OpenRouterTeam/go-sdk v0.5.16
+	github.com/OpenRouterTeam/go-sdk v0.7.27
 	github.com/aws/aws-sdk-go-v2 v1.42.1
 	github.com/aws/aws-sdk-go-v2/config v1.32.29
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.29

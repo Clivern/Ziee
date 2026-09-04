@@ -121,6 +121,13 @@ run:
 	$(go) run ziee.go server -c config.test.yml
 
 
+## consumer: Run the NATS consumer
+.PHONY: consumer
+consumer:
+	@echo ">> ============= Run NATS Consumer ============= <<"
+	$(go) run ziee.go worker -c config.test.yml
+
+
 ## ci: Run all CI tests.
 .PHONY: ci
 ci: style check_license test vet lint integration

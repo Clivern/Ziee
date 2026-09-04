@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package worker
@@ -6,7 +6,7 @@ package worker
 import (
 	"context"
 
-	"github.com/actx0/ziee/pkg/nats"
+	"github.com/clivern/ziee/pkg/nats"
 
 	"github.com/rs/zerolog/log"
 )
@@ -14,16 +14,18 @@ import (
 // Handler processes an inbound NATS message.
 type Handler func(context.Context, *nats.Msg) error
 
-type registration struct {
+// Registration binds a subject to a handler.
+type Registration struct {
 	Subject string
 	Handler Handler
 }
 
-var registrations []registration
+// Registrations is a list of all registered handlers.
+var Registrations []Registration
 
 // On registers a queue worker handler for subject.
 func On(subject string, handler Handler) {
-	registrations = append(registrations, registration{
+	Registrations = append(Registrations, Registration{
 		Subject: subject,
 		Handler: handler,
 	})
@@ -31,9 +33,7 @@ func On(subject string, handler Handler) {
 
 // Bind attaches all registered handlers to the NATS client using the queue group.
 func Bind(client *nats.Client, queue string) error {
-	for _, reg := range registrations {
-		reg := reg
-
+	for _, reg := range Registrations {
 		_, err := client.QueueSubscribe(reg.Subject, queue, func(msg *nats.Msg) {
 			err := reg.Handler(context.Background(), msg)
 			if err != nil {
@@ -54,8 +54,4 @@ func Bind(client *nats.Client, queue string) error {
 	}
 
 	return nil
-}
-
-// Register attaches all worker handlers.
-func Register() {
 }

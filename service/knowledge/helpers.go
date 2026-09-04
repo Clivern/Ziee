@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package knowledge
@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/migration"
-	"github.com/actx0/ziee/pkg/chunk"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/migration"
+	"github.com/clivern/ziee/pkg/chunk"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/samber/lo"
 )

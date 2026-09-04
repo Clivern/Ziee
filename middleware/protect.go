@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package middleware
@@ -8,10 +8,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/locale"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"

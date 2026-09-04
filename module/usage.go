@@ -1,12 +1,12 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
 
 import (
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/util"
 )
 
 const bytesPerGB = 1024 * 1024 * 1024

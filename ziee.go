@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package main
@@ -7,9 +7,9 @@ import (
 	"embed"
 	"io/fs"
 
-	"github.com/actx0/ziee/cli"
-	"github.com/actx0/ziee/locale"
-	"github.com/actx0/ziee/pkg/resend"
+	"github.com/clivern/ziee/cli"
+	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/pkg/resend"
 )
 
 var (

@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
@@ -10,10 +10,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/storage"
-	"github.com/actx0/ziee/pkg/util"
-	"github.com/actx0/ziee/service/knowledge"
+	"github.com/clivern/ziee/conf"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/storage"
+	"github.com/clivern/ziee/pkg/util"
+	"github.com/clivern/ziee/service/knowledge"
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -321,31 +322,43 @@ func (d *Document) SearchDocuments(ctx context.Context, workspaceId db.Id, query
 	}, nil
 }
 
-// EnqueueIndexTask enqueues an async task to index a document.
+// EnqueueIndexTask publishes a NATS message to index a document.
 func (d *Document) EnqueueIndexTask(workspaceId, documentId db.Id) error {
-	_, err := GetAsyncMgr().CreateTask(&CreateAsyncTaskOptions{
-		WorkspaceId: workspaceId,
-		Type:        "task.doc.index",
-		Priority:    AsyncPriorityLow,
-		Payload: map[string]string{
-			"documentId": documentId.String(),
-		},
+	raw, err := json.Marshal(map[string]string{
+		"workspaceId": workspaceId.String(),
+		"documentId":  documentId.String(),
 	})
+	if err != nil {
+		return err
+	}
 
-	return err
+	bus := GetBus()
+
+	err = bus.Publish(conf.NATSSubjectDocIndex, raw)
+	if err != nil {
+		return err
+	}
+
+	return bus.Flush()
 }
 
-// EnqueueDeleteTask enqueues an async task to delete a resource.
+// EnqueueDeleteTask publishes a NATS message to delete a document's storage and vectors.
 func (d *Document) EnqueueDeleteTask(workspaceId, documentId, internalId db.Id) error {
-	_, err := GetAsyncMgr().CreateTask(&CreateAsyncTaskOptions{
-		WorkspaceId: workspaceId,
-		Type:        "task.doc.delete",
-		Priority:    AsyncPriorityLow,
-		Payload: map[string]string{
-			"documentId": documentId.String(),
-			"internalId": internalId.String(),
-		},
+	raw, err := json.Marshal(map[string]string{
+		"workspaceId": workspaceId.String(),
+		"documentId":  documentId.String(),
+		"internalId":  internalId.String(),
 	})
+	if err != nil {
+		return err
+	}
 
-	return err
+	bus := GetBus()
+
+	err = bus.Publish(conf.NATSSubjectDocDelete, raw)
+	if err != nil {
+		return err
+	}
+
+	return bus.Flush()
 }

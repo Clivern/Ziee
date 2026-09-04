@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package cli
@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 
 
 If you have any suggestions, bug reports, or annoyances please report
-them to our issue tracker at <https://github.com/actx0/ziee/issues>`,
+them to our issue tracker at <https://github.com/clivern/ziee/issues>`,
 }
 
 // Execute runs cmd tool

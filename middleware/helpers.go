@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package middleware
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/module"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 )
 
 const (

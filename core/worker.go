@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package core
@@ -10,14 +10,63 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/actx0/ziee/pkg/nats"
-	"github.com/actx0/ziee/worker"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/nats"
+	"github.com/clivern/ziee/pkg/qdrant"
+	"github.com/clivern/ziee/pkg/storage"
+	"github.com/clivern/ziee/service/knowledge"
+	"github.com/clivern/ziee/worker"
 
 	"github.com/rs/zerolog/log"
 )
 
 // RunWorker starts the NATS worker and blocks until shutdown.
 func RunWorker() error {
+	err := db.InitDB(ReadWriteDatabase(), ReadOnlyDatabase()...)
+	if err != nil {
+		return fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	defer func() {
+		err := db.CloseDB()
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Error closing database connection")
+		}
+	}()
+
+	store, err := storage.New()
+	if err != nil {
+		return fmt.Errorf("failed to initialize document storage: %w", err)
+	}
+
+	vdb, err := qdrant.New()
+	if err != nil {
+		return fmt.Errorf("failed to initialize qdrant: %w", err)
+	}
+
+	defer func() {
+		err := vdb.Close()
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Error closing qdrant client")
+		}
+	}()
+
+	ksvc := knowledge.New(knowledge.Dependencies{
+		Documents: db.NewWorkspaceDocumentRepository(
+			db.GetDB(true),
+		),
+		Embed:         ai.NewEmbedClient(),
+		Vectors:       vdb,
+		Store:         store,
+		Usage:         db.NewUsageRepository(db.GetDB(false)),
+		Subscriptions: db.NewSubscriptionRepository(db.GetDB(false)),
+	})
+
 	client, err := nats.New()
 	if err != nil {
 		return fmt.Errorf("failed to connect to nats: %w", err)
@@ -27,7 +76,9 @@ func RunWorker() error {
 
 	cfg := client.Config()
 
-	worker.Register()
+	worker.Register(worker.Dependencies{
+		Knowledge: ksvc,
+	})
 
 	err = worker.Bind(client, cfg.Queue)
 	if err != nil {

@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package core
@@ -16,15 +16,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/actx0/ziee/api"
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/middleware"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/qdrant"
-	"github.com/actx0/ziee/pkg/storage"
-	"github.com/actx0/ziee/service/knowledge"
-	"github.com/actx0/ziee/task"
+	"github.com/clivern/ziee/api"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/middleware"
+	"github.com/clivern/ziee/module"
 
 	"github.com/go-chi/chi/v5"
 	cmid "github.com/go-chi/chi/v5/middleware"
@@ -184,46 +179,10 @@ func RunServer(handler http.Handler) error {
 		return fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	module.RegisterEventListeners()
-
-	asyr, err := module.Start(db.NewAsyncTaskRepository(db.GetDB(true)))
+	err = module.StartBus()
 	if err != nil {
-		return fmt.Errorf("failed to start async worker pool: %w", err)
+		return fmt.Errorf("failed to start nats bus: %w", err)
 	}
-
-	store, err := storage.New()
-	if err != nil {
-		return fmt.Errorf("failed to initialize document storage: %w", err)
-	}
-
-	vdb, err := qdrant.New()
-	if err != nil {
-		return fmt.Errorf("failed to initialize qdrant: %w", err)
-	}
-
-	defer func() {
-		err := vdb.Close()
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Error closing qdrant client")
-		}
-	}()
-
-	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents: db.NewWorkspaceDocumentRepository(
-			db.GetDB(true),
-		),
-		Embed:         ai.NewEmbedClient(),
-		Vectors:       vdb,
-		Store:         store,
-		Usage:         db.NewUsageRepository(db.GetDB(false)),
-		Subscriptions: db.NewSubscriptionRepository(db.GetDB(false)),
-	})
-
-	task.Register(asyr, task.Dependencies{
-		Knowledge: ksvc,
-	})
 
 	defer func() {
 		err := db.CloseDB()
@@ -234,14 +193,7 @@ func RunServer(handler http.Handler) error {
 		}
 	}()
 
-	defer func() {
-		err := asyr.Stop(30 * time.Second)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Error stopping async worker pool")
-		}
-	}()
+	defer module.StopBus()
 
 	timeout := time.Duration(viper.GetInt("app.timeout")) * time.Second
 

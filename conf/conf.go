@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package conf
@@ -18,19 +18,13 @@ const (
 	// InviteExpiry is how long a workspace invite stays valid.
 	InviteExpiry = 7 * 24 * time.Hour
 
-	// AsyncClaimInterval is how often the async manager polls for due tasks.
-	AsyncClaimInterval = 10 * time.Second
-
-	// AsyncTaskMaxRetries is how many times a failed task is retried.
-	AsyncTaskMaxRetries = 5
-
-	// AsyncCompletedTasksRetention is how far back completed tasks are kept before cleanup.
-	// Negative duration: cutoff = now + retention.
-	AsyncCompletedTasksRetention = -7 * 24 * time.Hour
-
 	// MaxUploadBytes is the maximum multipart upload size.
 	MaxUploadBytes = 2 * 1024 * 1024
 
 	// DefaultSearchLimit is used when a knowledge search request omits limit.
 	DefaultSearchLimit = 10
+
+	// NATS subjects for document workers.
+	NATSSubjectDocIndex  = "ziee.doc.index"
+	NATSSubjectDocDelete = "ziee.doc.delete"
 )

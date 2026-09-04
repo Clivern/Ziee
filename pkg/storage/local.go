@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package storage
@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/pkg/util"
 )
 
 type LocalStore struct {

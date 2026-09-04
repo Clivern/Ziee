@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/actx0/ziee/conf"
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/conf"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -145,11 +145,6 @@ func (a *Auth) LoginWithOAuth(ctx context.Context, identity *OAuthIdentity) (*Lo
 		Str("sessionId", session.Id.String()).
 		Str("provider", identity.Provider).
 		Msg("User logged in via oauth")
-
-	UserLoggedIn.Emit(ctx, UserLoggedInData{
-		UserID:    user.Id,
-		SessionID: session.Id,
-	})
 
 	cookieOptions := lo.Ternary(
 		strings.HasPrefix(viper.GetString("app.url"), "https://"),

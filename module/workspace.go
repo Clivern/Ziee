@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/stripe"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/stripe"
+	"github.com/clivern/ziee/pkg/util"
 )
 
 var (

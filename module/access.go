@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/actx0/ziee/db"
+	"github.com/clivern/ziee/db"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"

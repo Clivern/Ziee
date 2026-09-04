@@ -1,15 +1,14 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 )
@@ -55,7 +54,7 @@ func NewAuth(
 }
 
 // Logout revokes all sessions for a user.
-func (a *Auth) Logout(ctx context.Context, userId db.Id) error {
+func (a *Auth) Logout(userId db.Id) error {
 	count, err := a.SessionRepository.DeleteExpired()
 	if err == nil && count > 0 {
 		log.Info().
@@ -71,8 +70,6 @@ func (a *Auth) Logout(ctx context.Context, userId db.Id) error {
 	log.Info().
 		Str("userId", userId.String()).
 		Msg("User logged out")
-
-	UserLoggedOut.Emit(ctx, UserLoggedOutData{UserID: userId})
 
 	return nil
 }

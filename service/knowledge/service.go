@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 //
 // Knowledge service: document indexing and retrieval.
@@ -12,10 +12,10 @@ package knowledge
 import (
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/qdrant"
-	"github.com/actx0/ziee/pkg/storage"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/qdrant"
+	"github.com/clivern/ziee/pkg/storage"
 )
 
 // Dependencies are the collaborators required by the knowledge service.

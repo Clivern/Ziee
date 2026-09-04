@@ -15,6 +15,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/leonelquinteros/gotext v1.7.2
 	github.com/lib/pq v1.12.3
+	github.com/nats-io/nats.go v1.53.1
 	github.com/panjf2000/ants/v2 v2.12.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/qdrant/go-client v1.18.3
@@ -55,10 +56,13 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/nats-io/nkeys v0.4.15 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

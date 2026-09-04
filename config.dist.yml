@@ -104,3 +104,8 @@ app:
       db: ${ZIEE_REDIS_DB:-0}
       pool_size: ${ZIEE_REDIS_POOL_SIZE:-10}
       min_idle_conns: ${ZIEE_REDIS_MIN_IDLE_CONNS:-5}
+
+  nats:
+    url: ${ZIEE_NATS_URL:-nats://127.0.0.1:4222}
+    name: ${ZIEE_NATS_NAME:-ziee}
+    queue: ${ZIEE_NATS_QUEUE:-ziee}

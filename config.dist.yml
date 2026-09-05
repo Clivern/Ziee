@@ -54,12 +54,12 @@ app:
     provider: ${ZIEE_BILLING_PROVIDER:-stripe}
     secret_key: ${ZIEE_STRIPE_SECRET_KEY:-}
     webhook_secret: ${ZIEE_STRIPE_WEBHOOK_SECRET:-}
-    product_id: ${ZIEE_STRIPE_PRODUCT_ID:-prod_UgfQ7UcEbz3I3H}
+    product_id: ${ZIEE_STRIPE_PRODUCT_ID:-}
     prices:
-      hobby: ${ZIEE_STRIPE_PRICE_HOBBY:-price_1TjNZoI9G8d9zAwtx09hgCZr}
-      growth: ${ZIEE_STRIPE_PRICE_GROWTH:-price_1TjNZoI9G8d9zAwtSdOodLaD}
-      starter: ${ZIEE_STRIPE_PRICE_STARTER:-price_1TjNZoI9G8d9zAwtm5byLMeJ}
-      pro: ${ZIEE_STRIPE_PRICE_PRO:-price_1TjNZoI9G8d9zAwttFhbvDEg}
+      hobby: ${ZIEE_STRIPE_PRICE_HOBBY:-}
+      growth: ${ZIEE_STRIPE_PRICE_GROWTH:-}
+      starter: ${ZIEE_STRIPE_PRICE_STARTER:-}
+      pro: ${ZIEE_STRIPE_PRICE_PRO:-}
     urls:
       checkout_success: ${ZIEE_STRIPE_CHECKOUT_SUCCESS_URL:-/billing/success}
       checkout_cancel: ${ZIEE_STRIPE_CHECKOUT_CANCEL_URL:-/billing/cancel}
@@ -86,7 +86,7 @@ app:
       qdb:
         host: ${ZIEE_AI_QDRANT_HOST:-127.0.0.1}
         port: ${ZIEE_AI_QDRANT_PORT:-6334}
-        api_key: ${ZIEE_AI_QDRANT_API_KEY:-871c1580-9f7a-4f89-bd24-536a4b570c2b}
+        api_key: ${ZIEE_AI_QDRANT_API_KEY:-}
         use_tls: ${ZIEE_AI_QDRANT_USE_TLS:-false}
         vector_size: ${ZIEE_AI_QDRANT_VECTOR_SIZE:-1024}
         pool_size: ${ZIEE_AI_QDRANT_POOL_SIZE:-3}

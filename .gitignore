@@ -46,3 +46,7 @@ ngrok
 
 # GitHub App private key
 *.pem
+
+# Local GitHub webhook dumps
+events/*
+!events/.gitkeep

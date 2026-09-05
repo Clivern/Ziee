@@ -61,6 +61,7 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	// TODO: Remove this after testing
 
 	log.Info().
 		Str("event", delivery.Event).

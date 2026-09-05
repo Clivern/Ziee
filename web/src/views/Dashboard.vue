@@ -200,7 +200,7 @@
                 <dt class="text-sm text-theme-textLight">{{ $t('dashboard.workspace_role') }}</dt>
                 <dd class="text-sm font-medium text-theme-text capitalize text-right">{{ roleLabel }}</dd>
               </div>
-              <div class="flex justify-between gap-4 py-3 border-b border-theme-border">
+              <div v-if="isSaaS()" class="flex justify-between gap-4 py-3 border-b border-theme-border">
                 <dt class="text-sm text-theme-textLight">{{ $t('dashboard.workspace_plan') }}</dt>
                 <dd class="text-sm font-medium text-theme-text capitalize text-right">{{ planLabel }}</dd>
               </div>
@@ -228,6 +228,7 @@ import AppNav from '@/components/AppNav.vue'
 import { user } from '@/lib/auth'
 import { saveWorkspaceToStorage } from '@/utils/storage'
 import { useWorkspaceContext } from '@/lib/permission'
+import { isSaaS } from '@/lib/edition'
 
 const { t } = useI18n()
 
@@ -275,6 +276,7 @@ const attentionItems = computed(() => [
     description: t('dashboard.attention_quota_desc'),
     action: t('dashboard.attention_quota_action'),
     to: '/billing',
+    requiresSaaS: true,
   },
   {
     id: 'doc',
@@ -323,6 +325,7 @@ const attentionItems = computed(() => [
     description: t('dashboard.attention_trial_desc'),
     action: t('dashboard.attention_trial_action'),
     to: '/billing',
+    requiresSaaS: true,
   },
   {
     id: 'stale_key',
@@ -348,7 +351,7 @@ const attentionItems = computed(() => [
     action: t('dashboard.attention_empty_kb_action'),
     to: '/knowledge',
   },
-])
+].filter((item) => !item.requiresSaaS || isSaaS())
 
 function attentionDotClass(level) {
   return {
@@ -412,7 +415,7 @@ async function loadDashboard() {
       .catch(() => {}),
   ]
 
-  if (canManage.value) {
+  if (canManage.value && isSaaS()) {
     tasks.push(
       billing_api.status(currentWorkspace.id)
         .then((res) => { plan.value = res.data.plan || 'hobby' })

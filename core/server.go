@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/clivern/ziee/api"
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/middleware"
 	"github.com/clivern/ziee/module"
@@ -57,8 +58,10 @@ func SetupServer(Static embed.FS) http.Handler {
 		r.Post("/api/v1/public/action/logout", api.LogoutAction)                            // user logout
 		r.Get("/api/v1/public/action/oauth/github", api.GitHubOAuthStartAction)             // start GitHub OAuth
 		r.Get("/api/v1/public/action/oauth/github/callback", api.GitHubOAuthCallbackAction) // GitHub OAuth callback
-		r.Post("/api/v1/public/action/stripe/webhook", api.StripeWebhookAction)             // Stripe billing webhook
 		r.Post("/api/v1/public/action/github/webhook", api.GitHubWebhookAction)             // GitHub App webhook
+		if conf.IsSaaS() {
+			r.Post("/api/v1/public/action/stripe/webhook", api.StripeWebhookAction) // Stripe billing webhook
+		}
 	})
 	r.Get("/api/v1/me", api.GetMeAction) // current authenticated user
 	r.Group(func(r chi.Router) {         // user profile and workspace invites
@@ -118,10 +121,12 @@ func SetupServer(Static embed.FS) http.Handler {
 			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeleteWorkspaceAccessKey})).Delete("/{keyId}", api.DeleteWorkspaceAccessKeyAction) // delete workspace access key
 		})
 
-		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing", api.GetBillingStatusAction)                               // get billing status
-		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing/usage", api.GetBillingUsageAction)                          // get billing usage
-		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/checkout", api.CreateBillingCheckoutAction) // start Stripe checkout
-		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/portal", api.CreateBillingPortalAction)     // open Stripe customer portal
+		if conf.IsSaaS() {
+			r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing", api.GetBillingStatusAction)                               // get billing status
+			r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing/usage", api.GetBillingUsageAction)                          // get billing usage
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/checkout", api.CreateBillingCheckoutAction) // start Stripe checkout
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/portal", api.CreateBillingPortalAction)     // open Stripe customer portal
+		}
 
 		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspace})).Get("/stats", api.GetWorkspaceStatsAction) // get workspace stats
 
@@ -220,6 +225,7 @@ func RunServer(handler http.Handler) error {
 	go func() {
 		log.Info().
 			Int("port", viper.GetInt("app.port")).
+			Str("edition", conf.Edition()).
 			Msg("Starting HTTP server")
 
 		err := srv.ListenAndServe()

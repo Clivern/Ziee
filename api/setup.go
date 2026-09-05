@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/module"
@@ -81,5 +82,6 @@ func SetupStatusAction(w http.ResponseWriter, _ *http.Request) {
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{
 		"installed": sm.IsInstalled(),
+		"edition":   conf.Edition(),
 	})
 }

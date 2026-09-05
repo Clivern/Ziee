@@ -4,6 +4,7 @@ ARG ZIEE_VERSION=0.1.0
 ARG ZIEE_COMMIT=none
 ARG ZIEE_BUILD_DATE=unknown
 ARG ZIEE_BUILT_BY=docker
+ARG ZIEE_EDITION=oss
 
 WORKDIR /src
 
@@ -14,7 +15,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -trimpath \
-    -ldflags="-s -w -X main.version=${ZIEE_VERSION} -X main.commit=${ZIEE_COMMIT} -X main.date=${ZIEE_BUILD_DATE} -X main.builtBy=${ZIEE_BUILT_BY}" \
+    -ldflags="-s -w -X main.version=${ZIEE_VERSION} -X main.commit=${ZIEE_COMMIT} -X main.date=${ZIEE_BUILD_DATE} -X main.builtBy=${ZIEE_BUILT_BY} -X main.edition=${ZIEE_EDITION}" \
     -o /out/ziee .
 
 RUN mkdir -p /out/configs /out/var/logs && \

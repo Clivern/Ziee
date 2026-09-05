@@ -4,6 +4,7 @@
 package stripe
 
 import (
+	"github.com/clivern/ziee/conf"
 	"github.com/spf13/viper"
 	stripesdk "github.com/stripe/stripe-go/v82"
 )
@@ -16,7 +17,7 @@ type Client struct {
 
 // New returns a Stripe client loaded from app.billing config.
 func New() (*Client, error) {
-	if viper.GetString("app.billing.provider") != "stripe" {
+	if !conf.IsSaaS() || viper.GetString("app.billing.provider") != "stripe" {
 		return nil, ErrBillingDisabled
 	}
 

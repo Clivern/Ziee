@@ -53,6 +53,7 @@ jobs:
             ZIEE_COMMIT=${{ github.sha }}
             ZIEE_BUILD_DATE=${{ github.event.head_commit.timestamp }}
             ZIEE_BUILT_BY=github-actions
+            ZIEE_EDITION=saas
 
       - name: Prune old image tags
         env:

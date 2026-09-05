@@ -123,6 +123,7 @@ import { removeWorkspaceFromStorage, loadWorkspaceFromStorage } from '@/utils/st
 import { user, clearUser } from '@/lib/auth'
 import { applyLocale, applyTheme, applyUserPreferences, readStoredLocale, readStoredTheme } from '@/lib/preferences'
 import { canManageWorkspace } from '@/lib/permission'
+import { isSaaS } from '@/lib/edition'
 
 const route = useRoute()
 const router = useRouter()
@@ -154,11 +155,11 @@ const navItems = computed(() => {
     { to: '/knowledge', label: 'Knowledge' },
     { to: '/integrations', label: 'Integrations', requiresManage: true },
     { to: '/audits', label: t('nav.audits'), requiresManage: true },
-    { to: '/billing', label: t('nav.billing'), requiresManage: true },
+    { to: '/billing', label: t('nav.billing'), requiresManage: true, requiresSaaS: true },
     { to: '/members', label: 'Members', requiresManage: true },
     { to: '/settings', label: t('nav.settings'), requiresManage: true },
     { to: '/workspaces', label: 'Workspaces' }
-  ].filter((item) => !item.requiresManage || canManageWorkspaceNav.value)
+  ].filter((item) => (!item.requiresManage || canManageWorkspaceNav.value) && (!item.requiresSaaS || isSaaS()))
 })
 
 function isActive(path) {

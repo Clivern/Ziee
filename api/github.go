@@ -178,7 +178,7 @@ func AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Request) {
 		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
 	)
 
-	err = im.Attach(db.Id(id), db.Id(req.WorkspaceId), lo.FromPtr(user.ProviderUserId))
+	err = im.Attach(r.Context(), db.Id(id), db.Id(req.WorkspaceId), lo.FromPtr(user.ProviderUserId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrInstallationNotFound):

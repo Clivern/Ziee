@@ -27,6 +27,7 @@ type WorkspaceGitHubRepo struct {
 // WorkspaceGitHubRepoRepository is the interface for workspace GitHub repo CRUD.
 type WorkspaceGitHubRepoRepository interface {
 	Create(repo *WorkspaceGitHubRepo) error
+	Upsert(repo *WorkspaceGitHubRepo) error
 	GetById(id Id) (*WorkspaceGitHubRepo, error)
 	GetByGitHubId(githubId int64) (*WorkspaceGitHubRepo, error)
 	Update(repo *WorkspaceGitHubRepo) error
@@ -71,6 +72,41 @@ func (r *WorkspaceGitHubRepoRepositoryPostgres) Create(repo *WorkspaceGitHubRepo
 		repo.Private,
 		repo.Meta,
 	).Scan(&repo.CreatedAt, &repo.UpdatedAt)
+}
+
+// Upsert inserts or updates a workspace GitHub repo by GitHub repository id.
+func (r *WorkspaceGitHubRepoRepositoryPostgres) Upsert(repo *WorkspaceGitHubRepo) error {
+	id, err := NewId()
+	if err != nil {
+		return err
+	}
+
+	return r.db.QueryRow(
+		`INSERT INTO workspace_github_repos
+		(id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		ON CONFLICT (github_id) DO UPDATE SET
+			workspace_id = EXCLUDED.workspace_id,
+			installation_id = EXCLUDED.installation_id,
+			node_id = EXCLUDED.node_id,
+			owner = EXCLUDED.owner,
+			name = EXCLUDED.name,
+			full_name = EXCLUDED.full_name,
+			private = EXCLUDED.private,
+			meta = EXCLUDED.meta,
+			updated_at = CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
+		RETURNING id, created_at, updated_at`,
+		id.String(),
+		repo.WorkspaceId.String(),
+		repo.InstallationId,
+		repo.GitHubId,
+		repo.NodeId,
+		repo.Owner,
+		repo.Name,
+		repo.FullName,
+		repo.Private,
+		repo.Meta,
+	).Scan(&repo.Id, &repo.CreatedAt, &repo.UpdatedAt)
 }
 
 // GetById returns a workspace GitHub repo by id.

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { loadUserFromStorage, loadWorkspaceFromStorage } from '@/utils/storage'
 import { canManageWorkspace } from '@/lib/permission'
+import { loadEdition, isSaaS } from '@/lib/edition'
 
 const routes = [
   {
@@ -71,7 +72,7 @@ const routes = [
     path: '/billing',
     name: 'Billing',
     component: () => import('@/views/Billing.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, requiresWorkspaceAdmin: true, title: 'Billing', description: 'Billing' }
+    meta: { requiresAuth: true, requiresWorkspace: true, requiresWorkspaceAdmin: true, requiresSaaS: true, title: 'Billing', description: 'Billing' }
   },
   {
     path: '/integrations',
@@ -130,12 +131,16 @@ function isSafeRedirect(redirect) {
 }
 
 // Navigation guard - reads auth state directly from storage
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  await loadEdition()
+
   const currentUser = loadUserFromStorage()
   const currentWorkspace = loadWorkspaceFromStorage()
   const isAuthenticated = !!currentUser
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (to.meta.requiresSaaS && !isSaaS()) {
+    next('/404')
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
     next({ path: '/login', query: { redirect: to.fullPath } })
   } else if (to.meta.requiresGuest && isAuthenticated) {
     const redirect = to.query.redirect

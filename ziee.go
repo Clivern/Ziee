@@ -8,6 +8,7 @@ import (
 	"io/fs"
 
 	"github.com/clivern/ziee/cli"
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/pkg/resend"
 )
@@ -17,6 +18,7 @@ var (
 	commit  = "none"
 	date    = "unknown"
 	builtBy = "unknown"
+	edition = "oss"
 )
 
 //go:embed web/dist/*
@@ -34,7 +36,9 @@ func main() {
 	cli.Commit = commit
 	cli.Date = date
 	cli.BuiltBy = builtBy
+	cli.Edition = edition
 	cli.Static = static
+	conf.BuiltEdition = edition
 
 	// Load locales
 	if sub, err := fs.Sub(localeFS, "locale/locales"); err == nil {

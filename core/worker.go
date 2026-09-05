@@ -12,6 +12,7 @@ import (
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/github"
 	"github.com/clivern/ziee/pkg/nats"
 	"github.com/clivern/ziee/pkg/qdrant"
 	"github.com/clivern/ziee/pkg/storage"
@@ -36,6 +37,11 @@ func RunWorker() error {
 				Msg("Error closing database connection")
 		}
 	}()
+
+	err = github.Init()
+	if err != nil {
+		return fmt.Errorf("failed to initialize github app: %w", err)
+	}
 
 	store, err := storage.New()
 	if err != nil {

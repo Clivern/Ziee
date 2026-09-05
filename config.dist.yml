@@ -26,6 +26,7 @@ app:
       client_secret: ${ZIEE_GITHUB_OAUTH_CLIENT_SECRET:-}
       redirect_url: ${ZIEE_GITHUB_OAUTH_REDIRECT_URL:-}
       webhook_secret: ${ZIEE_GITHUB_WEBHOOK_SECRET:-}
+      private_key_path: ${ZIEE_GITHUB_APP_PRIVATE_KEY_PATH:-priv_key.pem}
 
   database:
     rw:

@@ -168,6 +168,9 @@ msgstr "Failed to list users."
 msgid "failed_list_workspaces"
 msgstr "Failed to list workspaces."
 
+msgid "failed_list_github_installations"
+msgstr "Failed to list GitHub installations."
+
 msgid "failed_process_request"
 msgstr "Failed to process request."
 

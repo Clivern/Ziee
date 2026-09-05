@@ -159,6 +159,9 @@ msgstr "Impossible de lister les utilisateurs."
 msgid "failed_list_workspaces"
 msgstr "Impossible de lister les espaces de travail."
 
+msgid "failed_list_github_installations"
+msgstr "Impossible de lister les installations GitHub."
+
 msgid "failed_process_request"
 msgstr "Impossible de traiter la demande."
 

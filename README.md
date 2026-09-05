@@ -19,8 +19,6 @@ Agent teams ship faster when branches, reviews, and releases merge themselves. Y
 
 **Ziee is the autonomous merge layer for agent-scale delivery** — infrastructure that merges agent work safely, resolves conflicts automatically, and keeps shipping continuous as parallel agents multiply. Built for teams who need merge throughput, control, and reliability at agent scale.
 
-Ziee connects to your observability stack — metrics, logs, traces, and alerts from tools like Datadog, Grafana, Prometheus, and Sentry — to watch what happens after a PR lands. If a merge correlates with error spikes, latency regressions, or failing health checks, Ziee flags the pull request as the likely cause and can hold or roll back further agent merges until the blast radius is contained.
-
 
 ### Versioning
 

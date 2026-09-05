@@ -43,3 +43,6 @@ commit
 # Local tunnel config (contains authtoken)
 ngrok.yml
 ngrok
+
+# GitHub App private key
+*.pem

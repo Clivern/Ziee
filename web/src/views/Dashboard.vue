@@ -351,7 +351,7 @@ const attentionItems = computed(() => [
     action: t('dashboard.attention_empty_kb_action'),
     to: '/knowledge',
   },
-].filter((item) => !item.requiresSaaS || isSaaS())
+].filter((item) => !item.requiresSaaS || isSaaS()))
 
 function attentionDotClass(level) {
   return {

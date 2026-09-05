@@ -149,20 +149,27 @@ func (a *App) InstallationToken(ctx context.Context, installationID int64) (*Ins
 	return &token, nil
 }
 
-// Repositories lists repos the installation can access.
+// Repositories lists all repos the installation can access.
 func (a *App) Repositories(ctx context.Context, installationID int64) ([]Repository, error) {
 	token, err := a.InstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
 
-	var body repositoriesResponse
-	err = a.do(ctx, http.MethodGet, "/installation/repositories?per_page="+strconv.Itoa(AppReposPerPage), token.Token, &body)
-	if err != nil {
-		return nil, err
-	}
+	var all []Repository
+	for page := 1; ; page++ {
+		var body repositoriesResponse
+		path := fmt.Sprintf("/installation/repositories?per_page=%d&page=%d", AppReposPerPage, page)
+		err = a.do(ctx, http.MethodGet, path, token.Token, &body)
+		if err != nil {
+			return nil, err
+		}
 
-	return body.Repositories, nil
+		all = append(all, body.Repositories...)
+		if len(body.Repositories) < AppReposPerPage {
+			return all, nil
+		}
+	}
 }
 
 func (a *App) do(ctx context.Context, method, path, token string, dest any) error {

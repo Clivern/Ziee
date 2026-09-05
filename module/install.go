@@ -4,13 +4,16 @@
 package module
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/github"
 	"github.com/clivern/ziee/pkg/github/webhook"
 
 	"github.com/rs/zerolog/log"
@@ -34,6 +37,11 @@ type InstallationResponse struct {
 	UpdatedAt           string `json:"updatedAt"`
 }
 
+// AttachInstallationRequest is the body for attaching an installation to a workspace.
+type AttachInstallationRequest struct {
+	WorkspaceId string `json:"workspaceId" validate:"required" label:"Workspace"`
+}
+
 // Installation is the module for GitHub App installations.
 type Installation struct {
 	InstallationRepository db.GitHubInstallationRepository
@@ -48,12 +56,20 @@ func NewInstallation(installations db.GitHubInstallationRepository, repos db.Wor
 	}
 }
 
-// HandleWebhook persists or deletes a GitHub App installation from a webhook delivery.
+// HandleWebhook persists GitHub App installation and repository access changes.
 func (i *Installation) HandleWebhook(event string, body []byte) error {
-	if event != "installation" {
+	switch event {
+	case "installation":
+		return i.HandleInstallation(body)
+	case "installation_repositories":
+		return i.HandleInstallationRepositories(body)
+	default:
 		return nil
 	}
+}
 
+// HandleInstallation handles a GitHub App installation webhook.
+func (i *Installation) HandleInstallation(body []byte) error {
 	var payload webhook.InstallationEvent
 	err := json.Unmarshal(body, &payload)
 	if err != nil {
@@ -110,6 +126,74 @@ func (i *Installation) HandleWebhook(event string, body []byte) error {
 	return nil
 }
 
+// HandleInstallationRepositories handles a GitHub App installation_repositories webhook.
+func (i *Installation) HandleInstallationRepositories(body []byte) error {
+	var payload webhook.InstallationRepositoriesEvent
+	err := json.Unmarshal(body, &payload)
+	if err != nil {
+		return fmt.Errorf("decode installation repositories webhook: %w", err)
+	}
+
+	item, err := i.InstallationRepository.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		return fmt.Errorf("get installation: %w", err)
+	}
+	if item == nil || item.WorkspaceId == "" {
+		return nil
+	}
+
+	for _, repo := range payload.RepositoriesAdded {
+		err = i.StoreRepository(item.WorkspaceId, payload.Installation.ID, repo)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, repo := range payload.RepositoriesRemoved {
+		err = i.RepoRepository.DeleteByGitHubId(repo.ID)
+		if err != nil {
+			return fmt.Errorf("delete installation repo: %w", err)
+		}
+	}
+
+	log.Info().
+		Int64("githubId", payload.Installation.ID).
+		Str("workspaceId", item.WorkspaceId.String()).
+		Str("action", payload.Action).
+		Int("added", len(payload.RepositoriesAdded)).
+		Int("removed", len(payload.RepositoriesRemoved)).
+		Msg("GitHub installation repositories updated")
+
+	return nil
+}
+
+// StoreRepository stores a GitHub repository in the database.
+func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, repo webhook.InstallationRepo) error {
+	meta, err := json.Marshal(repo)
+	if err != nil {
+		return fmt.Errorf("encode repo meta: %w", err)
+	}
+	raw := string(meta)
+	owner, _, _ := strings.Cut(repo.FullName, "/")
+
+	err = i.RepoRepository.Upsert(&db.WorkspaceGitHubRepo{
+		WorkspaceId:    workspaceId,
+		InstallationId: installationId,
+		GitHubId:       repo.ID,
+		NodeId:         repo.NodeID,
+		Owner:          owner,
+		Name:           repo.Name,
+		FullName:       repo.FullName,
+		Private:        repo.Private,
+		Meta:           &raw,
+	})
+	if err != nil {
+		return fmt.Errorf("store installation repo: %w", err)
+	}
+
+	return nil
+}
+
 // ListPending lists pending GitHub App installations for a GitHub user to attach to a workspace.
 func (i *Installation) ListPending(githubUserId string) ([]*InstallationResponse, error) {
 	list, err := i.InstallationRepository.ListPendingByGitHubUserId(githubUserId)
@@ -138,19 +222,32 @@ func (i *Installation) ListPending(githubUserId string) ([]*InstallationResponse
 	return installations, nil
 }
 
-// AttachInstallationRequest is the body for attaching an installation to a workspace.
-type AttachInstallationRequest struct {
-	WorkspaceId string `json:"workspaceId" validate:"required" label:"Workspace"`
-}
-
-// Attach links a GitHub App installation to a workspace.
-func (i *Installation) Attach(id, workspaceId db.Id, githubUserId string) error {
+// Attach links a GitHub App installation to a workspace and stores its repos.
+func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, githubUserId string) error {
 	item, err := i.InstallationRepository.GetById(id)
 	if err != nil {
 		return fmt.Errorf("get installation: %w", err)
 	}
 	if item == nil || item.GitHubUserId != githubUserId {
 		return ErrInstallationNotFound
+	}
+
+	repos, err := github.Get().Repositories(ctx, item.GitHubId)
+	if err != nil {
+		return fmt.Errorf("list installation repos: %w", err)
+	}
+
+	for _, repo := range repos {
+		err = i.StoreRepository(workspaceId, item.GitHubId, webhook.InstallationRepo{
+			ID:       repo.ID,
+			NodeID:   repo.NodeID,
+			Name:     repo.Name,
+			FullName: repo.FullName,
+			Private:  repo.Private,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	err = i.InstallationRepository.Attach(id, workspaceId)
@@ -161,6 +258,7 @@ func (i *Installation) Attach(id, workspaceId db.Id, githubUserId string) error 
 	log.Info().
 		Str("id", id.String()).
 		Str("workspaceId", workspaceId.String()).
+		Int("repos", len(repos)).
 		Msg("GitHub installation attached")
 
 	return nil

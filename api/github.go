@@ -4,7 +4,9 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/pkg/github/webhook"
@@ -39,9 +41,21 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Remove this after testing
+	path := fmt.Sprintf("github-webhook-%s-%s.json", delivery.Event, delivery.ID)
+	err = os.WriteFile(path, delivery.Body, 0o644)
+	if err != nil {
+		log.Error().Err(err).Str("path", path).Msg("Failed to dump GitHub webhook")
+		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
+			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
+		})
+		return
+	}
+
 	log.Info().
 		Str("event", delivery.Event).
 		Str("deliveryId", delivery.ID).
+		Str("path", path).
 		Int("payloadBytes", len(delivery.Body)).
 		Msg("GitHub webhook received")
 

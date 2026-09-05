@@ -121,3 +121,8 @@ export const document_api = {
   }),
   delete: (workspaceId, documentId) => api.delete(`/workspaces/${workspaceId}/documents/${documentId}`),
 }
+
+export const github_api = {
+  listInstallations: () => api.get('/action/github/installations'),
+  attachInstallation: (id, data) => api.post(`/action/github/installations/${id}/attach`, data),
+}

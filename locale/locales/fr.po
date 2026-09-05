@@ -162,6 +162,12 @@ msgstr "Impossible de lister les espaces de travail."
 msgid "failed_list_github_installations"
 msgstr "Impossible de lister les installations GitHub."
 
+msgid "failed_attach_github_installation"
+msgstr "Impossible de rattacher l'installation GitHub."
+
+msgid "github_installation_not_found"
+msgstr "Installation GitHub introuvable."
+
 msgid "failed_process_request"
 msgstr "Impossible de traiter la demande."
 

@@ -544,7 +544,18 @@
     "create_modal_title": "Nouvel espace",
     "create_modal_description": "Saisissez un nom pour votre nouvel espace.",
     "workspace_name": "Nom de l'espace",
-    "workspace_name_placeholder": "Mon espace"
+    "workspace_name_placeholder": "Mon espace",
+    "installations_title": "Installations GitHub",
+    "installations_description": "Rattachez ces installations GitHub App à un espace.",
+    "attach": "Rattacher",
+    "attaching": "Rattachement…",
+    "attach_to": "Espace",
+    "attach_modal_title": "Rattacher à un espace",
+    "attach_modal_description": "Choisissez un espace pour {account}.",
+    "create_to_attach": "Créez d'abord un espace pour rattacher cette installation.",
+    "failed_attach": "Impossible de rattacher l'installation",
+    "failed_load": "Impossible de charger les espaces",
+    "failed_load_installations": "Impossible de charger les installations GitHub"
   },
   "dashboard": {
     "title": "Tableau de bord",

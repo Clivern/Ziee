@@ -4,12 +4,17 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/middleware"
+	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/github/webhook"
 	"github.com/clivern/ziee/pkg/util"
 
@@ -52,8 +57,23 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := filepath.Join("events", fmt.Sprintf("github-webhook-%s-%s.json", delivery.Event, delivery.ID))
-	err = os.WriteFile(path, delivery.Body, 0o644)
+	path := filepath.Join(
+		"events",
+		fmt.Sprintf("gh-%s-%s.json", delivery.Event, delivery.ID),
+	)
+
+	var pretty bytes.Buffer
+	err = json.Indent(&pretty, delivery.Body, "", "  ")
+	if err != nil {
+		log.Error().Err(err).Str("path", path).Msg("Failed to format GitHub webhook")
+		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
+			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
+		})
+		return
+	}
+
+	pretty.WriteByte('\n')
+	err = os.WriteFile(path, pretty.Bytes(), 0o644)
 	if err != nil {
 		log.Error().Err(err).Str("path", path).Msg("Failed to dump GitHub webhook")
 		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
@@ -62,6 +82,24 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// TODO: Remove this after testing
+
+	im := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+	)
+
+	err = im.HandleWebhook(delivery.Event, delivery.Body)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("event", delivery.Event).
+			Str("deliveryId", delivery.ID).
+			Msg("Failed to persist GitHub installation")
+		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
+			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
+		})
+		return
+	}
 
 	log.Info().
 		Str("event", delivery.Event).
@@ -72,5 +110,37 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{
 		"received": true,
+	})
+}
+
+// ListGitHubInstallationsAction lists pending GitHub App installations for the signed-in GitHub user.
+func ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || user == nil {
+		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
+			"errorMessage": locale.TR(r, "not_authenticated"),
+		})
+		return
+	}
+
+	im := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+	)
+
+	installations, err := im.ListPending(*user.ProviderUserId)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("userId", user.Id.String()).
+			Msg("Failed to list GitHub installations")
+		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
+			"errorMessage": locale.TR(r, "failed_list_github_installations"),
+		})
+		return
+	}
+
+	util.WriteJSON(w, http.StatusOK, map[string]any{
+		"installations": installations,
 	})
 }

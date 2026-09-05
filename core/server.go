@@ -20,6 +20,7 @@ import (
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/middleware"
 	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/github"
 
 	"github.com/go-chi/chi/v5"
 	cmid "github.com/go-chi/chi/v5/middleware"
@@ -65,6 +66,7 @@ func SetupServer(Static embed.FS) http.Handler {
 		r.Get("/api/v1/action/profile", api.GetProfileAction)                                        // get user profile
 		r.Put("/api/v1/action/profile", api.UpdateProfileAction)                                     // update user profile
 		r.Get("/api/v1/action/invites", api.ListUserInvitesAction)                                   // list pending workspace invites
+		r.Get("/api/v1/action/github/installations", api.ListGitHubInstallationsAction)              // list pending GitHub App installations for the user
 		r.Get("/api/v1/action/invite-by-token/{token}", api.GetAuthenticatedUserInviteByTokenAction) // get invite details by token
 		r.Post("/api/v1/action/accept-invite/{token}", api.AcceptUserInviteByTokenAction)            // accept workspace invite
 		r.Post("/api/v1/action/reject-invite/{token}", api.RejectUserInviteByTokenAction)            // reject workspace invite
@@ -177,6 +179,11 @@ func RunServer(handler http.Handler) error {
 	err := db.InitDB(ReadWriteDatabase(), ReadOnlyDatabase()...)
 	if err != nil {
 		return fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	err = github.Init()
+	if err != nil {
+		return fmt.Errorf("failed to initialize github app: %w", err)
 	}
 
 	err = module.StartBus()

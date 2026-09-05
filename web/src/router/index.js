@@ -20,6 +20,12 @@ const routes = [
     meta: { requiresGuest: true, title: 'Setup', description: 'Setup platform' }
   },
   {
+    path: '/getting-started',
+    name: 'GettingStarted',
+    component: () => import('@/views/GettingStarted.vue'),
+    meta: { title: 'Getting started', description: 'Welcome after installing the GitHub App' }
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),

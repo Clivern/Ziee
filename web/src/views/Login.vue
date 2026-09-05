@@ -70,6 +70,13 @@ function getRedirectTarget() {
 
 const handleGitHubLogin = () => {
   loading.value = true
+
+  const redirect = route.query.redirect
+  if (typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')) {
+    window.location.href = `/api/v1/public/action/oauth/github?redirect=${encodeURIComponent(redirect)}`
+    return
+  }
+
   window.location.href = '/api/v1/public/action/oauth/github'
 }
 

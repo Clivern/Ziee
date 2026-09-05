@@ -44,6 +44,23 @@
     "error_passwords_match": "Passwords do not match",
     "error_password_length": "Password must be at least 8 characters long"
   },
+  "getting_started": {
+    "title": "Getting started",
+    "title_install": "GitHub App installed",
+    "title_update": "Installation updated",
+    "subtitle": "Connect your GitHub repositories and let Ziee merge agent work safely.",
+    "subtitle_install": "Ziee can now watch the repositories you selected.",
+    "subtitle_update": "Repository access for Ziee has been updated.",
+    "installation_id": "Installation {id}",
+    "step_sign_in": "Sign in to Ziee",
+    "step_sign_in_desc": "Use the same GitHub account to open Ziee.",
+    "step_workspace": "Choose a workspace",
+    "step_workspace_desc": "Attach this GitHub installation to a Ziee workspace.",
+    "step_merge": "Let Ziee take control",
+    "step_merge_desc": "Safe merges. Conflicts resolved. Shipping never stalls.",
+    "cta_sign_in": "Sign in to continue",
+    "cta_continue": "Continue to Ziee"
+  },
   "invite": {
     "title": "Workspace Invitation",
     "description": "Review this workspace invitation and choose what you want to do.",

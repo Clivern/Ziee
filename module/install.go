@@ -5,6 +5,7 @@ package module
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 )
+
+var ErrInstallationNotFound = errors.New("installation not found")
 
 // InstallationResponse is a GitHub App installation shaped for API responses.
 type InstallationResponse struct {
@@ -135,12 +138,30 @@ func (i *Installation) ListPending(githubUserId string) ([]*InstallationResponse
 	return installations, nil
 }
 
+// AttachInstallationRequest is the body for attaching an installation to a workspace.
+type AttachInstallationRequest struct {
+	WorkspaceId string `json:"workspaceId" validate:"required" label:"Workspace"`
+}
+
 // Attach links a GitHub App installation to a workspace.
-func (i *Installation) Attach(id, workspaceId db.Id) error {
-	err := i.InstallationRepository.Attach(id, workspaceId)
+func (i *Installation) Attach(id, workspaceId db.Id, githubUserId string) error {
+	item, err := i.InstallationRepository.GetById(id)
+	if err != nil {
+		return fmt.Errorf("get installation: %w", err)
+	}
+	if item == nil || item.GitHubUserId != githubUserId {
+		return ErrInstallationNotFound
+	}
+
+	err = i.InstallationRepository.Attach(id, workspaceId)
 	if err != nil {
 		return fmt.Errorf("attach installation: %w", err)
 	}
+
+	log.Info().
+		Str("id", id.String()).
+		Str("workspaceId", workspaceId.String()).
+		Msg("GitHub installation attached")
 
 	return nil
 }

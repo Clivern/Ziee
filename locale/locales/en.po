@@ -171,6 +171,12 @@ msgstr "Failed to list workspaces."
 msgid "failed_list_github_installations"
 msgstr "Failed to list GitHub installations."
 
+msgid "failed_attach_github_installation"
+msgstr "Failed to attach GitHub installation."
+
+msgid "github_installation_not_found"
+msgstr "GitHub installation not found."
+
 msgid "failed_process_request"
 msgstr "Failed to process request."
 

@@ -544,7 +544,18 @@
     "create_modal_title": "Create New Workspace",
     "create_modal_description": "Enter a name for your new workspace.",
     "workspace_name": "Workspace name",
-    "workspace_name_placeholder": "My Workspace"
+    "workspace_name_placeholder": "My Workspace",
+    "installations_title": "GitHub installations",
+    "installations_description": "Attach these GitHub App installs to a workspace.",
+    "attach": "Attach",
+    "attaching": "Attaching…",
+    "attach_to": "Workspace",
+    "attach_modal_title": "Attach to a workspace",
+    "attach_modal_description": "Choose a workspace for {account}.",
+    "create_to_attach": "Create a workspace first to attach this installation.",
+    "failed_attach": "Failed to attach installation",
+    "failed_load": "Failed to load workspaces",
+    "failed_load_installations": "Failed to load GitHub installations"
   },
   "dashboard": {
     "title": "Dashboard",

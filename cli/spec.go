@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/clivern/ziee/pkg/spec"
+	"github.com/clivern/ziee/policy/spec"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"

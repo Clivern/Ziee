@@ -113,6 +113,16 @@ coverage:
 	go tool cover -html=cover.out -o coverage.html
 
 
+## deps: Start local Postgres, Qdrant, and NATS
+.PHONY: deps
+deps:
+	@echo ">> ============= Start Local Dependencies ============= <<"
+	container system start
+	./bin/pgsql start
+	./bin/qdrant start --api-key 871c1580-9f7a-4f89-bd24-536a4b570c2b
+	./bin/nats start
+
+
 ## run: Run the Server
 .PHONY: run
 run:

@@ -84,6 +84,7 @@ func RunWorker() error {
 
 	worker.Register(worker.Dependencies{
 		Knowledge: ksvc,
+		Tasks:     db.NewAsyncTaskRepository(db.GetDB(false)),
 	})
 
 	err = worker.Bind(client, cfg.Queue)

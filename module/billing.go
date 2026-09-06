@@ -19,40 +19,33 @@ import (
 	stripesdk "github.com/stripe/stripe-go/v82"
 )
 
-const (
-	BillingProviderStripe = "stripe"
-	BillingStatusActive   = "active"
-	BillingStatusCanceled = "canceled"
-)
-
 var (
 	ErrBillingPortalUnavailable    = errors.New("stripe billing portal is unavailable for this workspace")
-	ErrBillingFreePlan             = errors.New("hobby is the default free plan and does not use checkout")
 	ErrBillingSubscriptionNotFound = errors.New("workspace subscription not found")
 )
 
-// Billing coordinates local subscription state with Stripe Checkout and Portal.
+// Billing coordinates prepaid AI tokens with Stripe Checkout and Portal.
 type Billing struct {
 	WorkspaceRepository    db.WorkspaceRepository
 	SubscriptionRepository db.SubscriptionRepository
+	PurchaseRepository     db.TokenPurchaseRepository
 	Usage                  Usage
 }
 
 // BillingStatusResponse is the billing state exposed to the UI.
 type BillingStatusResponse struct {
-	Id                 db.Id   `json:"id"`
-	WorkspaceId        db.Id   `json:"workspaceId"`
-	Plan               string  `json:"plan"`
-	Status             string  `json:"status"`
-	Provider           *string `json:"provider"`
-	ProviderCustomerId string  `json:"providerCustomerId"`
-	CreatedAt          string  `json:"createdAt"`
-	UpdatedAt          string  `json:"updatedAt"`
+	Id                 db.Id  `json:"id"`
+	WorkspaceId        db.Id  `json:"workspaceId"`
+	ProviderCustomerId string `json:"providerCustomerId"`
+	AITokensBalance    int64  `json:"aiTokensBalance"`
+	TokensPerUsd       int64  `json:"tokensPerUsd"`
+	CreatedAt          string `json:"createdAt"`
+	UpdatedAt          string `json:"updatedAt"`
 }
 
 // BillingCheckoutRequest is the body for creating a Stripe Checkout session.
 type BillingCheckoutRequest struct {
-	Plan string `json:"plan" validate:"required" label:"Plan"`
+	AmountCents int64 `json:"amountCents" validate:"required,gte=100" label:"Amount"`
 }
 
 // BillingSessionResponse contains a Stripe redirect URL.
@@ -65,9 +58,8 @@ type BillingWebhookResponse struct {
 	Received bool `json:"received"`
 }
 
-// PlanUsageLimits are the consumption caps for a billing plan.
-type PlanUsageLimits struct {
-	APICalls         int64   `json:"apiCalls"`
+// WorkspaceUsageLimits are the consumption caps shown on the billing page.
+type WorkspaceUsageLimits struct {
 	WorkspaceMembers int64   `json:"workspaceMembers"`
 	DocumentsCount   int64   `json:"documentsCount"`
 	StorageGB        float64 `json:"storageGB"`
@@ -76,48 +68,23 @@ type PlanUsageLimits struct {
 
 // BillingUsageResponse is workspace usage and limits for the billing page.
 type BillingUsageResponse struct {
-	Plan        string                `json:"plan"`
 	PeriodReset string                `json:"periodReset"`
 	Used        WorkspaceUsageMetrics `json:"used"`
-	Limits      PlanUsageLimits       `json:"limits"`
+	Limits      WorkspaceUsageLimits  `json:"limits"`
 }
 
-var planUsageLimits = map[string]PlanUsageLimits{
-	stripe.PlanHobby: {
-		APICalls:         10_000,
-		WorkspaceMembers: 3,
-		DocumentsCount:   100,
-		StorageGB:        5,
-		AITokens:         500_000,
-	},
-	stripe.PlanStarter: {
-		APICalls:         50_000,
-		WorkspaceMembers: 10,
-		DocumentsCount:   500,
-		StorageGB:        25,
-		AITokens:         2_000_000,
-	},
-	stripe.PlanGrowth: {
-		APICalls:         200_000,
-		WorkspaceMembers: 25,
-		DocumentsCount:   2_000,
-		StorageGB:        100,
-		AITokens:         10_000_000,
-	},
-	stripe.PlanPro: {
-		APICalls:         1_000_000,
-		WorkspaceMembers: 100,
-		DocumentsCount:   10_000,
-		StorageGB:        500,
-		AITokens:         50_000_000,
-	},
+var workspaceUsageLimits = WorkspaceUsageLimits{
+	WorkspaceMembers: 3,
+	DocumentsCount:   100,
+	StorageGB:        5,
 }
 
 // NewBilling creates a billing module.
-func NewBilling(workspaces db.WorkspaceRepository, subscriptions db.SubscriptionRepository, usage Usage) *Billing {
+func NewBilling(workspaces db.WorkspaceRepository, subscriptions db.SubscriptionRepository, purchases db.TokenPurchaseRepository, usage Usage) *Billing {
 	return &Billing{
 		WorkspaceRepository:    workspaces,
 		SubscriptionRepository: subscriptions,
+		PurchaseRepository:     purchases,
 		Usage:                  usage,
 	}
 }
@@ -140,24 +107,18 @@ func (b *Billing) GetBillingStatus(workspaceId db.Id) (*BillingStatusResponse, e
 		return nil, ErrBillingSubscriptionNotFound
 	}
 
-	err = b.UpdateHobbyPlanPeriods(subscription)
-	if err != nil {
-		return nil, err
-	}
-
 	return &BillingStatusResponse{
 		Id:                 subscription.Id,
 		WorkspaceId:        subscription.WorkspaceId,
-		Plan:               subscription.Plan,
-		Status:             subscription.Status,
-		Provider:           subscription.Provider,
 		ProviderCustomerId: lo.FromPtr(subscription.ProviderCustomerId),
+		AITokensBalance:    subscription.AITokensBalance,
+		TokensPerUsd:       stripe.TokensPerUSD(),
 		CreatedAt:          subscription.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:          subscription.UpdatedAt.UTC().Format(time.RFC3339),
 	}, nil
 }
 
-// GetBillingUsage returns usage and plan limits for a workspace.
+// GetBillingUsage returns usage and limits for a workspace.
 func (b *Billing) GetBillingUsage(workspaceId db.Id, deps UsageSnapshotDeps) (*BillingUsageResponse, error) {
 	workspace, err := b.WorkspaceRepository.GetById(workspaceId)
 	if err != nil {
@@ -175,32 +136,24 @@ func (b *Billing) GetBillingUsage(workspaceId db.Id, deps UsageSnapshotDeps) (*B
 		return nil, ErrBillingSubscriptionNotFound
 	}
 
-	err = b.UpdateHobbyPlanPeriods(subscription)
-	if err != nil {
-		return nil, err
-	}
-
 	used, err := b.Usage.GetWorkspaceUsage(deps, workspaceId)
 	if err != nil {
 		return nil, err
 	}
 
-	limits, ok := planUsageLimits[subscription.Plan]
-	if !ok {
-		limits = planUsageLimits[stripe.PlanHobby]
-	}
+	limits := workspaceUsageLimits
+	limits.AITokens = subscription.AITokensBalance + used.AITokens
 
 	_, periodEnd := util.CurrentMonthPeriod()
 
 	return &BillingUsageResponse{
-		Plan:        subscription.Plan,
 		PeriodReset: periodEnd.UTC().Format(time.RFC3339),
 		Used:        *used,
 		Limits:      limits,
 	}, nil
 }
 
-// CreateCheckoutSession starts Stripe Checkout for a paid plan.
+// CreateCheckoutSession starts Stripe Checkout for an AI token purchase.
 func (b *Billing) CreateCheckoutSession(ctx context.Context, workspaceId db.Id, user *db.User, req *BillingCheckoutRequest, successURL string, cancelURL string) (*BillingSessionResponse, error) {
 	workspace, err := b.WorkspaceRepository.GetById(workspaceId)
 	if err != nil {
@@ -209,16 +162,15 @@ func (b *Billing) CreateCheckoutSession(ctx context.Context, workspaceId db.Id, 
 	if workspace == nil {
 		return nil, ErrWorkspaceNotFound
 	}
-	if req.Plan == stripe.PlanHobby {
-		return nil, ErrBillingFreePlan
-	}
 
 	client, err := stripe.New()
 	if err != nil {
 		return nil, err
 	}
-	if lo.IsEmpty(client.Config().PriceId(req.Plan)) {
-		return nil, stripe.ErrInvalidPlan
+
+	tokens := client.Config().TokensForCents(req.AmountCents)
+	if req.AmountCents < stripe.MinTokenPurchaseCents || tokens <= 0 {
+		return nil, stripe.ErrInvalidAmount
 	}
 
 	subscription, err := b.SubscriptionRepository.GetByWorkspaceId(workspaceId)
@@ -231,7 +183,8 @@ func (b *Billing) CreateCheckoutSession(ctx context.Context, workspaceId db.Id, 
 
 	session, err := client.CreateCheckoutSession(ctx, stripe.CheckoutOptions{
 		WorkspaceId:   workspaceId.String(),
-		Plan:          req.Plan,
+		AmountCents:   req.AmountCents,
+		Tokens:        tokens,
 		CustomerId:    lo.FromPtr(subscription.ProviderCustomerId),
 		CustomerEmail: user.Email,
 		SuccessURL:    successURL,
@@ -293,119 +246,71 @@ func (b *Billing) HandleWebhook(payload []byte, signature string) error {
 		return err
 	}
 
-	switch event.Type {
-	case "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted":
-		var subscription stripesdk.Subscription
-		err = json.Unmarshal(event.Data.Raw, &subscription)
-		if err != nil {
-			return fmt.Errorf("decode subscription: %w", err)
-		}
-		return b.SyncStripeSubscription(client, &subscription, string(event.Type))
-	default:
+	if event.Type != "checkout.session.completed" {
 		return nil
 	}
+
+	var session stripesdk.CheckoutSession
+	err = json.Unmarshal(event.Data.Raw, &session)
+	if err != nil {
+		return fmt.Errorf("decode checkout session: %w", err)
+	}
+
+	return b.CreditTokenPurchase(client, &session)
 }
 
-// SyncStripeSubscription syncs a Stripe subscription with the local database.
-func (b *Billing) SyncStripeSubscription(client *stripe.Client, payload *stripesdk.Subscription, eventType string) error {
-	if payload == nil {
-		return nil
-	}
-
-	workspaceId := db.Id(payload.Metadata["workspaceId"])
-	plan := payload.Metadata["plan"]
-
+// CreditTokenPurchase credits AI tokens after a successful Stripe payment.
+func (b *Billing) CreditTokenPurchase(client *stripe.Client, session *stripesdk.CheckoutSession) error {
+	workspaceId := db.Id(session.Metadata["workspaceId"])
 	if lo.IsEmpty(workspaceId) {
 		return nil
 	}
 
-	subscription, err := b.SubscriptionRepository.GetByWorkspaceId(workspaceId)
-	if err != nil {
-		return err
-	}
-	if subscription == nil {
-		log.Warn().
-			Str("workspaceId", workspaceId.String()).
-			Str("subscriptionId", payload.ID).
-			Msg("Stripe subscription sync ignored: workspace subscription not found")
+	amountCents := session.AmountTotal
+	tokens := client.Config().TokensForCents(amountCents)
+	if tokens <= 0 {
 		return nil
 	}
 
-	status := string(payload.Status)
-	if eventType == "customer.subscription.deleted" {
-		status = BillingStatusCanceled
-	}
-
-	subscription.Provider = new(BillingProviderStripe)
-	if payload.Customer != nil && lo.IsNotEmpty(payload.Customer.ID) {
-		subscription.ProviderCustomerId = new(payload.Customer.ID)
-	}
-	if lo.IsNotEmpty(payload.ID) && status != BillingStatusCanceled {
-		subscription.ProviderSubscriptionId = new(payload.ID)
-	}
-
-	if payload.Items != nil && len(payload.Items.Data) > 0 {
-		item := payload.Items.Data[0]
-		if item.CurrentPeriodStart > 0 {
-			subscription.CurrentPeriodStart = new(time.Unix(item.CurrentPeriodStart, 0).UTC())
-		}
-		if item.CurrentPeriodEnd > 0 {
-			subscription.CurrentPeriodEnd = new(time.Unix(item.CurrentPeriodEnd, 0).UTC())
-		}
-		if lo.IsEmpty(plan) && item.Price != nil {
-			plan = client.Config().PlanForPriceId(item.Price.ID)
-		}
-	}
-
-	if status == BillingStatusActive || status == BillingStatusCanceled {
-		if lo.IsNotEmpty(plan) {
-			subscription.Plan = plan
-		}
-		subscription.Status = status
-	}
-
-	err = b.SubscriptionRepository.Update(subscription)
+	inserted, err := b.PurchaseRepository.Create(&db.TokenPurchase{
+		WorkspaceId:     workspaceId,
+		StripeSessionId: session.ID,
+		AmountCents:     amountCents,
+		Tokens:          tokens,
+	})
 	if err != nil {
-		return err
+		return fmt.Errorf("record token purchase: %w", err)
+	}
+	if !inserted {
+		return nil
+	}
+
+	err = b.SubscriptionRepository.AddTokens(workspaceId, tokens)
+	if err != nil {
+		return fmt.Errorf("credit ai tokens: %w", err)
+	}
+
+	if session.Customer != nil && lo.IsNotEmpty(session.Customer.ID) {
+		subscription, err := b.SubscriptionRepository.GetByWorkspaceId(workspaceId)
+		if err != nil {
+			return err
+		}
+		if subscription != nil {
+			subscription.ProviderCustomerId = lo.ToPtr(session.Customer.ID)
+			err = b.SubscriptionRepository.Update(subscription)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	log.Info().
-		Str("workspaceId", subscription.WorkspaceId.String()).
-		Str("subscriptionId", payload.ID).
-		Str("plan", subscription.Plan).
-		Str("status", subscription.Status).
-		Msg("Stripe subscription synced")
+		Str("workspaceId", workspaceId.String()).
+		Str("sessionId", session.ID).
+		Int64("amountCents", amountCents).
+		Int64("tokens", tokens).
+		Msg("AI tokens credited")
 
-	return nil
-}
-
-// UpdateHobbyPlanPeriods updates the hobby plan periods for a subscription.
-func (b *Billing) UpdateHobbyPlanPeriods(subscription *db.Subscription) error {
-	if subscription == nil || subscription.Plan != stripe.PlanHobby {
-		return nil
-	}
-
-	now := time.Now().UTC()
-	if subscription.CurrentPeriodEnd != nil && !subscription.CurrentPeriodEnd.Before(now) {
-		return nil
-	}
-
-	periodStart := subscription.CurrentPeriodEnd.UTC()
-	periodEnd := periodStart.AddDate(0, 1, 0)
-
-	for !periodEnd.After(now) {
-		periodStart = periodEnd
-		periodEnd = periodStart.AddDate(0, 1, 0)
-	}
-
-	subscription.CurrentPeriodStart = new(periodStart)
-	subscription.CurrentPeriodEnd = new(periodEnd)
-
-	err := b.SubscriptionRepository.Update(subscription)
-
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

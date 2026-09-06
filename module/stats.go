@@ -23,7 +23,6 @@ func NewStats(workspaces db.WorkspaceRepository, stats db.WorkspaceStatsReposito
 
 // WorkspaceStatsResponse is workspace metrics shaped for API responses.
 type WorkspaceStatsResponse struct {
-	APICallsMonth   int64 `json:"apiCallsMonth"`
 	DocumentsStored int64 `json:"documentsStored"`
 }
 
@@ -43,7 +42,6 @@ func (s *Stats) GetWorkspaceStats(workspaceId db.Id) (*WorkspaceStatsResponse, e
 	}
 
 	return &WorkspaceStatsResponse{
-		APICallsMonth:   stats.APICallsMonth,
 		DocumentsStored: stats.DocumentsStored,
 	}, nil
 }

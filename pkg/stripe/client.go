@@ -26,13 +26,7 @@ func New() (*Client, error) {
 		config: Config{
 			SecretKey:     viper.GetString("app.billing.secret_key"),
 			WebhookSecret: viper.GetString("app.billing.webhook_secret"),
-			ProductId:     viper.GetString("app.billing.product_id"),
-			Prices: Prices{
-				Hobby:   viper.GetString("app.billing.prices.hobby"),
-				Pro:     viper.GetString("app.billing.prices.pro"),
-				Growth:  viper.GetString("app.billing.prices.growth"),
-				Starter: viper.GetString("app.billing.prices.starter"),
-			},
+			TokensPerUSD:  viper.GetInt64("app.billing.tokens_per_usd"),
 			URLs: URLs{
 				CheckoutSuccess: viper.GetString("app.billing.urls.checkout_success"),
 				CheckoutCancel:  viper.GetString("app.billing.urls.checkout_cancel"),

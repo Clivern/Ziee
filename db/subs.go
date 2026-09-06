@@ -8,19 +8,14 @@ import (
 	"time"
 )
 
-// Subscription is a single row in the subscriptions table.
+// Subscription is a workspace prepaid token balance and Stripe customer.
 type Subscription struct {
-	Id                     Id
-	WorkspaceId            Id
-	Plan                   string
-	Status                 string
-	Provider               *string
-	ProviderSubscriptionId *string
-	ProviderCustomerId     *string
-	CurrentPeriodStart     *time.Time
-	CurrentPeriodEnd       *time.Time
-	CreatedAt              time.Time
-	UpdatedAt              time.Time
+	Id                 Id
+	WorkspaceId        Id
+	ProviderCustomerId *string
+	AITokensBalance    int64
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
 // SubscriptionRepository is the interface for subscription CRUD.
@@ -28,8 +23,9 @@ type SubscriptionRepository interface {
 	Create(subscription *Subscription) error
 	GetById(id Id) (*Subscription, error)
 	GetByWorkspaceId(workspaceId Id) (*Subscription, error)
-	GetByProviderSubscriptionId(providerSubscriptionId string) (*Subscription, error)
 	Update(subscription *Subscription) error
+	AddTokens(workspaceId Id, tokens int64) error
+	ConsumeTokens(workspaceId Id, tokens int64) error
 }
 
 type SubscriptionRepositoryPostgres struct {
@@ -75,20 +71,14 @@ func (r *SubscriptionRepositoryPostgres) Create(subscription *Subscription) erro
 
 	err = r.db.QueryRow(
 		`INSERT INTO subscriptions (
-			id, workspace_id, plan, status, provider, provider_subscription_id,
-			provider_customer_id, period_start, period_end
+			id, workspace_id, provider_customer_id, ai_tokens_balance
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		VALUES ($1, $2, $3, $4)
 		RETURNING created_at, updated_at`,
 		subscription.Id.String(),
 		subscription.WorkspaceId.String(),
-		subscription.Plan,
-		subscription.Status,
-		subscription.Provider,
-		subscription.ProviderSubscriptionId,
 		subscription.ProviderCustomerId,
-		subscription.CurrentPeriodStart,
-		subscription.CurrentPeriodEnd,
+		subscription.AITokensBalance,
 	).Scan(&subscription.CreatedAt, &subscription.UpdatedAt)
 
 	return err
@@ -99,21 +89,15 @@ func (r *SubscriptionRepositoryPostgres) GetById(id Id) (*Subscription, error) {
 	item := &Subscription{}
 	err := r.db.QueryRow(
 		`SELECT
-			id, workspace_id, plan, status, provider, provider_subscription_id,
-			provider_customer_id, period_start, period_end, created_at, updated_at
+			id, workspace_id, provider_customer_id, ai_tokens_balance, created_at, updated_at
 		FROM subscriptions
 		WHERE id = $1`,
 		id.String(),
 	).Scan(
 		&item.Id,
 		&item.WorkspaceId,
-		&item.Plan,
-		&item.Status,
-		&item.Provider,
-		&item.ProviderSubscriptionId,
 		&item.ProviderCustomerId,
-		&item.CurrentPeriodStart,
-		&item.CurrentPeriodEnd,
+		&item.AITokensBalance,
 		&item.CreatedAt,
 		&item.UpdatedAt,
 	)
@@ -129,51 +113,15 @@ func (r *SubscriptionRepositoryPostgres) GetByWorkspaceId(workspaceId Id) (*Subs
 	item := &Subscription{}
 	err := r.db.QueryRow(
 		`SELECT
-			id, workspace_id, plan, status, provider, provider_subscription_id,
-			provider_customer_id, period_start, period_end, created_at, updated_at
+			id, workspace_id, provider_customer_id, ai_tokens_balance, created_at, updated_at
 		FROM subscriptions
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(
 		&item.Id,
 		&item.WorkspaceId,
-		&item.Plan,
-		&item.Status,
-		&item.Provider,
-		&item.ProviderSubscriptionId,
 		&item.ProviderCustomerId,
-		&item.CurrentPeriodStart,
-		&item.CurrentPeriodEnd,
-		&item.CreatedAt,
-		&item.UpdatedAt,
-	)
-
-	if isNotFound(err) {
-		return nil, nil
-	}
-	return item, err
-}
-
-// GetByProviderSubscriptionId returns a subscription by provider subscription id.
-func (r *SubscriptionRepositoryPostgres) GetByProviderSubscriptionId(providerSubscriptionId string) (*Subscription, error) {
-	item := &Subscription{}
-	err := r.db.QueryRow(
-		`SELECT
-			id, workspace_id, plan, status, provider, provider_subscription_id,
-			provider_customer_id, period_start, period_end, created_at, updated_at
-		FROM subscriptions
-		WHERE provider_subscription_id = $1`,
-		providerSubscriptionId,
-	).Scan(
-		&item.Id,
-		&item.WorkspaceId,
-		&item.Plan,
-		&item.Status,
-		&item.Provider,
-		&item.ProviderSubscriptionId,
-		&item.ProviderCustomerId,
-		&item.CurrentPeriodStart,
-		&item.CurrentPeriodEnd,
+		&item.AITokensBalance,
 		&item.CreatedAt,
 		&item.UpdatedAt,
 	)
@@ -190,26 +138,42 @@ func (r *SubscriptionRepositoryPostgres) Update(subscription *Subscription) erro
 		`UPDATE subscriptions
 		SET
 			workspace_id = $1,
-			plan = $2,
-			status = $3,
-			provider = $4,
-			provider_subscription_id = $5,
-			provider_customer_id = $6,
-			period_start = $7,
-			period_end = $8,
-			updated_at = $9
-		WHERE id = $10`,
+			provider_customer_id = $2,
+			updated_at = $3
+		WHERE id = $4`,
 		subscription.WorkspaceId.String(),
-		subscription.Plan,
-		subscription.Status,
-		subscription.Provider,
-		subscription.ProviderSubscriptionId,
 		subscription.ProviderCustomerId,
-		subscription.CurrentPeriodStart,
-		subscription.CurrentPeriodEnd,
 		time.Now().UTC(),
 		subscription.Id.String(),
 	)
+	return err
+}
+
+// AddTokens credits AI tokens to a workspace subscription.
+func (r *SubscriptionRepositoryPostgres) AddTokens(workspaceId Id, tokens int64) error {
+	_, err := r.db.Exec(
+		`UPDATE subscriptions
+		SET ai_tokens_balance = ai_tokens_balance + $1, updated_at = $2
+		WHERE workspace_id = $3`,
+		tokens,
+		time.Now().UTC(),
+		workspaceId.String(),
+	)
+
+	return err
+}
+
+// ConsumeTokens deducts AI tokens from a workspace subscription.
+func (r *SubscriptionRepositoryPostgres) ConsumeTokens(workspaceId Id, tokens int64) error {
+	_, err := r.db.Exec(
+		`UPDATE subscriptions
+		SET ai_tokens_balance = GREATEST(ai_tokens_balance - $1, 0), updated_at = $2
+		WHERE workspace_id = $3`,
+		tokens,
+		time.Now().UTC(),
+		workspaceId.String(),
+	)
+
 	return err
 }
 

@@ -9,6 +9,6 @@ import (
 
 var (
 	ErrBillingDisabled      = errors.New("stripe billing is not configured")
-	ErrInvalidPlan          = errors.New("invalid billing plan")
+	ErrInvalidAmount        = errors.New("invalid billing amount")
 	ErrWebhookNotConfigured = errors.New("stripe webhook secret is not configured")
 )

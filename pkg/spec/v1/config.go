@@ -73,16 +73,16 @@ type KBTag struct {
 type Rule struct {
 	Name        string   `yaml:"name"`
 	When        Clauses  `yaml:"when"`
-	Labels      Labels   `yaml:"labels"`
-	Assign      []string `yaml:"assign"`
-	Reviewers   []string `yaml:"reviewers"`
-	ReviewTeams []string `yaml:"review_teams"`
+	Labels      Labels   `yaml:"labels,omitempty"`
+	Assign      []string `yaml:"assign,omitempty"`
+	Reviewers   []string `yaml:"reviewers,omitempty"`
+	ReviewTeams []string `yaml:"review_teams,omitempty"`
 }
 
 // Labels are GitHub labels to add or remove.
 type Labels struct {
-	Add    []string `yaml:"add"`
-	Remove []string `yaml:"remove"`
+	Add    []string `yaml:"add,omitempty"`
+	Remove []string `yaml:"remove,omitempty"`
 }
 
 // Commands maps `@ziee` verbs to allow lists.
@@ -90,7 +90,7 @@ type Commands map[string]Command
 
 // Command is who may run one `@ziee` verb.
 type Command struct {
-	Allow Allow `yaml:"allow"`
+	Allow Allow `yaml:"allow,omitempty"`
 }
 
 // PriorityRule is parsed; the queue engine is not run in this delivery.
@@ -98,20 +98,20 @@ type PriorityRule struct {
 	Name            string  `yaml:"name"`
 	When            Clauses `yaml:"when"`
 	Priority        string  `yaml:"priority"`
-	InterruptChecks bool    `yaml:"interrupt_checks"`
+	InterruptChecks bool    `yaml:"interrupt_checks,omitempty"`
 }
 
 // QueueRule is parsed; the queue engine is not run in this delivery.
 type QueueRule struct {
 	Name             string    `yaml:"name"`
-	Allow            Allow     `yaml:"allow"`
-	QueueWhen        Clauses   `yaml:"queue_when"`
-	MergeWhen        Clauses   `yaml:"merge_when"`
-	BatchSize        BatchSize `yaml:"batch_size"`
-	BatchMaxWait     string    `yaml:"batch_max_wait"`
-	MergeMethod      string    `yaml:"merge_method"`
-	ChecksTimeout    string    `yaml:"checks_timeout"`
-	MaxChecksRetries int       `yaml:"max_checks_retries"`
+	Allow            Allow     `yaml:"allow,omitempty"`
+	QueueWhen        Clauses   `yaml:"queue_when,omitempty"`
+	MergeWhen        Clauses   `yaml:"merge_when,omitempty"`
+	BatchSize        BatchSize `yaml:"batch_size,omitempty"`
+	BatchMaxWait     string    `yaml:"batch_max_wait,omitempty"`
+	MergeMethod      string    `yaml:"merge_method,omitempty"`
+	ChecksTimeout    string    `yaml:"checks_timeout,omitempty"`
+	MaxChecksRetries int       `yaml:"max_checks_retries,omitempty"`
 }
 
 // Clauses is a list of `when` matchers. All must match.
@@ -136,8 +136,8 @@ type Clause struct {
 
 // Approvals is a `queue_when` / `merge_when` matcher.
 type Approvals struct {
-	Min  int      `yaml:"min" json:"min,omitempty"`
-	From []string `yaml:"from" json:"from,omitempty"`
+	Min  int      `yaml:"min,omitempty" json:"min,omitempty"`
+	From []string `yaml:"from,omitempty" json:"from,omitempty"`
 }
 
 // Allow is a list of permission, team, or user entries. Any match is enough.
@@ -145,16 +145,16 @@ type Allow []AllowEntry
 
 // AllowEntry is one ACL item.
 type AllowEntry struct {
-	Permission string   `json:"permission,omitempty"`
-	Teams      []string `json:"teams,omitempty"`
-	Users      []string `json:"users,omitempty"`
+	Permission string   `json:"permission,omitempty" yaml:"permission,omitempty"`
+	Teams      []string `json:"teams,omitempty" yaml:"teams,omitempty"`
+	Users      []string `json:"users,omitempty" yaml:"users,omitempty"`
 }
 
 // BatchSize is either a single int or {min, max}.
 type BatchSize struct {
-	Value *int `json:"value,omitempty"`
-	Min   int  `json:"min,omitempty"`
-	Max   int  `json:"max,omitempty"`
+	Value *int `json:"value,omitempty" yaml:"value,omitempty"`
+	Min   int  `json:"min,omitempty" yaml:"min,omitempty"`
+	Max   int  `json:"max,omitempty" yaml:"max,omitempty"`
 }
 
 func (c *Clause) UnmarshalYAML(value *yaml.Node) error {

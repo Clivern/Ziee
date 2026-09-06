@@ -8,13 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/github"
-	"github.com/clivern/ziee/pkg/github/webhook"
 
 	"github.com/rs/zerolog/log"
 )
@@ -56,62 +54,9 @@ func NewInstallation(installations db.GitHubInstallationRepository, repos db.Wor
 	}
 }
 
-// HandleWebhook persists GitHub App installation and repository access changes.
-func (i *Installation) HandleWebhook(event string, body []byte) error {
-	switch event {
-	case "installation":
-		return i.HandleInstallation(body)
-	case "installation_repositories":
-		return i.HandleInstallationRepositories(body)
-	default:
-		return nil
-	}
-}
-
-// HandleInstallation handles a GitHub App installation webhook.
-func (i *Installation) HandleInstallation(body []byte) error {
-	var payload webhook.InstallationEvent
-	err := json.Unmarshal(body, &payload)
-	if err != nil {
-		return fmt.Errorf("decode installation webhook: %w", err)
-	}
-
-	if payload.Action == "deleted" {
-		err = i.RepoRepository.DeleteByInstallationId(payload.Installation.ID)
-		if err != nil {
-			return fmt.Errorf("delete installation repos: %w", err)
-		}
-
-		err = i.InstallationRepository.DeleteByGitHubId(payload.Installation.ID)
-		if err != nil {
-			return fmt.Errorf("delete installation: %w", err)
-		}
-
-		log.Info().
-			Int64("githubId", payload.Installation.ID).
-			Msg("GitHub installation deleted")
-
-		return nil
-	}
-
-	meta, err := json.Marshal(payload.Installation)
-	if err != nil {
-		return fmt.Errorf("encode installation meta: %w", err)
-	}
-	raw := string(meta)
-
-	installation := &db.GitHubInstallation{
-		GitHubId:            payload.Installation.ID,
-		GitHubUserId:        strconv.FormatInt(payload.Sender.ID, 10),
-		AccountId:           payload.Installation.Account.ID,
-		AccountLogin:        payload.Installation.Account.Login,
-		AccountType:         payload.Installation.Account.Type,
-		RepositorySelection: payload.Installation.RepositorySelection,
-		HTMLURL:             payload.Installation.HTMLURL,
-		Meta:                &raw,
-	}
-
-	err = i.InstallationRepository.Upsert(installation)
+// Upsert stores a GitHub App installation.
+func (i *Installation) Upsert(installation *db.GitHubInstallation) error {
+	err := i.InstallationRepository.Upsert(installation)
 	if err != nil {
 		return fmt.Errorf("upsert installation: %w", err)
 	}
@@ -126,15 +71,28 @@ func (i *Installation) HandleInstallation(body []byte) error {
 	return nil
 }
 
-// HandleInstallationRepositories handles a GitHub App installation_repositories webhook.
-func (i *Installation) HandleInstallationRepositories(body []byte) error {
-	var payload webhook.InstallationRepositoriesEvent
-	err := json.Unmarshal(body, &payload)
+// Delete removes an installation and its repositories.
+func (i *Installation) Delete(githubId int64) error {
+	err := i.RepoRepository.DeleteByInstallationId(githubId)
 	if err != nil {
-		return fmt.Errorf("decode installation repositories webhook: %w", err)
+		return fmt.Errorf("delete installation repos: %w", err)
 	}
 
-	item, err := i.InstallationRepository.GetByGitHubId(payload.Installation.ID)
+	err = i.InstallationRepository.DeleteByGitHubId(githubId)
+	if err != nil {
+		return fmt.Errorf("delete installation: %w", err)
+	}
+
+	log.Info().
+		Int64("githubId", githubId).
+		Msg("GitHub installation deleted")
+
+	return nil
+}
+
+// UpdateRepositories adds and removes repos for an attached installation.
+func (i *Installation) UpdateRepositories(githubId int64, added []github.Repository, removed []int64) error {
+	item, err := i.InstallationRepository.GetByGitHubId(githubId)
 	if err != nil {
 		return fmt.Errorf("get installation: %w", err)
 	}
@@ -142,33 +100,32 @@ func (i *Installation) HandleInstallationRepositories(body []byte) error {
 		return nil
 	}
 
-	for _, repo := range payload.RepositoriesAdded {
-		err = i.StoreRepository(item.WorkspaceId, payload.Installation.ID, repo)
+	for _, repo := range added {
+		err = i.StoreRepository(item.WorkspaceId, githubId, repo)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, repo := range payload.RepositoriesRemoved {
-		err = i.RepoRepository.DeleteByGitHubId(repo.ID)
+	for _, repoId := range removed {
+		err = i.RepoRepository.DeleteByGitHubId(repoId)
 		if err != nil {
 			return fmt.Errorf("delete installation repo: %w", err)
 		}
 	}
 
 	log.Info().
-		Int64("githubId", payload.Installation.ID).
+		Int64("githubId", githubId).
 		Str("workspaceId", item.WorkspaceId.String()).
-		Str("action", payload.Action).
-		Int("added", len(payload.RepositoriesAdded)).
-		Int("removed", len(payload.RepositoriesRemoved)).
+		Int("added", len(added)).
+		Int("removed", len(removed)).
 		Msg("GitHub installation repositories updated")
 
 	return nil
 }
 
 // StoreRepository stores a GitHub repository in the database.
-func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, repo webhook.InstallationRepo) error {
+func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, repo github.Repository) error {
 	meta, err := json.Marshal(repo)
 	if err != nil {
 		return fmt.Errorf("encode repo meta: %w", err)
@@ -238,13 +195,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 	}
 
 	for _, repo := range repos {
-		err = i.StoreRepository(workspaceId, item.GitHubId, webhook.InstallationRepo{
-			ID:       repo.ID,
-			NodeID:   repo.NodeID,
-			Name:     repo.Name,
-			FullName: repo.FullName,
-			Private:  repo.Private,
-		})
+		err = i.StoreRepository(workspaceId, item.GitHubId, repo)
 		if err != nil {
 			return err
 		}

@@ -86,23 +86,7 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO: Remove this after testing
 
-	im := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
-	)
-
-	err = im.HandleWebhook(delivery.Event, delivery.Body)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Str("event", delivery.Event).
-			Str("deliveryId", delivery.ID).
-			Msg("Failed to persist GitHub installation")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
-		})
-		return
-	}
+	delivery.Dispatch(r.Context())
 
 	log.Info().
 		Str("event", delivery.Event).

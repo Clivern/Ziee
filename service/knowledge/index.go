@@ -15,6 +15,7 @@ import (
 	"github.com/clivern/ziee/pkg/chunk"
 	"github.com/clivern/ziee/pkg/qdrant"
 	"github.com/clivern/ziee/pkg/storage"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -100,26 +101,28 @@ func (s *Service) Index(ctx context.Context, documentId db.Id) error {
 			Msg("Failed to record AI usage")
 	}
 
-	if sub != nil && sub.CurrentPeriodStart != nil && sub.CurrentPeriodEnd != nil {
-		// Increment AI tokens usage
+	if sub != nil {
+		start, end := util.CurrentMonthPeriod()
+
 		s.usage.IncrementByPeriod(
 			document.WorkspaceId,
 			db.UsageTypeAITokens,
-			sub.CurrentPeriodStart.UTC(),
-			sub.CurrentPeriodEnd.UTC(),
+			start,
+			end,
 			totalTokens,
 			db.UsageUnitTokens,
 		)
 
-		// Increment AI cost usage
 		s.usage.IncrementByPeriod(
 			document.WorkspaceId,
 			db.UsageTypeAICost,
-			sub.CurrentPeriodStart.UTC(),
-			sub.CurrentPeriodEnd.UTC(),
+			start,
+			end,
 			totalCost,
 			db.UsageUnitNanoUSD,
 		)
+
+		s.subscriptions.ConsumeTokens(document.WorkspaceId, totalTokens)
 	}
 
 	log.Info().

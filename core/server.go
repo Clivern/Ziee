@@ -95,7 +95,6 @@ func SetupServer(Static embed.FS) http.Handler {
 
 	r.Route("/api/v1/workspaces/{workspaceId}", func(r chi.Router) { // workspace-scoped resources
 		r.Use(middleware.Protect(middleware.Config{Workspace: true}))
-		r.Use(middleware.TrackWorkspaceAPICall())
 
 		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetWorkspace})).Get("/", api.GetWorkspaceAction)          // get workspace
 		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspace})).Put("/", api.UpdateWorkspaceAction)    // update workspace

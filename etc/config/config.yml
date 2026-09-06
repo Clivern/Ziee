@@ -54,12 +54,7 @@ app:
     provider: ${ZIEE_BILLING_PROVIDER:-stripe}
     secret_key: ${ZIEE_STRIPE_SECRET_KEY:-}
     webhook_secret: ${ZIEE_STRIPE_WEBHOOK_SECRET:-}
-    product_id: ${ZIEE_STRIPE_PRODUCT_ID:-}
-    prices:
-      hobby: ${ZIEE_STRIPE_PRICE_HOBBY:-}
-      growth: ${ZIEE_STRIPE_PRICE_GROWTH:-}
-      starter: ${ZIEE_STRIPE_PRICE_STARTER:-}
-      pro: ${ZIEE_STRIPE_PRICE_PRO:-}
+    tokens_per_usd: ${ZIEE_TOKENS_PER_USD:-20000}
     urls:
       checkout_success: ${ZIEE_STRIPE_CHECKOUT_SUCCESS_URL:-/billing/success}
       checkout_cancel: ${ZIEE_STRIPE_CHECKOUT_CANCEL_URL:-/billing/cancel}

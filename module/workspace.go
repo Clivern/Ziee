@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/pkg/stripe"
 	"github.com/clivern/ziee/pkg/util"
 )
 
@@ -101,14 +100,8 @@ func (w *Workspace) CreateWorkspace(req *CreateWorkspaceRequest, user *db.User) 
 		return nil, err
 	}
 
-	pst := time.Now().UTC()
-	pen := pst.AddDate(0, 1, 0)
 	err = w.SubscriptionRepository.Create(&db.Subscription{
-		WorkspaceId:        workspace.Id,
-		Plan:               stripe.PlanHobby,
-		Status:             BillingStatusActive,
-		CurrentPeriodStart: &pst,
-		CurrentPeriodEnd:   &pen,
+		WorkspaceId: workspace.Id,
 	})
 	if err != nil {
 		return nil, err

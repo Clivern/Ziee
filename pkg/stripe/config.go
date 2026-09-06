@@ -3,20 +3,12 @@
 
 package stripe
 
-const (
-	PlanHobby   = "hobby"
-	PlanPro     = "pro"
-	PlanGrowth  = "growth"
-	PlanStarter = "starter"
-)
+import "github.com/spf13/viper"
 
-// Prices maps ziee plan names to Stripe Price IDs.
-type Prices struct {
-	Hobby   string
-	Pro     string
-	Growth  string
-	Starter string
-}
+const (
+	DefaultTokensPerUSD   = 20_000
+	MinTokenPurchaseCents = 100
+)
 
 // URLs holds Stripe redirect URLs (relative or absolute).
 type URLs struct {
@@ -29,39 +21,26 @@ type URLs struct {
 type Config struct {
 	SecretKey     string
 	WebhookSecret string
-	ProductId     string
-	Prices        Prices
+	TokensPerUSD  int64
 	URLs          URLs
 }
 
-// PriceId returns the Stripe Price Id for a plan name.
-func (c Config) PriceId(plan string) string {
-	switch plan {
-	case PlanHobby:
-		return c.Prices.Hobby
-	case PlanPro:
-		return c.Prices.Pro
-	case PlanGrowth:
-		return c.Prices.Growth
-	case PlanStarter:
-		return c.Prices.Starter
-	default:
-		return ""
+// TokensForCents converts a USD cent amount into AI tokens.
+func (c Config) TokensForCents(amountCents int64) int64 {
+	rate := c.TokensPerUSD
+	if rate <= 0 {
+		rate = DefaultTokensPerUSD
 	}
+
+	return amountCents * rate / 100
 }
 
-// PlanForPriceId returns the ziee plan name for a Stripe Price Id.
-func (c Config) PlanForPriceId(priceId string) string {
-	switch priceId {
-	case c.Prices.Hobby:
-		return PlanHobby
-	case c.Prices.Pro:
-		return PlanPro
-	case c.Prices.Growth:
-		return PlanGrowth
-	case c.Prices.Starter:
-		return PlanStarter
-	default:
-		return ""
+// TokensPerUSD is the AI token grant for each US dollar.
+func TokensPerUSD() int64 {
+	rate := viper.GetInt64("app.billing.tokens_per_usd")
+	if rate > 0 {
+		return rate
 	}
+
+	return DefaultTokensPerUSD
 }

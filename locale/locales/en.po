@@ -360,6 +360,12 @@ msgstr "Failed to get billing status."
 msgid "failed_get_billing_usage"
 msgstr "Failed to get billing usage."
 
+msgid "invalid_billing_amount"
+msgstr "Enter an amount of at least $1."
+
+msgid "stripe_billing_available_after_purchase"
+msgstr "Stripe billing is available after your first purchase."
+
 msgid "invalid_billing_plan"
 msgstr "Invalid billing plan."
 

@@ -348,6 +348,12 @@ msgstr "Échec de la récupération de l'état de facturation."
 msgid "failed_get_billing_usage"
 msgstr "Échec de la récupération de l'utilisation de facturation."
 
+msgid "invalid_billing_amount"
+msgstr "Saisissez un montant d'au moins 1 $."
+
+msgid "stripe_billing_available_after_purchase"
+msgstr "La facturation Stripe est disponible après votre premier achat."
+
 msgid "invalid_billing_plan"
 msgstr "Plan de facturation invalide."
 

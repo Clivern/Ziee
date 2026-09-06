@@ -4,8 +4,10 @@
 package module
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/nats"
 
 	"github.com/rs/zerolog/log"
@@ -45,4 +47,37 @@ func StopBus() {
 	}
 
 	bus = nil
+}
+
+// EnqueueTask records a pending async task and publishes it on NATS.
+func EnqueueTask(taskType, subject string, payload map[string]string, workspaceId db.Id) error {
+	taskId, err := db.NewId()
+	if err != nil {
+		return err
+	}
+
+	payload["taskId"] = taskId.String()
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	body := string(raw)
+
+	err = db.NewAsyncTaskRepository(db.GetDB()).Create(&db.AsyncTask{
+		Id:          taskId,
+		WorkspaceId: workspaceId,
+		Type:        taskType,
+		Status:      db.AsyncTaskStatusPending,
+		Payload:     &body,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = GetBus().Publish(subject, raw)
+	if err != nil {
+		return err
+	}
+
+	return GetBus().Flush()
 }

@@ -24,25 +24,14 @@
   },
   "setup": {
     "title": "Ziee",
-    "subtitle": "Create your admin account.",
+    "subtitle": "Set up this instance, then sign in with GitHub.",
     "platform_email": "Platform Email",
     "platform_email_placeholder": "admin{'@'}ziee.io",
     "platform_email_hint": "The contact email for this platform",
-    "admin_account": "Admin Account",
-    "admin_email": "Admin Email",
-    "admin_email_placeholder": "hello{'@'}ziee.example.com",
-    "admin_email_hint": "The email address for the admin account",
-    "admin_password": "Admin Password",
-    "admin_password_placeholder": "Enter a secure password (min. 8 characters)",
-    "admin_password_hint": "Use a strong password with at least 8 characters",
-    "confirm_password": "Confirm Password",
-    "confirm_password_placeholder": "Re-enter your password",
     "submit": "Complete Setup",
     "submitting": "Setting up...",
     "success": "Platform setup completed successfully! Redirecting to login...",
-    "error_default": "Setup failed. Please try again.",
-    "error_passwords_match": "Passwords do not match",
-    "error_password_length": "Password must be at least 8 characters long"
+    "error_default": "Setup failed. Please try again."
   },
   "getting_started": {
     "title": "Getting started",

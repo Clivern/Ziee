@@ -324,7 +324,7 @@ func (d *Document) SearchDocuments(ctx context.Context, workspaceId db.Id, query
 
 // EnqueueIndexTask records an async task and publishes a NATS message to index a document.
 func (d *Document) EnqueueIndexTask(workspaceId, documentId db.Id) error {
-	return d.enqueueTask(db.AsyncTaskTypeDocIndex, conf.NATSSubjectDocIndex, map[string]string{
+	return EnqueueTask(db.AsyncTaskTypeDocIndex, conf.NATSSubjectDocIndex, map[string]string{
 		"workspaceId": workspaceId.String(),
 		"documentId":  documentId.String(),
 	}, workspaceId)
@@ -332,42 +332,9 @@ func (d *Document) EnqueueIndexTask(workspaceId, documentId db.Id) error {
 
 // EnqueueDeleteTask records an async task and publishes a NATS message to delete a document.
 func (d *Document) EnqueueDeleteTask(workspaceId, documentId, internalId db.Id) error {
-	return d.enqueueTask(db.AsyncTaskTypeDocDelete, conf.NATSSubjectDocDelete, map[string]string{
+	return EnqueueTask(db.AsyncTaskTypeDocDelete, conf.NATSSubjectDocDelete, map[string]string{
 		"workspaceId": workspaceId.String(),
 		"documentId":  documentId.String(),
 		"internalId":  internalId.String(),
 	}, workspaceId)
-}
-
-func (d *Document) enqueueTask(taskType, subject string, payload map[string]string, workspaceId db.Id) error {
-	taskId, err := db.NewId()
-	if err != nil {
-		return err
-	}
-
-	payload["taskId"] = taskId.String()
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-	body := string(raw)
-
-	err = db.NewAsyncTaskRepository(db.GetDB()).Create(&db.AsyncTask{
-		Id:          taskId,
-		WorkspaceId: workspaceId,
-		Type:        taskType,
-		Status:      db.AsyncTaskStatusPending,
-		Payload:     &body,
-	})
-	if err != nil {
-		return err
-	}
-
-	bus := GetBus()
-	err = bus.Publish(subject, raw)
-	if err != nil {
-		return err
-	}
-
-	return bus.Flush()
 }

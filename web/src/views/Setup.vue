@@ -27,64 +27,6 @@
             <p class="text-xs text-theme-textLight mt-1.5">{{ $t('setup.platform_email_hint') }}</p>
           </div>
 
-          <div class="relative py-3">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-theme-border"></div>
-            </div>
-            <div class="relative flex justify-center text-xs">
-              <span class="px-3 bg-white text-theme-textLight font-medium">{{ $t('setup.admin_account') }}</span>
-            </div>
-          </div>
-
-          <div>
-            <label for="admin-email" class="block text-sm font-medium text-theme-text mb-2">
-              {{ $t('setup.admin_email') }}
-            </label>
-            <input
-              id="admin-email"
-              v-model="form.adminEmail"
-              type="email"
-              required
-              class="input-field"
-              :placeholder="$t('setup.admin_email_placeholder')"
-              :disabled="loading"
-            >
-            <p class="text-xs text-theme-textLight mt-1.5">{{ $t('setup.admin_email_hint') }}</p>
-          </div>
-
-          <div>
-            <label for="admin-password" class="block text-sm font-medium text-theme-text mb-2">
-              {{ $t('setup.admin_password') }}
-            </label>
-            <input
-              id="admin-password"
-              v-model="form.adminPassword"
-              type="password"
-              required
-              minlength="8"
-              class="input-field"
-              :placeholder="$t('setup.admin_password_placeholder')"
-              :disabled="loading"
-            >
-            <p class="text-xs text-theme-textLight mt-1.5">{{ $t('setup.admin_password_hint') }}</p>
-          </div>
-
-          <div>
-            <label for="confirm-password" class="block text-sm font-medium text-theme-text mb-2">
-              {{ $t('setup.confirm_password') }}
-            </label>
-            <input
-              id="confirm-password"
-              v-model="form.confirmPassword"
-              type="password"
-              required
-              minlength="8"
-              class="input-field"
-              :placeholder="$t('setup.confirm_password_placeholder')"
-              :disabled="loading"
-            >
-          </div>
-
           <div v-if="error" class="rounded-md border border-red-200 bg-red-50 p-3">
             <p class="text-sm text-red-800">
               {{ error }}
@@ -127,10 +69,7 @@ import { showFlash } from '@/lib/flash'
 const { t } = useI18n()
 const router = useRouter()
 const form = reactive({
-  platformEmail: '',
-  adminEmail: '',
-  adminPassword: '',
-  confirmPassword: ''
+  platformEmail: ''
 })
 
 const loading = ref(false)
@@ -147,34 +86,13 @@ onMounted(async () => {
   }
 })
 
-const validateForm = () => {
-  if (form.adminPassword !== form.confirmPassword) {
-    error.value = t('setup.error_passwords_match')
-    return false
-  }
-
-  if (form.adminPassword.length < 8) {
-    error.value = t('setup.error_password_length')
-    return false
-  }
-
-  return true
-}
-
 const handleSetup = async () => {
   loading.value = true
   error.value = null
 
-  if (!validateForm()) {
-    loading.value = false
-    return
-  }
-
   try {
     await setup_api.install({
-      platformEmail: form.platformEmail,
-      adminEmail: form.adminEmail,
-      adminPassword: form.adminPassword
+      platformEmail: form.platformEmail
     })
 
     showFlash(t('common.saved'))
@@ -189,4 +107,3 @@ const handleSetup = async () => {
   }
 }
 </script>
-

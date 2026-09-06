@@ -11,7 +11,7 @@ import (
 	v1 "github.com/clivern/ziee/policy/spec/v1"
 )
 
-// Run evaluates a parsed spec against an event. It does not call GitHub.
+// Run evaluates a parsed spec against an event.
 func Run(file *v1.File, event Event, client Client) action.Plan {
 	return action.Plan{}
 }

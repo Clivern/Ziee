@@ -6,7 +6,6 @@ package module
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/clivern/ziee/db"
@@ -27,8 +26,6 @@ type Setup struct {
 // SetupRequest is the body you send when running setup.
 type SetupRequest struct {
 	PlatformEmail string `json:"platformEmail" validate:"required,email,min=4,max=60" label:"Platform Email"`
-	AdminEmail    string `json:"adminEmail" validate:"required,email,min=4,max=60" label:"Admin Email"`
-	AdminPassword string `json:"adminPassword" validate:"required,strong_password,min=8,max=60" label:"Admin Password"`
 }
 
 // NewSetup creates a Setup with the given repositories.
@@ -53,31 +50,6 @@ func (s *Setup) Install(req *SetupRequest) error {
 	if s.IsInstalled() {
 		return ErrPlatformAlreadyInstalled
 	}
-	if strings.EqualFold(req.AdminEmail, db.BotUserEmail) {
-		return fmt.Errorf("%w: admin email reserved", ErrFailedCompleteSetup)
-	}
-
-	hpass, err := util.HashPassword(req.AdminPassword)
-	if err != nil {
-		return fmt.Errorf("%w: hash admin password: %v", ErrFailedCompleteSetup, err)
-	}
-	user := &db.User{
-		Name:            "V",
-		Email:           req.AdminEmail,
-		Password:        hpass,
-		Provider:        db.UserProviderLocal,
-		Role:            db.UserRoleAdmin,
-		IsActive:        true,
-		IsEmailVerified: true,
-		LastLoginAt:     time.Now().UTC(),
-		Language:        db.UserLanguageEN,
-		Theme:           db.UserThemeDefault,
-	}
-
-	err = s.UserRepository.Create(user)
-	if err != nil {
-		return fmt.Errorf("%w: create admin user: %v", ErrFailedCompleteSetup, err)
-	}
 
 	botPassword, err := util.HashPassword("ziee-bot-user-no-login")
 	if err != nil {
@@ -87,7 +59,7 @@ func (s *Setup) Install(req *SetupRequest) error {
 	err = s.UserRepository.Create(&db.User{
 		Id:              db.BotUserId,
 		Name:            db.BotUserName,
-		Email:           db.BotUserEmail,
+		Email:           req.PlatformEmail,
 		Password:        botPassword,
 		Provider:        db.UserProviderLocal,
 		Role:            db.UserRoleBot,

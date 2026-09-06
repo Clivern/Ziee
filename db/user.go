@@ -30,10 +30,7 @@ const (
 
 const BotUserId Id = "00000000-0000-0000-0000-000000000000"
 
-const (
-	BotUserEmail = "hello@ziee.com"
-	BotUserName  = "Ziee"
-)
+const BotUserName = "Ziee"
 
 // User is the DB row for a user.
 type User struct {
@@ -58,6 +55,7 @@ type User struct {
 type UserRepository interface {
 	Create(user *User) error
 	GetById(id Id) (*User, error)
+	GetBot() (*User, error)
 	GetByAPIKey(apiKey string) (*User, error)
 	GetByEmail(email string) (*User, error)
 	GetByProvider(provider, providerUserId string) (*User, error)
@@ -167,6 +165,11 @@ func (r *UserRepositoryPostgres) GetById(id Id) (*User, error) {
 		return nil, nil
 	}
 	return user, err
+}
+
+// GetBot returns the platform bot user.
+func (r *UserRepositoryPostgres) GetBot() (*User, error) {
+	return r.GetById(BotUserId)
 }
 
 // GetByAPIKey returns a user by API key (raw key lookup)

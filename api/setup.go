@@ -26,7 +26,7 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().
-		Str("adminEmail", req.AdminEmail).
+		Str("platformEmail", req.PlatformEmail).
 		Msg("New setup request")
 
 	sm := module.NewSetup(
@@ -41,18 +41,10 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
 				"errorMessage": locale.TR(r, "platform_already_installed"),
 			})
-		case errors.Is(err, module.ErrFailedCompleteSetup):
-			log.Error().
-				Err(err).
-				Str("adminEmail", req.AdminEmail).
-				Msg("Failed to complete setup")
-			util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-				"errorMessage": locale.TR(r, "failed_complete_setup"),
-			})
 		default:
 			log.Error().
 				Err(err).
-				Str("adminEmail", req.AdminEmail).
+				Str("platformEmail", req.PlatformEmail).
 				Msg("Setup failed")
 			util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
 				"errorMessage": locale.TR(r, "failed_complete_setup"),
@@ -63,7 +55,6 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().
 		Str("platformEmail", req.PlatformEmail).
-		Str("adminEmail", req.AdminEmail).
 		Msg("Platform setup completed")
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{

@@ -30,6 +30,7 @@ type UserInviteRepository interface {
 	GetByToken(token string) (*UserInvite, error)
 	ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*UserInvite, error)
 	ListByEmail(email string, limit, offset int) ([]*UserInvite, error)
+	ListPendingByEmail(email string) ([]*UserInvite, error)
 	UpdateStatus(id Id, status string, acceptedAt *time.Time) error
 	MarkExpiredAsExpired() (int64, error)
 	Delete(id Id) error
@@ -194,6 +195,45 @@ func (r *UserInviteRepositoryPostgres) ListByEmail(email string, limit, offset i
 		email,
 		limit,
 		offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []*UserInvite
+	for rows.Next() {
+		u := &UserInvite{}
+		if err := rows.Scan(
+			&u.Id,
+			&u.Email,
+			&u.Role,
+			&u.Token,
+			&u.Status,
+			&u.InviterUserId,
+			&u.WorkspaceId,
+			&u.ExpiresAt,
+			&u.AcceptedAt,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		list = append(list, u)
+	}
+	return list, rows.Err()
+}
+
+// ListPendingByEmail returns pending, unexpired invites for an email address.
+func (r *UserInviteRepositoryPostgres) ListPendingByEmail(email string) ([]*UserInvite, error) {
+	rows, err := r.db.Query(
+		`SELECT
+			id, email, role, token, status, inviter_user_id, workspace_id,
+			expires_at, accepted_at, created_at, updated_at
+		FROM user_invites
+		WHERE LOWER(email) = LOWER($1) AND status = 'pending' AND expires_at > $2
+		ORDER BY created_at ASC`,
+		email,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return nil, err

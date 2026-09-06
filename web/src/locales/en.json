@@ -50,24 +50,6 @@
     "cta_sign_in": "Sign in to continue",
     "cta_continue": "Continue to Ziee"
   },
-  "invite": {
-    "title": "Workspace Invitation",
-    "description": "Review this workspace invitation and choose what you want to do.",
-    "loading": "Loading invite…",
-    "email": "Invited email",
-    "workspace": "Workspace",
-    "role": "Role",
-    "expires": "Expires",
-    "accept": "Accept invite",
-    "accepting": "Accepting…",
-    "reject": "Reject",
-    "rejecting": "Rejecting…",
-    "back_to_workspaces": "Back to workspaces",
-    "not_found": "Invite not found.",
-    "failed_load": "Failed to load invite",
-    "failed_accept": "Failed to accept invite",
-    "failed_reject": "Failed to reject invite"
-  },
   "audits_page": {
     "title": "Audits",
     "subtitle": "Review workspace activity.",
@@ -338,7 +320,7 @@
     "title": "Members",
     "subtitle": "Manage workspace members and invitations.",
     "invite_member": "Invite member",
-    "invite_desc": "Send an invitation to join this workspace.",
+    "invite_desc": "Invite them to sign in with GitHub. They join this workspace automatically after login.",
     "email": "Email",
     "email_placeholder": "member{'@'}example.com",
     "role": "Role",

@@ -1,1 +1,0 @@
-import{I as e}from"./runtime-core.esm-bundler-BEGHLvG4.js";import{C as t,x as n,y as r}from"./index-DKMNChCd.js";var i=e(r());function a(e){i.value=e,t(e)}function o(){i.value=null,n()}export{a as n,i as r,o as t};

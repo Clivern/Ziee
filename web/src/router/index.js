@@ -39,12 +39,6 @@ const routes = [
     meta: { requiresAuth: true, title: 'Switch Workspaces', description: 'Choose or create a workspace' }
   },
   {
-    path: '/invite/:token',
-    name: 'Invite',
-    component: () => import('@/views/Invite.vue'),
-    meta: { requiresAuth: true, title: 'Workspace Invite', description: 'Accept or reject a workspace invite' }
-  },
-  {
     path: '/workspaces',
     name: 'Workspaces',
     component: () => import('@/views/Workspaces.vue'),

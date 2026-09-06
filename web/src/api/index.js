@@ -71,12 +71,6 @@ export const workspace_api = {
   delete: (id) => api.delete(`/workspaces/${id}`),
 }
 
-export const invite_api = {
-  getByToken: (token) => api.get(`/action/invite-by-token/${encodeURIComponent(token)}`),
-  acceptByToken: (token) => api.post(`/action/accept-invite/${encodeURIComponent(token)}`),
-  rejectByToken: (token) => api.post(`/action/reject-invite/${encodeURIComponent(token)}`),
-}
-
 export const workspace_member_api = {
   list: (workspaceId, params) => api.get(`/workspaces/${workspaceId}/members`, { params }),
   updateRole: (workspaceId, userId, data) => api.put(`/workspaces/${workspaceId}/members/${userId}`, data),

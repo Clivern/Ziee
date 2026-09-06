@@ -26,7 +26,7 @@ func NewMailer() *Mailer {
 	}
 }
 
-// SendInviteEmail sends the user invite email with the sign-up link.
+// SendInviteEmail sends the user invite email with the sign-in link.
 func (m *Mailer) SendInviteEmail(to, inviteLink, platformName string) error {
 	return m.sendTemplate(to, fmt.Sprintf("You're invited to %s", platformName), "invite.html", map[string]string{
 		"PlatformName": platformName,

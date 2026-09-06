@@ -1,6 +1,8 @@
 version: 1.0.0
 
 merge_queue:
+  # Whether to enable the merge queue
+  enabled: false
   # Speculative CI: nothing lands on real main until the front of the line is green.
   # Ziee builds temp branches only:
   #   mq/1 = main + #1, mq/2 = main + #1 + #2, … up to max_parallel_checks.
@@ -146,6 +148,7 @@ merge_queue:
   #   permission — GitHub repo role minimum (write = write / maintain / admin)
   #   teams      — org team slugs
   #   users      — GitHub logins
+  # Omit `permission` so people without repo access can still interact; Ziee uses the app token.
   commands:
     # `@ziee queue` or `@ziee queue hotfix`
     # No name → first queue_rule whose queue_when matches and whose allow includes the commenter
@@ -162,14 +165,55 @@ merge_queue:
     requeue:
       allow:
         - permission: write
+    # `@ziee rebase` — rebase the PR onto latest main
+    rebase:
+      allow:
+        - permission: write
+    # `@ziee update` — merge latest main into the PR branch
+    update:
+      allow:
+        - permission: write
+    # `@ziee refresh` — re-run triage and re-evaluate queue_when
+    refresh:
+      allow:
+        - permission: write
+        - teams: [sre, core]
+        - users: [clivern]
     # `@ziee label bug security` — add GitHub labels named in the comment
     label:
       allow:
-        - permission: write
+        - teams: [sre, core]
+        - users: [clivern]
     # `@ziee unlabel bot` — remove GitHub labels named in the comment
     unlabel:
       allow:
-        - permission: write
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee assign clivern` — assign users named in the comment
+    assign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unassign clivern` — remove assignees named in the comment
+    unassign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee reviewers maya` — request reviewers (user logins)
+    reviewers:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee close` — close the PR (dequeues if it was in line)
+    close:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@ziee reopen` — reopen the PR
+    reopen:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
 
   # Same merge pipeline, different place in line. Not extra queues.
   # First matching rule wins. priority: high > medium > low.
@@ -240,3 +284,132 @@ merge_queue:
       # auto = derive from GitHub required checks
       checks_timeout: auto
       max_checks_retries: 2
+
+pr_reviews:
+  # Whether to enable AI-assisted PR reviews
+  enabled: false
+
+
+issue_triage:
+  # GitHub issues only (not PRs). Re-run on issue open and edit.
+  # Every matching rule fires (not first-wins).
+  enabled: true
+  # How chatty Ziee is on the issue. Labels still update either way.
+  #   outcomes — only when something happened (triaged, labeled, assigned, closed)
+  #     "Triaged this issue: labeled `bug`, assigned @clivern."
+  #     "Labeled `security` as requested by @maya."
+  #     "Closed this issue as requested by @clivern."
+  #   all — every state change, including no-ops
+  #     "Triage ran; no rules matched."
+  #     "Re-evaluated after edit; labels unchanged."
+  #   none — no comments; state is labels / assignees only
+  comments: outcomes
+  # Classify intention once from title and body (no diff).
+  # enabled: false → skip classification; `intention:` matchers never match.
+  ai:
+    enabled: true
+    # Workspace knowledge `tag=` values used as classify context.
+    kb_tags:
+      # Few-shot examples to better label issues
+      - tag: platform_monorepo
+  # Commands are typed on the issue. Ziee performs the action with the app token,
+  # so the commenter does not need repo write (or any GitHub permission on this repo).
+  # `allow` is who may run them (any matching entry is enough):
+  #   teams — org team slugs
+  #   users — GitHub logins
+  # Omit `permission` so people without repo access can still interact.
+  commands:
+    # `@ziee label bug security` — add GitHub labels named in the comment
+    label:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unlabel bot` — remove GitHub labels named in the comment
+    unlabel:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee assign clivern` — assign users named in the comment
+    assign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unassign clivern` — remove assignees named in the comment
+    unassign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee close` — close the issue
+    close:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@ziee reopen` — reopen the issue
+    reopen:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+  # `when` matchers (all must match):
+  #   title, body,
+  #   author_in / author_not_in (user logins),
+  #   author_in_team / author_not_in_team (org team slugs),
+  #   intention (requires ai.enabled).
+  # Actions: labels.add / labels.remove, assign (users).
+  rules:
+    # Bot authors (user logins)
+    - name: bot
+      when:
+        - author_in: [dependabot, ziee-bot]
+      labels:
+        add: [bot]
+      assign: []
+
+    # Author is a member of org team sre
+    - name: from-sre
+      when:
+        - author_in_team: [sre]
+      labels:
+        add: [team/sre]
+
+    # Title matches Hotfix / hotfix
+    - name: hotfix
+      when:
+        - title: "[Hh]otfix"
+      labels:
+        add: [hotfix]
+      assign: [clivern]
+
+    # AI intention: bug
+    - name: bug
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention: bug
+      labels:
+        add: [bug]
+      assign: [clivern]
+
+    # AI intention: enhancement
+    - name: enhancement
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention: enhancement
+      labels:
+        add: [enhancement]
+
+    # AI intention: docs
+    - name: docs
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention: docs
+      labels:
+        add: [docs]
+      assign: [maya]
+
+    # AI intention: security (no-op when ai.enabled is false)
+    - name: security
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention: security
+      labels:
+        add: [security]
+      assign: [clivern]

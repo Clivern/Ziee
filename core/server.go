@@ -64,16 +64,12 @@ func SetupServer(Static embed.FS) http.Handler {
 		}
 	})
 	r.Get("/api/v1/me", api.GetMeAction) // current authenticated user
-	r.Group(func(r chi.Router) {         // user profile and workspace invites
+	r.Group(func(r chi.Router) {         // user profile and GitHub App installations
 		r.Use(middleware.Protect(middleware.Config{Roles: []string{db.UserRoleAdmin, db.UserRoleRegular}}))
 		r.Get("/api/v1/action/profile", api.GetProfileAction)                                                     // get user profile
 		r.Put("/api/v1/action/profile", api.UpdateProfileAction)                                                  // update user profile
-		r.Get("/api/v1/action/invites", api.ListUserInvitesAction)                                                // list pending workspace invites
 		r.Get("/api/v1/action/github/installations", api.ListGitHubInstallationsAction)                           // list pending GitHub App installations for the user
 		r.Post("/api/v1/action/github/installations/{installationId}/attach", api.AttachGitHubInstallationAction) // attach a GitHub App installation to a workspace
-		r.Get("/api/v1/action/invite-by-token/{token}", api.GetAuthenticatedUserInviteByTokenAction)              // get invite details by token
-		r.Post("/api/v1/action/accept-invite/{token}", api.AcceptUserInviteByTokenAction)                         // accept workspace invite
-		r.Post("/api/v1/action/reject-invite/{token}", api.RejectUserInviteByTokenAction)                         // reject workspace invite
 	})
 	r.Group(func(r chi.Router) { // app settings — admin only
 		r.Use(middleware.Protect(middleware.Config{Roles: []string{db.UserRoleAdmin}}))

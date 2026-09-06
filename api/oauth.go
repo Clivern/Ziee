@@ -12,6 +12,7 @@ import (
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/github"
+	"github.com/clivern/ziee/pkg/resend"
 	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
@@ -119,5 +120,22 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.SetCookie(w, "_ziee_session", result.Session.Token, result.CookieOptions)
+
+	im := module.NewInvite(
+		db.NewUserInviteRepository(db.GetDB()),
+		db.NewUserRepository(db.GetDB()),
+		db.NewConfigRepository(db.GetDB()),
+		db.NewWorkspaceRepository(db.GetDB()),
+		db.NewWorkspaceUserRepository(db.GetDB()),
+		resend.NewMailer(),
+	)
+	err = im.AttachPending(result.User)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("userId", result.User.Id.String()).
+			Msg("Failed to attach pending workspace invites")
+	}
+
 	http.Redirect(w, r, util.AppURL("/login?oauth=github"), http.StatusFound)
 }

@@ -50,24 +50,6 @@
     "cta_sign_in": "Se connecter pour continuer",
     "cta_continue": "Continuer vers Ziee"
   },
-  "invite": {
-    "title": "Invitation à un espace",
-    "description": "Consultez cette invitation et choisissez l'action à effectuer.",
-    "loading": "Chargement de l'invitation…",
-    "email": "E-mail invité",
-    "workspace": "Espace",
-    "role": "Rôle",
-    "expires": "Expire le",
-    "accept": "Accepter l'invitation",
-    "accepting": "Acceptation…",
-    "reject": "Refuser",
-    "rejecting": "Refus…",
-    "back_to_workspaces": "Retour aux espaces",
-    "not_found": "Invitation introuvable.",
-    "failed_load": "Échec du chargement de l'invitation",
-    "failed_accept": "Échec de l'acceptation de l'invitation",
-    "failed_reject": "Échec du refus de l'invitation"
-  },
   "audits_page": {
     "title": "Audits",
     "subtitle": "Consultez l'activité de l'espace.",
@@ -338,7 +320,7 @@
     "title": "Membres",
     "subtitle": "Gérer les membres et invitations de l'espace.",
     "invite_member": "Inviter un membre",
-    "invite_desc": "Envoyer une invitation pour rejoindre cet espace.",
+    "invite_desc": "Invitez-les à se connecter avec GitHub. Ils rejoignent cet espace automatiquement après connexion.",
     "email": "E-mail",
     "email_placeholder": "membre{'@'}example.com",
     "role": "Rôle",

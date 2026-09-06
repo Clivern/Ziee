@@ -333,6 +333,9 @@ msgstr "Setup completed successfully."
 msgid "tool_not_found"
 msgstr "Tool not found."
 
+msgid "user_already_workspace_member"
+msgstr "This user is already a member of the workspace."
+
 msgid "user_not_found"
 msgstr "User not found."
 

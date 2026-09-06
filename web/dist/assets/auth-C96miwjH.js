@@ -1,0 +1,1 @@
+import{I as e}from"./runtime-core.esm-bundler-BEGHLvG4.js";import{S as t,b as n,v as r}from"./index-BDhapsAX.js";var i=e(r());function a(e){i.value=e,t(e)}function o(){i.value=null,n()}export{a as n,i as r,o as t};

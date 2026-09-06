@@ -321,6 +321,9 @@ msgstr "Configuration terminée avec succès."
 msgid "tool_not_found"
 msgstr "Outil introuvable."
 
+msgid "user_already_workspace_member"
+msgstr "Cet utilisateur est déjà membre de l'espace de travail."
+
 msgid "user_not_found"
 msgstr "Utilisateur introuvable."
 

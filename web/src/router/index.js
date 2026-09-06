@@ -87,6 +87,18 @@ const routes = [
     meta: { requiresAuth: true, requiresWorkspace: true, title: 'Knowledge', description: 'Knowledge' }
   },
   {
+    path: '/repositories',
+    name: 'Repositories',
+    component: () => import('@/views/Repositories.vue'),
+    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Repositories', description: 'GitHub repositories' }
+  },
+  {
+    path: '/repositories/:repoId',
+    name: 'Repository',
+    component: () => import('@/views/Repository.vue'),
+    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Repository', description: 'Issue triage and merge queue' }
+  },
+  {
     path: '/404',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),

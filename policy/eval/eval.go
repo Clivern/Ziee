@@ -15,8 +15,14 @@ import (
 // Run evaluates a parsed spec against an event.
 func Run(file *v1.File, event Event, client Client) action.Plan {
 	switch event.Kind {
-	case policy.KindIssueOpened, policy.KindIssueEdited:
-		return EvaluateIssueChange(file, event, client)
+	case policy.KindIssueOpened:
+		return EvaluateIssueOpened(file, event, client)
+	case policy.KindIssueEdited:
+		return EvaluateIssueEdited(file, event, client)
+	case policy.KindIssueLabeled, policy.KindIssueUnlabeled:
+		return EvaluateIssueLabelChange(file, event, client)
+	case policy.KindComment:
+		return EvaluateIssueComment(file, event, client)
 	default:
 		return action.Plan{}
 	}

@@ -7,9 +7,11 @@
 package policy
 
 const (
-	KindIssueOpened = "issue.opened"
-	KindIssueEdited = "issue.edited"
-	KindComment     = "issue.comment"
+	KindIssueOpened    = "issue.opened"
+	KindIssueEdited    = "issue.edited"
+	KindIssueLabeled   = "issue.labeled"
+	KindIssueUnlabeled = "issue.unlabeled"
+	KindComment        = "issue.comment"
 
 	CommentsOutcomes = "outcomes"
 	CommentsAll      = "all"

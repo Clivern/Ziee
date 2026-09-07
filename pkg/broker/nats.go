@@ -25,13 +25,23 @@ type Client struct {
 	conn   *natssdk.Conn
 }
 
-// New returns a NATS client loaded from app.broker config.
+// New returns a broker client from app.broker config.
 func New() (*Client, error) {
 	config := GetConfig()
 
+	switch config.Provider {
+	case "nats":
+		return NewNatsClient(config)
+	default:
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedProvider, config.Provider)
+	}
+}
+
+// NewNatsClient creates a NATS-backed broker client.
+func NewNatsClient(config Config) (*Client, error) {
 	conn, err := natssdk.Connect(
-		config.URL,
-		natssdk.Name(config.Name),
+		config.NATS.URL,
+		natssdk.Name(config.NATS.Name),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("nats connect: %w", err)
@@ -43,7 +53,7 @@ func New() (*Client, error) {
 	}, nil
 }
 
-// Config returns the NATS configuration used by this client.
+// Config returns the broker configuration used by this client.
 func (c *Client) Config() Config {
 	return c.config
 }

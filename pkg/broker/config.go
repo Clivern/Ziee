@@ -7,8 +7,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config holds NATS connection settings.
+// Config holds broker configuration.
 type Config struct {
+	Provider string
+	NATS     NATSConfig
+}
+
+// NATSConfig holds NATS connection settings.
+type NATSConfig struct {
 	URL   string
 	Name  string
 	Queue string
@@ -17,8 +23,11 @@ type Config struct {
 // GetConfig loads broker settings from app.broker config.
 func GetConfig() Config {
 	return Config{
-		URL:   viper.GetString("app.broker.url"),
-		Name:  viper.GetString("app.broker.name"),
-		Queue: viper.GetString("app.broker.queue"),
+		Provider: viper.GetString("app.broker.provider"),
+		NATS: NATSConfig{
+			URL:   viper.GetString("app.broker.nats.url"),
+			Name:  viper.GetString("app.broker.nats.name"),
+			Queue: viper.GetString("app.broker.nats.queue"),
+		},
 	}
 }

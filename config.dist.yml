@@ -101,6 +101,8 @@ app:
       min_idle_conns: ${ZIEE_REDIS_MIN_IDLE_CONNS:-5}
 
   broker:
-    url: ${ZIEE_BROKER_URL:-nats://127.0.0.1:4222}
-    name: ${ZIEE_BROKER_NAME:-ziee}
-    queue: ${ZIEE_BROKER_QUEUE:-ziee}
+    provider: ${ZIEE_BROKER_PROVIDER:-nats}
+    nats:
+      url: ${ZIEE_BROKER_URL:-nats://127.0.0.1:4222}
+      name: ${ZIEE_BROKER_NAME:-ziee}
+      queue: ${ZIEE_BROKER_QUEUE:-ziee}

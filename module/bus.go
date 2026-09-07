@@ -25,8 +25,8 @@ func StartBus() error {
 	bus = client
 
 	log.Info().
-		Str("url", client.Config().URL).
-		Str("name", client.Config().Name).
+		Str("url", client.Config().NATS.URL).
+		Str("name", client.Config().NATS.Name).
 		Msg("NATS bus connected")
 
 	return nil

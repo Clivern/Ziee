@@ -80,22 +80,22 @@ func RunWorker() error {
 
 	defer client.Close()
 
-	cfg := client.Config()
+	nats := client.Config().NATS
 
 	worker.Register(worker.Dependencies{
 		Knowledge: ksvc,
 		Tasks:     db.NewAsyncTaskRepository(db.GetDB(false)),
 	})
 
-	err = worker.Bind(client, cfg.Queue)
+	err = worker.Bind(client, nats.Queue)
 	if err != nil {
 		return fmt.Errorf("failed to bind workers: %w", err)
 	}
 
 	log.Info().
-		Str("url", cfg.URL).
-		Str("name", cfg.Name).
-		Str("queue", cfg.Queue).
+		Str("url", nats.URL).
+		Str("name", nats.Name).
+		Str("queue", nats.Queue).
 		Msg("Starting NATS worker")
 
 	quit := make(chan os.Signal, 1)

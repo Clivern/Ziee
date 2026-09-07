@@ -9,6 +9,7 @@ Basic usage:
   ./bin/nats stop
   ./bin/nats restart
   ./bin/nats health
+  ./bin/nats stats
   ./bin/nats remove
   ./bin/nats remove --with-volume
 """
@@ -34,6 +35,19 @@ DEFAULT_NAME = "ziee"
 DEFAULT_QUEUE = "ziee"
 DEFAULT_DATA_MOUNT = "/data"
 
+MONITOR_ENDPOINTS = (
+    "healthz",
+    "varz",
+    "connz",
+    "subsz",
+    "jsz?streams=true&consumers=true",
+    "routez",
+    "gatewayz",
+    "leafz",
+    "accountz",
+    "accstatz",
+)
+
 HELP_TEXT = f"""examples:
   ./bin/nats start
   ./bin/nats credentials
@@ -42,6 +56,7 @@ HELP_TEXT = f"""examples:
   ./bin/nats stop
   ./bin/nats restart
   ./bin/nats health
+  ./bin/nats stats
   ./bin/nats remove
   ./bin/nats remove --with-volume
 
@@ -261,20 +276,22 @@ def logs(cfg: NatsConfig, follow: bool) -> None:
     run_container(*args)
 
 
-def health(cfg: NatsConfig) -> None:
+def require_monitor(cfg: NatsConfig) -> bool:
     ensure_ready()
     if not container_exists(cfg.container):
         print(f"{cfg.container} does not exist")
-        return
+        return False
     if not container_is_running(cfg.container):
         print(f"{cfg.container} is not running")
-        return
-
+        return False
     if shutil.which("curl") is None:
         print("curl is required but was not found in PATH", file=sys.stderr)
         raise SystemExit(1)
+    return True
 
-    url = f"http://{cfg.host}:{cfg.monitor_port}/healthz"
+
+def fetch_monitor(cfg: NatsConfig, path: str) -> str:
+    url = f"http://{cfg.host}:{cfg.monitor_port}/{path}"
     result = subprocess.run(
         ["curl", "--fail", "--silent", "--show-error", url],
         check=False,
@@ -282,11 +299,28 @@ def health(cfg: NatsConfig) -> None:
         text=True,
     )
     if result.returncode != 0:
-        print("healthz: unavailable")
+        print(f"{path.split('?', 1)[0]}: unavailable", file=sys.stderr)
         if result.stderr:
             print(result.stderr.strip(), file=sys.stderr)
         raise SystemExit(1)
-    print(f"healthz: {result.stdout.strip() or 'ok'}")
+    return result.stdout.strip()
+
+
+def health(cfg: NatsConfig) -> None:
+    if not require_monitor(cfg):
+        return
+    print(f"healthz: {fetch_monitor(cfg, 'healthz') or 'ok'}")
+
+
+def stats(cfg: NatsConfig) -> None:
+    if not require_monitor(cfg):
+        return
+    sections: list[str] = []
+    for path in MONITOR_ENDPOINTS:
+        name = path.split("?", 1)[0]
+        payload = json.loads(fetch_monitor(cfg, path))
+        sections.append(f"=== {name} ===\n{json.dumps(payload, indent=2)}")
+    print("\n\n".join(sections))
 
 
 def add_common_options(parser: argparse.ArgumentParser) -> None:
@@ -371,6 +405,9 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "health", parents=[common_parser], help="Check NATS health endpoint"
     )
+    subparsers.add_parser(
+        "stats", parents=[common_parser], help="Print NATS monitoring stats"
+    )
 
     logs_parser = subparsers.add_parser(
         "logs", parents=[common_parser], help="Show NATS container logs"
@@ -420,6 +457,8 @@ def main() -> int:
         remove(cfg, volume=getattr(args, "with_volume", False))
     elif command == "health":
         health(cfg)
+    elif command == "stats":
+        stats(cfg)
     else:
         parser.error(f"unknown command: {command}")
 

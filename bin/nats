@@ -46,9 +46,9 @@ HELP_TEXT = f"""examples:
   ./bin/nats remove --with-volume
 
 default app environment:
-  export ZIEE_NATS_URL=nats://{DEFAULT_HOST}:{DEFAULT_CLIENT_PORT}
-  export ZIEE_NATS_NAME={DEFAULT_NAME}
-  export ZIEE_NATS_QUEUE={DEFAULT_QUEUE}
+  export ZIEE_BROKER_URL=nats://{DEFAULT_HOST}:{DEFAULT_CLIENT_PORT}
+  export ZIEE_BROKER_NAME={DEFAULT_NAME}
+  export ZIEE_BROKER_QUEUE={DEFAULT_QUEUE}
 """
 
 
@@ -154,9 +154,9 @@ Client URL: nats://{cfg.host}:{cfg.client_port}
 Monitor:    http://{cfg.host}:{cfg.monitor_port}
 
 App environment:
-export ZIEE_NATS_URL=nats://{cfg.host}:{cfg.client_port}
-export ZIEE_NATS_NAME={cfg.name}
-export ZIEE_NATS_QUEUE={cfg.queue}
+export ZIEE_BROKER_URL=nats://{cfg.host}:{cfg.client_port}
+export ZIEE_BROKER_NAME={cfg.name}
+export ZIEE_BROKER_QUEUE={cfg.queue}
 """
 
 

@@ -21,7 +21,7 @@ import (
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/middleware"
 	"github.com/clivern/ziee/module"
-	"github.com/clivern/ziee/pkg/github"
+	"github.com/clivern/ziee/pkg/github/app"
 
 	"github.com/go-chi/chi/v5"
 	cmid "github.com/go-chi/chi/v5/middleware"
@@ -182,7 +182,7 @@ func RunServer(handler http.Handler) error {
 		return fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	err = github.Init()
+	err = app.Init()
 	if err != nil {
 		return fmt.Errorf("failed to initialize github app: %w", err)
 	}

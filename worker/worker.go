@@ -6,13 +6,13 @@ package worker
 import (
 	"context"
 
-	"github.com/clivern/ziee/pkg/nats"
+	"github.com/clivern/ziee/pkg/broker"
 
 	"github.com/rs/zerolog/log"
 )
 
 // Handler processes an inbound NATS message.
-type Handler func(context.Context, *nats.Msg) error
+type Handler func(context.Context, *broker.Msg) error
 
 // Registration binds a subject to a handler.
 type Registration struct {
@@ -32,9 +32,9 @@ func On(subject string, handler Handler) {
 }
 
 // Bind attaches all registered handlers to the NATS client using the queue group.
-func Bind(client *nats.Client, queue string) error {
+func Bind(client *broker.Client, queue string) error {
 	for _, reg := range Registrations {
-		_, err := client.QueueSubscribe(reg.Subject, queue, func(msg *nats.Msg) {
+		_, err := client.QueueSubscribe(reg.Subject, queue, func(msg *broker.Msg) {
 			err := reg.Handler(context.Background(), msg)
 			if err != nil {
 				log.Error().

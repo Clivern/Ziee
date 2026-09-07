@@ -10,7 +10,7 @@ import (
 
 	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/pkg/nats"
+	"github.com/clivern/ziee/pkg/broker"
 )
 
 var ErrInvalidPayload = errors.New("invalid worker payload")
@@ -41,7 +41,7 @@ func Register(deps Dependencies) {
 }
 
 // HandleDocumentIndex indexes a document.
-func (h *handlers) HandleDocumentIndex(ctx context.Context, msg *nats.Msg) error {
+func (h *handlers) HandleDocumentIndex(ctx context.Context, msg *broker.Msg) error {
 	var payload map[string]string
 	err := json.Unmarshal(msg.Data, &payload)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *handlers) HandleDocumentIndex(ctx context.Context, msg *nats.Msg) error
 }
 
 // HandleDocumentDelete deletes a document.
-func (h *handlers) HandleDocumentDelete(ctx context.Context, msg *nats.Msg) error {
+func (h *handlers) HandleDocumentDelete(ctx context.Context, msg *broker.Msg) error {
 	var payload map[string]string
 	err := json.Unmarshal(msg.Data, &payload)
 	if err != nil {

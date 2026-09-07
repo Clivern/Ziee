@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/pkg/github"
+	"github.com/clivern/ziee/pkg/github/app"
 
 	"github.com/rs/zerolog/log"
 )
@@ -91,7 +91,7 @@ func (i *Installation) Delete(githubId int64) error {
 }
 
 // UpdateRepositories adds and removes repos for an attached installation.
-func (i *Installation) UpdateRepositories(githubId int64, added []github.Repository, removed []int64) error {
+func (i *Installation) UpdateRepositories(githubId int64, added []app.Repository, removed []int64) error {
 	item, err := i.InstallationRepository.GetByGitHubId(githubId)
 	if err != nil {
 		return fmt.Errorf("get installation: %w", err)
@@ -125,7 +125,7 @@ func (i *Installation) UpdateRepositories(githubId int64, added []github.Reposit
 }
 
 // StoreRepository stores a GitHub repository in the database.
-func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, repo github.Repository) error {
+func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, repo app.Repository) error {
 	meta, err := json.Marshal(repo)
 	if err != nil {
 		return fmt.Errorf("encode repo meta: %w", err)
@@ -189,7 +189,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 		return ErrInstallationNotFound
 	}
 
-	repos, err := github.Get().Repositories(ctx, item.GitHubId)
+	repos, err := app.Get().ListRepositories(ctx, item.GitHubId)
 	if err != nil {
 		return fmt.Errorf("list installation repos: %w", err)
 	}

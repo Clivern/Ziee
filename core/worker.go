@@ -12,8 +12,8 @@ import (
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/ai"
-	"github.com/clivern/ziee/pkg/github"
-	"github.com/clivern/ziee/pkg/nats"
+	"github.com/clivern/ziee/pkg/broker"
+	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/qdrant"
 	"github.com/clivern/ziee/pkg/storage"
 	"github.com/clivern/ziee/service/knowledge"
@@ -38,7 +38,7 @@ func RunWorker() error {
 		}
 	}()
 
-	err = github.Init()
+	err = app.Init()
 	if err != nil {
 		return fmt.Errorf("failed to initialize github app: %w", err)
 	}
@@ -73,7 +73,7 @@ func RunWorker() error {
 		Subscriptions: db.NewSubscriptionRepository(db.GetDB(false)),
 	})
 
-	client, err := nats.New()
+	client, err := broker.New()
 	if err != nil {
 		return fmt.Errorf("failed to connect to nats: %w", err)
 	}

@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/pkg/github"
+	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/webhook"
 
 	"github.com/rs/zerolog/log"
@@ -59,9 +59,9 @@ func RegisterEventListeners() {
 			db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
 		)
 
-		added := make([]github.Repository, len(payload.RepositoriesAdded))
+		added := make([]app.Repository, len(payload.RepositoriesAdded))
 		for n, repo := range payload.RepositoriesAdded {
-			added[n] = github.Repository{
+			added[n] = app.Repository{
 				ID:       repo.ID,
 				NodeID:   repo.NodeID,
 				Name:     repo.Name,

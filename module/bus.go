@@ -8,16 +8,16 @@ import (
 	"fmt"
 
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/pkg/nats"
+	"github.com/clivern/ziee/pkg/broker"
 
 	"github.com/rs/zerolog/log"
 )
 
-var bus *nats.Client
+var bus *broker.Client
 
 // StartBus connects the shared NATS client used to publish work.
 func StartBus() error {
-	client, err := nats.New()
+	client, err := broker.New()
 	if err != nil {
 		return fmt.Errorf("connect nats bus: %w", err)
 	}
@@ -33,7 +33,7 @@ func StartBus() error {
 }
 
 // GetBus returns the shared NATS publisher.
-func GetBus() *nats.Client {
+func GetBus() *broker.Client {
 	return bus
 }
 

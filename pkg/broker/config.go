@@ -1,7 +1,7 @@
 // Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
-package nats
+package broker
 
 import (
 	"github.com/spf13/viper"
@@ -14,11 +14,11 @@ type Config struct {
 	Queue string
 }
 
-// GetConfig loads NATS settings from app.nats config.
+// GetConfig loads broker settings from app.broker config.
 func GetConfig() Config {
 	return Config{
-		URL:   viper.GetString("app.nats.url"),
-		Name:  viper.GetString("app.nats.name"),
-		Queue: viper.GetString("app.nats.queue"),
+		URL:   viper.GetString("app.broker.url"),
+		Name:  viper.GetString("app.broker.name"),
+		Queue: viper.GetString("app.broker.queue"),
 	}
 }

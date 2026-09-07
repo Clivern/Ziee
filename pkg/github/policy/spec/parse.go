@@ -6,7 +6,7 @@ package spec
 import (
 	"fmt"
 
-	v1 "github.com/clivern/ziee/policy/spec/v1"
+	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
 	"gopkg.in/yaml.v3"
 )

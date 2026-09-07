@@ -6,9 +6,9 @@ package eval
 import (
 	"testing"
 
-	"github.com/clivern/ziee/policy"
-	"github.com/clivern/ziee/policy/action"
-	v1 "github.com/clivern/ziee/policy/spec/v1"
+	"github.com/clivern/ziee/pkg/github/policy"
+	"github.com/clivern/ziee/pkg/github/policy/action"
+	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"testing"
 
-	v1 "github.com/clivern/ziee/policy/spec/v1"
+	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +17,7 @@ import (
 
 func TestUnitParseRoutesV1(t *testing.T) {
 	_, thisFile, _, _ := runtime.Caller(0)
-	data, err := os.ReadFile(filepath.Join(filepath.Dir(thisFile), "..", "..", ".ziee.yml"))
+	data, err := os.ReadFile(filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", ".ziee.yml"))
 	require.NoError(t, err)
 
 	file, err := Parse(data)

@@ -1,14 +1,10 @@
 // Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
-package github
+package oauth
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -111,40 +107,17 @@ func (o *OAuth) Exchange(ctx context.Context, code, state, expectedState string)
 		return nil, ErrInvalidOAuthState
 	}
 
-	payload, err := json.Marshal(OauthTokenRequest{
+	var token Token
+	err := call(ctx, http.MethodPost, OauthTokenURL, "", map[string]string{
+		"Accept": "application/json",
+	}, OauthTokenRequest{
 		ClientID:     o.cfg.ClientID,
 		ClientSecret: o.cfg.ClientSecret,
 		Code:         code,
 		State:        expectedState,
-	})
+	}, &token)
 	if err != nil {
-		return nil, fmt.Errorf("github oauth encode request: %w", err)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, OauthTokenURL, bytes.NewReader(payload))
-	if err != nil {
-		return nil, fmt.Errorf("github oauth build request: %w", err)
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth read body: %w", err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("github oauth token: status %d: %s", resp.StatusCode, body)
-	}
-
-	var token Token
-	if err := json.Unmarshal(body, &token); err != nil {
-		return nil, fmt.Errorf("github oauth decode body: %w", err)
+		return nil, err
 	}
 
 	return &token, nil
@@ -152,30 +125,12 @@ func (o *OAuth) Exchange(ctx context.Context, code, state, expectedState string)
 
 // User fetches the authenticated GitHub user.
 func (o *OAuth) User(ctx context.Context, accessToken string) (*UserInfo, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, OauthUserURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth user request: %w", err)
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth user: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth user body: %w", err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("github oauth user: status %d: %s", resp.StatusCode, body)
-	}
-
 	var user UserInfo
-	if err := json.Unmarshal(body, &user); err != nil {
-		return nil, fmt.Errorf("github oauth user decode: %w", err)
+	err := call(ctx, http.MethodGet, OauthUserURL, accessToken, map[string]string{
+		"Accept": "application/json",
+	}, nil, &user)
+	if err != nil {
+		return nil, err
 	}
 
 	return &user, nil
@@ -183,30 +138,12 @@ func (o *OAuth) User(ctx context.Context, accessToken string) (*UserInfo, error)
 
 // Emails fetches the authenticated user's email addresses.
 func (o *OAuth) Emails(ctx context.Context, accessToken string) ([]Email, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, OauthEmailsURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth emails request: %w", err)
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth emails: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("github oauth emails body: %w", err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("github oauth emails: status %d: %s", resp.StatusCode, body)
-	}
-
 	var emails []Email
-	if err := json.Unmarshal(body, &emails); err != nil {
-		return nil, fmt.Errorf("github oauth emails decode: %w", err)
+	err := call(ctx, http.MethodGet, OauthEmailsURL, accessToken, map[string]string{
+		"Accept": "application/json",
+	}, nil, &emails)
+	if err != nil {
+		return nil, err
 	}
 
 	return emails, nil

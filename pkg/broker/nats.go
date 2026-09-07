@@ -1,7 +1,7 @@
 // Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
-package nats
+package broker
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ type Client struct {
 	conn   *natssdk.Conn
 }
 
-// New returns a NATS client loaded from app.nats config.
+// New returns a NATS client loaded from app.broker config.
 func New() (*Client, error) {
 	config := GetConfig()
 

@@ -40,9 +40,9 @@ func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan 
 			if slices.Contains(when.AuthorNotIn, event.Issue.Author) {
 				matched = false
 			}
-			if when.Intention != "" && when.Intention != event.Issue.Intention {
-				matched = false
-			}
+
+			//TODO: Add intention matching
+
 			if when.Label != "" && !slices.Contains(event.Issue.Labels, when.Label) {
 				matched = false
 			}

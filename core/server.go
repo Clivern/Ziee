@@ -138,12 +138,7 @@ func SetupServer(Static embed.FS) http.Handler {
 		})
 	})
 
-	r.With(middleware.BasicAuth(
-		viper.GetString("app.metrics.username"),
-		viper.GetString("app.metrics.secret"),
-	)).Get(
-		"/api/v1/public/_metrics", promhttp.Handler().ServeHTTP, // Prometheus metrics
-	)
+	r.With(middleware.BasicAuth(viper.GetString("app.metrics.username"), viper.GetString("app.metrics.secret"))).Get("/api/v1/public/_metrics", promhttp.Handler().ServeHTTP) // Prometheus metrics
 
 	dist, err := fs.Sub(Static, "web/dist")
 	if err != nil {

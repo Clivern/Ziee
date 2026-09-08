@@ -1,5 +1,61 @@
 version: 1.0.0
 
+# Labels definitions
+labels:
+  - name: "state/queued"
+    color: "0E8A16"
+    description: "PR is currently waiting in the merge queue line."
+  - name: "state/checking"
+    color: "FBCA04"
+    description: "Speculative CI checks are running on this PR."
+  - name: "state/dequeued"
+    color: "D93F0B"
+    description: "PR was kicked out or removed from the merge queue."
+  - name: "area/api"
+    color: "1D76DB"
+    description: "Changes made inside the API or core PKG paths."
+  - name: "area/web"
+    color: "C2E0C6"
+    description: "Changes related to frontend web paths."
+  - name: "size/s"
+    color: "0E8A16"
+    description: "Small PR with 20 or fewer files changed."
+  - name: "size/l"
+    color: "B60205"
+    description: "Large PR with 21 or more files changed."
+  - name: "bot"
+    color: "EEEEEE"
+    description: "Automated PR created by a bot account."
+  - name: "team/sre"
+    color: "5319E7"
+    description: "PR originated from a member of the SRE team."
+  - name: "hotfix"
+    color: "D93F0B"
+    description: "High-priority critical fix bypassing standard queues."
+  - name: "bug"
+    color: "D93F0B"
+    description: "Identified bug fix requiring patch-level verification."
+  - name: "enhancement"
+    color: "A2EEEF"
+    description: "New feature or system optimization."
+  - name: "docs"
+    color: "0075CA"
+    description: "Documentation changes only."
+  - name: "security"
+    color: "E99695"
+    description: "Vulnerability remediation or security improvement."
+
+# Teams definitions
+teams:
+  - name: sre
+    members:
+      - clivern
+      - maya
+  - name: core
+    members:
+      - tj
+      - kiran
+
 merge_queue:
   # Whether to enable the merge queue
   enabled: false
@@ -21,7 +77,7 @@ merge_queue:
     queued: state/queued
     # speculative CI running
     checking: state/checking
-    # kicked out of the queue
+    # kicked out of the queue if merge_when is not met
     dequeued: state/dequeued
   # How chatty Ziee is on the PR. Labels still update either way.
   #   outcomes — only when something happened (queued, merged, failed, dequeued)
@@ -99,10 +155,19 @@ merge_queue:
           add: [team/sre]
         review_teams: [sre]
 
-      # Title matches Hotfix / hotfix
+      # Title matches hotfix
       - name: hotfix
         when:
-          - title: "[Hh]otfix"
+          - title: "hotfix"
+        labels:
+          add: [hotfix]
+        assign: [clivern]
+        review_teams: [sre]
+
+      # Body matches hotfix
+      - name: hotfix
+        when:
+          - body: "hotfix"
         labels:
           add: [hotfix]
         assign: [clivern]
@@ -272,6 +337,8 @@ merge_queue:
             # Any eligible reviewer (write+)
             min: 1
         - check: ci
+        # This means someone has explicitly queued the PR
+        - label: state/queued
       merge_when:
         # Two-step: cheap `ci` to enter, heavy `ci-full` to land
         - check: ci-full
@@ -374,7 +441,15 @@ issue_triage:
     # Title matches Hotfix / hotfix
     - name: hotfix
       when:
-        - title: "[Hh]otfix"
+        - title: "hotfix"
+      labels:
+        add: [hotfix]
+      assign: [clivern]
+
+    # Body matches hotfix
+    - name: hotfix
+      when:
+        - body: "hotfix"
       labels:
         add: [hotfix]
       assign: [clivern]

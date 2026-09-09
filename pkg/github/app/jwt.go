@@ -38,6 +38,7 @@ func ParsePrivateKey(pemBytes []byte) (*rsa.PrivateKey, error) {
 // JWT returns a GitHub App JWT signed with the private key.
 func (a *App) JWT() (string, error) {
 	now := time.Now()
+
 	claims, err := json.Marshal(map[string]any{
 		"iat": now.Add(-60 * time.Second).Unix(),
 		"exp": now.Add(9 * time.Minute).Unix(),
@@ -47,11 +48,15 @@ func (a *App) JWT() (string, error) {
 		return "", fmt.Errorf("github app jwt claims: %w", err)
 	}
 
-	unsigned := base64.RawURLEncoding.EncodeToString([]byte(jwtHeader)) + "." +
-		base64.RawURLEncoding.EncodeToString(claims)
+	unsigned := fmt.Sprintf(
+		"%s.%s",
+		base64.RawURLEncoding.EncodeToString([]byte(jwtHeader)),
+		base64.RawURLEncoding.EncodeToString(claims),
+	)
 
 	hashed := sha256.Sum256([]byte(unsigned))
 	sig, err := rsa.SignPKCS1v15(rand.Reader, a.key, crypto.SHA256, hashed[:])
+
 	if err != nil {
 		return "", fmt.Errorf("github app jwt sign: %w", err)
 	}

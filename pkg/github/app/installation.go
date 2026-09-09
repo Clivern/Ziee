@@ -12,6 +12,7 @@ import (
 	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 )
 
 // Installation is a GitHub App installation.
@@ -65,7 +66,7 @@ func (a *App) GetInstallation(ctx context.Context, installationID int64) (*Insta
 
 // CreateInstallationToken returns a cached installation token when still valid
 func (a *App) CreateInstallationToken(ctx context.Context, installationID int64) (*InstallationToken, error) {
-	cacheKey := fmt.Sprintf("ghi:%d", installationID)
+	key := fmt.Sprintf("ghi:%d", installationID)
 
 	count, err := a.cache.DeleteExpired()
 	if err != nil {
@@ -77,11 +78,11 @@ func (a *App) CreateInstallationToken(ctx context.Context, installationID int64)
 			Msg("Expired cache entries deleted")
 	}
 
-	value, expiresAt, err := a.cache.Get(cacheKey)
+	value, expiresAt, err := a.cache.Get(key)
 	if err != nil {
 		return nil, err
 	}
-	if value != "" {
+	if !lo.IsEmpty(value) {
 		token, err := util.Decrypt(a.config.EncryptionKey, value)
 		if err != nil {
 			return nil, err
@@ -89,7 +90,7 @@ func (a *App) CreateInstallationToken(ctx context.Context, installationID int64)
 
 		log.Info().
 			Int64("installationId", installationID).
-			Str("cacheKey", cacheKey).
+			Str("key", key).
 			Time("expiresAt", expiresAt.UTC()).
 			Msg("GitHub installation token cache hit")
 
@@ -126,14 +127,14 @@ func (a *App) CreateInstallationToken(ctx context.Context, installationID int64)
 		return nil, err
 	}
 
-	err = a.cache.Set(cacheKey, encrypted, &expiry)
+	err = a.cache.Set(key, encrypted, &expiry)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Info().
 		Int64("installationId", installationID).
-		Str("cacheKey", cacheKey).
+		Str("key", key).
 		Time("expiresAt", expiry).
 		Msg("GitHub installation token cached")
 

@@ -14,19 +14,21 @@ import (
 	"github.com/samber/lo"
 )
 
-// GetIntentionsFromRules returns unique intention values from triage rules.
-func GetIntentionsFromRules(rules []v1.Rule) []string {
-	var intentions []string
+// GetIntentionsFromRules returns unique intentions from triage rules.
+func GetIntentionsFromRules(rules []v1.Rule) []v1.Intention {
+	var intentions []v1.Intention
 
 	for _, rule := range rules {
 		for _, when := range rule.When {
-			if !lo.IsEmpty(when.Intention) {
+			if !lo.IsEmpty(when.Intention.Name) {
 				intentions = append(intentions, when.Intention)
 			}
 		}
 	}
 
-	return lo.Uniq(intentions)
+	return lo.UniqBy(intentions, func(intention v1.Intention) string {
+		return intention.Name
+	})
 }
 
 // MatchPattern reports whether value matches pattern, ignoring case.

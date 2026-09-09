@@ -102,6 +102,38 @@ func (e *AllowEntry) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+func (i *Intention) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		i.Name = value.Value
+		return nil
+	}
+
+	var s struct {
+		Name        string `yaml:"name"`
+		Description string `yaml:"description"`
+	}
+	err := value.Decode(&s)
+	if err != nil {
+		return err
+	}
+
+	i.Name = s.Name
+	i.Description = s.Description
+
+	return nil
+}
+
+func (i Intention) MarshalYAML() (any, error) {
+	if i.Description == "" {
+		return i.Name, nil
+	}
+
+	return struct {
+		Name        string `yaml:"name"`
+		Description string `yaml:"description"`
+	}{Name: i.Name, Description: i.Description}, nil
+}
+
 func (b *BatchSize) UnmarshalYAML(value *yaml.Node) error {
 	var n int
 	err := value.Decode(&n)

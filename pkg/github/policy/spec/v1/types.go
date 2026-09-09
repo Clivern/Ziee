@@ -130,10 +130,16 @@ type Clause struct {
 	AuthorNotIn     []string   `json:"author_not_in,omitempty" yaml:"author_not_in,omitempty"`
 	AuthorInTeam    []string   `json:"author_in_team,omitempty" yaml:"author_in_team,omitempty"`
 	AuthorNotInTeam []string   `json:"author_not_in_team,omitempty" yaml:"author_not_in_team,omitempty"`
-	Intention       string     `json:"intention,omitempty" yaml:"intention,omitempty"`
+	Intention       Intention  `json:"intention,omitempty" yaml:"intention,omitempty"`
 	Label           string     `json:"label,omitempty" yaml:"label,omitempty"`
 	Check           string     `json:"check,omitempty" yaml:"check,omitempty"`
 	Approvals       *Approvals `json:"approvals,omitempty" yaml:"approvals,omitempty"`
+}
+
+// Intention is an AI classify label. A string is the name only.
+type Intention struct {
+	Name        string `json:"name,omitempty" yaml:"name,omitempty"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 }
 
 // Approvals is a `queue_when` / `merge_when` matcher.

@@ -3,6 +3,10 @@
 
 package eval
 
+import (
+	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
+)
+
 // Event is one GitHub delivery eval can evaluate.
 type Event struct {
 	Kind    string
@@ -36,5 +40,6 @@ type Client interface {
 	// GetTeams returns GitHub org team slugs for login.
 	GetTeams(login string) []string
 	// EvaluateIssue classifies issue intention from title and body.
-	EvaluateIssue(issue Issue, intentions []string) []string
+	// Intention descriptions are added to the classify prompt.
+	EvaluateIssue(issue Issue, intentions []v1.Intention) []string
 }

@@ -119,7 +119,7 @@ merge_queue:
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
     #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
-    #   intention (requires ai.enabled).
+    #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
     # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams).
     rules:
       # Paths under api/ or pkg/
@@ -196,7 +196,9 @@ merge_queue:
       - name: bug
         when:
           - author_not_in: [dependabot, ziee-bot]
-          - intention: bug
+          - intention:
+              name: bug
+              description: "A defect or unexpected behavior that needs a fix."
         labels:
           add: [bug]
         assign: [clivern]
@@ -205,7 +207,9 @@ merge_queue:
       - name: enhancement
         when:
           - author_not_in: [dependabot, ziee-bot]
-          - intention: enhancement
+          - intention:
+              name: enhancement
+              description: "A new feature or improvement."
         labels:
           add: [enhancement]
 
@@ -213,7 +217,9 @@ merge_queue:
       - name: docs
         when:
           - author_not_in: [dependabot, ziee-bot]
-          - intention: docs
+          - intention:
+              name: docs
+              description: "Documentation-only changes."
         labels:
           add: [docs]
         reviewers: [maya]
@@ -222,7 +228,9 @@ merge_queue:
       - name: security
         when:
           - author_not_in: [dependabot, ziee-bot]
-          - intention: security
+          - intention:
+              name: security
+              description: "A vulnerability or security improvement."
         labels:
           add: [security]
         assign: [clivern]
@@ -447,7 +455,7 @@ issue_triage:
   #   title, body,
   #   author_in / author_not_in (user logins),
   #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
-  #   intention (requires ai.enabled).
+  #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
   # Actions: labels.add / labels.remove, assign (users), comment (body).
   rules:
     # Bot authors (user logins)
@@ -485,7 +493,9 @@ issue_triage:
     - name: bug
       when:
         - author_not_in: [dependabot, ziee-bot]
-        - intention: bug
+        - intention:
+            name: bug
+            description: "A defect or unexpected behavior that needs a fix."
       labels:
         add: [bug]
       assign: [clivern]
@@ -495,7 +505,9 @@ issue_triage:
     - name: enhancement
       when:
         - author_not_in: [dependabot, ziee-bot]
-        - intention: enhancement
+        - intention:
+            name: enhancement
+            description: "A new feature or improvement."
       labels:
         add: [enhancement]
 
@@ -503,7 +515,9 @@ issue_triage:
     - name: docs
       when:
         - author_not_in: [dependabot, ziee-bot]
-        - intention: docs
+        - intention:
+            name: docs
+            description: "A documentation request or docs-only report."
       labels:
         add: [docs]
       assign: [maya]
@@ -512,7 +526,9 @@ issue_triage:
     - name: security
       when:
         - author_not_in: [dependabot, ziee-bot]
-        - intention: security
+        - intention:
+            name: security
+            description: "A vulnerability or security improvement."
       labels:
         add: [security]
       assign: [clivern]

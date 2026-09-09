@@ -67,7 +67,8 @@ func TestUnitParseRepoFile(t *testing.T) {
 
 	bug := file.MergeQueue.PRTriage.Rules[8]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bug.When[0].AuthorNotIn)
-	assert.Equal(t, "bug", bug.When[1].Intention)
+	assert.Equal(t, "bug", bug.When[1].Intention.Name)
+	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", bug.When[1].Intention.Description)
 
 	queue := file.MergeQueue.Commands["queue"]
 	assert.Equal(t, "write", queue.Allow[0].Permission)
@@ -97,7 +98,8 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
 	assert.Equal(t, "platform_monorepo", file.IssueTriage.AI.KBTags[0].Tag)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
-	assert.Equal(t, "bug", file.IssueTriage.Rules[4].When[1].Intention)
+	assert.Equal(t, "bug", file.IssueTriage.Rules[4].When[1].Intention.Name)
+	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", file.IssueTriage.Rules[4].When[1].Intention.Description)
 	assert.Equal(t, "Thanks for the report. We'll investigate this bug.", file.IssueTriage.Rules[4].Comment)
 	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[8].When[0].AuthorNotInTeam)
 	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[12].When[0].AuthorNotInTeam)
@@ -116,6 +118,10 @@ merge_queue:
           - min_files_changed: 1
           - author_not_in: [bot]
           - body: "repro"
+          - intention: docs
+          - intention:
+              name: bug
+              description: "A defect that needs a fix."
         labels:
           add: [size/s]
   queue_rules:
@@ -137,6 +143,9 @@ issue_triage:
 	assert.Equal(t, 1, *when[1].MinFilesChanged)
 	assert.Equal(t, []string{"bot"}, when[2].AuthorNotIn)
 	assert.Equal(t, "repro", when[3].Body)
+	assert.Equal(t, "docs", when[4].Intention.Name)
+	assert.Equal(t, "bug", when[5].Intention.Name)
+	assert.Equal(t, "A defect that needs a fix.", when[5].Intention.Description)
 	assert.Equal(t, 2, file.MergeQueue.QueueRules[0].BatchSize.Min)
 	assert.Equal(t, 4, file.MergeQueue.QueueRules[0].BatchSize.Max)
 	assert.Equal(t, []string{"maya"}, file.IssueTriage.Commands["label"].Allow[0].Users)

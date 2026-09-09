@@ -56,12 +56,12 @@ func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
 			Rules: []v1.Rule{
 				{
 					Name:   "bug",
-					When:   v1.Clauses{{Intention: "bug"}},
+					When:   v1.Clauses{{Intention: v1.Intention{Name: "bug", Description: "A defect that needs a fix."}}},
 					Labels: v1.Labels{Add: []string{"bug"}},
 				},
 				{
 					Name:   "docs",
-					When:   v1.Clauses{{Intention: "docs"}},
+					When:   v1.Clauses{{Intention: v1.Intention{Name: "docs"}}},
 					Labels: v1.Labels{Add: []string{"docs"}},
 				},
 			},
@@ -74,7 +74,10 @@ func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
 		Issue: Issue{Title: "crash on save"},
 	}, client)
 
-	assert.Equal(t, []string{"bug", "docs"}, client.got)
+	assert.Equal(t, []v1.Intention{
+		{Name: "bug", Description: "A defect that needs a fix."},
+		{Name: "docs"},
+	}, client.got)
 	assert.Equal(t, []action.Action{
 		{Kind: policy.AddLabels, Labels: []string{"bug"}},
 	}, plan.Actions)
@@ -177,12 +180,12 @@ func TestUnitEvaluateIssueOpenedOutcomeAllNone(t *testing.T) {
 }
 
 type stubClient struct {
-	got        []string
+	got        []v1.Intention
 	intentions []string
 	teams      []string
 }
 
-func (s *stubClient) EvaluateIssue(_ Issue, intentions []string) []string {
+func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) []string {
 	s.got = intentions
 
 	return s.intentions

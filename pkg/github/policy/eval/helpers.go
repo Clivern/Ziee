@@ -32,7 +32,6 @@ func GetIntentionsFromRules(rules []v1.Rule) []string {
 // MatchPattern reports whether value matches pattern, ignoring case.
 func MatchPattern(pattern, value string) bool {
 	matched, _ := regexp.MatchString("(?i)"+pattern, value)
-
 	return matched
 }
 

@@ -22,7 +22,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 	event.Issue.Teams = MergeTeams(
 		event.Issue.Teams,
 		GetTeamsFromFile(conf.Teams, event.Issue.Author),
-		client.GetTeams(event.Issue.Author),
+		client.GetTeams(event.Org, event.Issue.Author),
 	)
 
 	intentions := GetIntentionsFromRules(conf.IssueTriage.Rules)

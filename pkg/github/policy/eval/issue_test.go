@@ -111,6 +111,7 @@ func TestUnitEvaluateIssueOpenedTeams(t *testing.T) {
 	}
 
 	plan := EvaluateIssueOpened(conf, Event{
+		Org:   "acme",
 		Issue: Issue{Author: "maya"},
 	}, &stubClient{teams: []string{"core"}})
 
@@ -191,6 +192,6 @@ func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) []string 
 	return s.intentions
 }
 
-func (s *stubClient) GetTeams(string) []string {
+func (s *stubClient) GetTeams(string, string) []string {
 	return s.teams
 }

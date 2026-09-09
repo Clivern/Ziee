@@ -85,10 +85,10 @@ func OutcomeComment(mode string, actions []action.Action) string {
 	}
 
 	parts := lo.Compact([]string{
-		joinClause("labeled", "`", "`", add),
-		joinClause("removed", "`", "`", remove),
-		joinClause("assigned", "@", "", assign),
-		joinClause("unassigned", "@", "", unassign),
+		JoinClause("labeled", "`", "`", add),
+		JoinClause("removed", "`", "`", remove),
+		JoinClause("assigned", "@", "", assign),
+		JoinClause("unassigned", "@", "", unassign),
 		lo.Ternary(closed, "closed this issue", ""),
 		lo.Ternary(reopened, "reopened this issue", ""),
 	})
@@ -106,7 +106,7 @@ func OutcomeComment(mode string, actions []action.Action) string {
 	return ""
 }
 
-func joinClause(verb, left, right string, items []string) string {
+func JoinClause(verb, left, right string, items []string) string {
 	items = lo.Uniq(items)
 	if len(items) == 0 {
 		return ""

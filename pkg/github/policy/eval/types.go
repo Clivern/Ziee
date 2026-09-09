@@ -13,15 +13,15 @@ type Event struct {
 
 // Issue is the ticket the event is about.
 type Issue struct {
-	Number    int
-	Title     string
-	Body      string
-	Author    string
-	Labels    []string
-	Assignees []string
-	Teams     []string
-	Files     []string
-	Intention string
+	Number     int
+	Title      string
+	Body       string
+	Author     string
+	Labels     []string
+	Assignees  []string
+	Teams      []string
+	Files      []string
+	Intentions []string
 }
 
 // Actor is who opened the issue or typed the comment.
@@ -31,6 +31,10 @@ type Actor struct {
 	Teams      []string
 }
 
-// Client is the GitHub client.
+// Client is the GitHub and AI client.
 type Client interface {
+	// GetTeams returns GitHub org team slugs for login.
+	GetTeams(login string) []string
+	// EvaluateIssue classifies issue intention from title and body.
+	EvaluateIssue(issue Issue, intentions []string) []string
 }

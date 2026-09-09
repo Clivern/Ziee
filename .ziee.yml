@@ -45,7 +45,7 @@ labels:
     color: "E99695"
     description: "Vulnerability remediation or security improvement."
 
-# Teams definitions
+# Teams definitions (union with GitHub org teams for author_in_team)
 teams:
   - name: sre
     members:
@@ -118,7 +118,7 @@ merge_queue:
     # `when` matchers (all must match):
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
-    #   author_in_team / author_not_in_team (org team slugs),
+    #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
     #   intention (requires ai.enabled).
     # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams).
     rules:
@@ -227,6 +227,11 @@ merge_queue:
           add: [security]
         assign: [clivern]
         review_teams: [sre]
+
+      # Author is not a member of org team sre
+      - name: not-sre
+        when:
+          - author_not_in_team: [sre]
 
   # Commands are typed on the PR. `allow` is who may run them (any matching entry is enough):
   #   permission — GitHub repo role minimum (write = write / maintain / admin)
@@ -441,9 +446,9 @@ issue_triage:
   # `when` matchers (all must match):
   #   title, body,
   #   author_in / author_not_in (user logins),
-  #   author_in_team / author_not_in_team (org team slugs),
+  #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
   #   intention (requires ai.enabled).
-  # Actions: labels.add / labels.remove, assign (users).
+  # Actions: labels.add / labels.remove, assign (users), comment (body).
   rules:
     # Bot authors (user logins)
     - name: bot
@@ -484,6 +489,7 @@ issue_triage:
       labels:
         add: [bug]
       assign: [clivern]
+      comment: "Thanks for the report. We'll investigate this bug."
 
     # AI intention: enhancement
     - name: enhancement
@@ -510,3 +516,9 @@ issue_triage:
       labels:
         add: [security]
       assign: [clivern]
+
+    # Author is not a member of org team sre
+    - name: not-sre
+      when:
+        - author_not_in_team: [sre]
+      comment: "Thanks for opening this. Someone from the team will take a look."

@@ -6,9 +6,16 @@ package v1
 // File is a parsed `.ziee.yml`.
 type File struct {
 	Version     string      `yaml:"version"`
+	Teams       []Team      `yaml:"teams"`
 	MergeQueue  MergeQueue  `yaml:"merge_queue"`
 	PRReviews   PRReviews   `yaml:"pr_reviews"`
 	IssueTriage IssueTriage `yaml:"issue_triage"`
+}
+
+// Team is a named group of GitHub logins in `.ziee.yml`.
+type Team struct {
+	Name    string   `yaml:"name"`
+	Members []string `yaml:"members"`
 }
 
 // MergeQueue is the pull-request automation block.
@@ -38,7 +45,7 @@ type PRTriage struct {
 	Rules []Rule `yaml:"rules"`
 }
 
-// IssueTriage labels and assigns GitHub issues.
+// IssueTriage labels, assigns, and comments on GitHub issues.
 type IssueTriage struct {
 	Enabled  bool     `yaml:"enabled"`
 	Comments string   `yaml:"comments"`
@@ -71,6 +78,7 @@ type Rule struct {
 	Assign      []string `yaml:"assign,omitempty"`
 	Reviewers   []string `yaml:"reviewers,omitempty"`
 	ReviewTeams []string `yaml:"review_teams,omitempty"`
+	Comment     string   `yaml:"comment,omitempty"`
 }
 
 // Labels are GitHub labels to add or remove.

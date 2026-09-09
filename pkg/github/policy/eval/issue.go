@@ -4,12 +4,11 @@
 package eval
 
 import (
-	"regexp"
-	"slices"
-
 	"github.com/clivern/ziee/pkg/github/policy"
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
+
+	"github.com/samber/lo"
 )
 
 // EvaluateIssueOpened evaluates a new issue against every issue rule.
@@ -20,48 +19,44 @@ func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan 
 		return plan
 	}
 
-	// TODO: Use client to enrich author teams and AI intention.
+	event.Issue.Teams = MergeTeams(
+		event.Issue.Teams,
+		GetTeamsFromFile(file.Teams, event.Issue.Author),
+		client.GetTeams(event.Issue.Author),
+	)
+
+	intentions := GetIntentionsFromRules(file.IssueTriage.Rules)
+	if file.IssueTriage.AI.Enabled && len(intentions) > 0 {
+		event.Issue.Intentions = client.EvaluateIssue(event.Issue, intentions)
+	}
+
 	for _, rule := range file.IssueTriage.Rules {
 		matched := true
 
 		for _, when := range rule.When {
-			titleMatches, _ := regexp.MatchString(when.Title, event.Issue.Title)
-			bodyMatches, _ := regexp.MatchString(when.Body, event.Issue.Body)
-
-			if when.Title != "" && !titleMatches {
+			if !lo.IsEmpty(when.Title) && !MatchPattern(when.Title, event.Issue.Title) {
 				matched = false
 			}
-			if when.Body != "" && !bodyMatches {
+			if !lo.IsEmpty(when.Body) && !MatchPattern(when.Body, event.Issue.Body) {
 				matched = false
 			}
-			if len(when.AuthorIn) > 0 && !slices.Contains(when.AuthorIn, event.Issue.Author) {
+			if len(when.AuthorIn) > 0 && !lo.Contains(when.AuthorIn, event.Issue.Author) {
 				matched = false
 			}
-			if slices.Contains(when.AuthorNotIn, event.Issue.Author) {
+			if lo.Contains(when.AuthorNotIn, event.Issue.Author) {
 				matched = false
 			}
-
-			//TODO: Add intention matching
-
-			if when.Label != "" && !slices.Contains(event.Issue.Labels, when.Label) {
+			if !lo.IsEmpty(when.Intention) && !lo.Contains(event.Issue.Intentions, when.Intention) {
 				matched = false
 			}
-
-			if len(when.AuthorInTeam) > 0 {
-				authorInTeam := false
-				for _, team := range when.AuthorInTeam {
-					if slices.Contains(event.Issue.Teams, team) {
-						authorInTeam = true
-					}
-				}
-				if !authorInTeam {
-					matched = false
-				}
+			if !lo.IsEmpty(when.Label) && !lo.Contains(event.Issue.Labels, when.Label) {
+				matched = false
 			}
-			for _, team := range when.AuthorNotInTeam {
-				if slices.Contains(event.Issue.Teams, team) {
-					matched = false
-				}
+			if len(when.AuthorInTeam) > 0 && !lo.Some(event.Issue.Teams, when.AuthorInTeam) {
+				matched = false
+			}
+			if len(when.AuthorNotInTeam) > 0 && lo.Some(event.Issue.Teams, when.AuthorNotInTeam) {
+				matched = false
 			}
 		}
 
@@ -87,9 +82,21 @@ func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan 
 				Users: rule.Assign,
 			})
 		}
+		if !lo.IsEmpty(rule.Comment) {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind: policy.Comment,
+				Body: rule.Comment,
+			})
+		}
 	}
 
-	// TODO: Add an outcome comment according to file.IssueTriage.Comments.
+	body := OutcomeComment(file.IssueTriage.Comments, plan.Actions)
+	if !lo.IsEmpty(body) {
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind: policy.Comment,
+			Body: body,
+		})
+	}
 
 	return plan
 }

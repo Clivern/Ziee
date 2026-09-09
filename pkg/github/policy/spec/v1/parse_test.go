@@ -22,6 +22,10 @@ func TestUnitParseRepoFile(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "1.0.0", file.Version)
+	assert.Equal(t, "sre", file.Teams[0].Name)
+	assert.Equal(t, []string{"clivern", "maya"}, file.Teams[0].Members)
+	assert.Equal(t, "core", file.Teams[1].Name)
+	assert.Equal(t, []string{"tj", "kiran"}, file.Teams[1].Members)
 	assert.False(t, file.MergeQueue.Enabled)
 	assert.Equal(t, "serial", file.MergeQueue.Mode)
 	assert.Equal(t, 5, file.MergeQueue.MaxParallelChecks)
@@ -94,6 +98,9 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "platform_monorepo", file.IssueTriage.AI.KBTags[0].Tag)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
 	assert.Equal(t, "bug", file.IssueTriage.Rules[4].When[1].Intention)
+	assert.Equal(t, "Thanks for the report. We'll investigate this bug.", file.IssueTriage.Rules[4].Comment)
+	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[8].When[0].AuthorNotInTeam)
+	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[12].When[0].AuthorNotInTeam)
 }
 
 func TestUnitParseWhenAllowBatchSize(t *testing.T) {

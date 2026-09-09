@@ -19,10 +19,11 @@ func TestUnitEvaluateIssueOpened(t *testing.T) {
 			Enabled: true,
 			Rules: []v1.Rule{
 				{
-					Name:   "hotfix",
-					When:   v1.Clauses{{Title: "[Hh]otfix"}},
-					Labels: v1.Labels{Add: []string{"hotfix"}},
-					Assign: []string{"clivern"},
+					Name:    "hotfix",
+					When:    v1.Clauses{{Title: "hotfix"}},
+					Labels:  v1.Labels{Add: []string{"hotfix"}},
+					Assign:  []string{"clivern"},
+					Comment: "Hotfix acknowledged.",
 				},
 				{
 					Name:   "bot",
@@ -35,13 +36,158 @@ func TestUnitEvaluateIssueOpened(t *testing.T) {
 
 	plan := EvaluateIssueOpened(file, Event{
 		Issue: Issue{
-			Title:  "Hotfix: cache",
+			Title:  "HOTFIX: cache",
 			Author: "maya",
 		},
-	}, nil)
+	}, &stubClient{})
 
 	assert.Equal(t, []action.Action{
 		{Kind: policy.AddLabels, Labels: []string{"hotfix"}},
 		{Kind: policy.Assign, Users: []string{"clivern"}},
+		{Kind: policy.Comment, Body: "Hotfix acknowledged."},
 	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
+	file := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			AI:      v1.AI{Enabled: true},
+			Rules: []v1.Rule{
+				{
+					Name:   "bug",
+					When:   v1.Clauses{{Intention: "bug"}},
+					Labels: v1.Labels{Add: []string{"bug"}},
+				},
+				{
+					Name:   "docs",
+					When:   v1.Clauses{{Intention: "docs"}},
+					Labels: v1.Labels{Add: []string{"docs"}},
+				},
+			},
+		},
+	}
+
+	client := &stubClient{intentions: []string{"bug"}}
+
+	plan := EvaluateIssueOpened(file, Event{
+		Issue: Issue{Title: "crash on save"},
+	}, client)
+
+	assert.Equal(t, []string{"bug", "docs"}, client.got)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedTeams(t *testing.T) {
+	file := &v1.File{
+		Teams: []v1.Team{
+			{Name: "sre", Members: []string{"maya"}},
+		},
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name:   "from-sre",
+					When:   v1.Clauses{{AuthorInTeam: []string{"sre"}}},
+					Labels: v1.Labels{Add: []string{"team/sre"}},
+				},
+				{
+					Name:   "from-core",
+					When:   v1.Clauses{{AuthorInTeam: []string{"core"}}},
+					Labels: v1.Labels{Add: []string{"area/api"}},
+				},
+				{
+					Name:   "not-sre",
+					When:   v1.Clauses{{AuthorNotInTeam: []string{"sre"}}},
+					Labels: v1.Labels{Add: []string{"community"}},
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(file, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{teams: []string{"core"}})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"team/sre"}},
+		{Kind: policy.AddLabels, Labels: []string{"area/api"}},
+	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedOutcome(t *testing.T) {
+	file := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled:  true,
+			Comments: policy.CommentsOutcomes,
+			Rules: []v1.Rule{
+				{
+					Name:   "bug",
+					When:   v1.Clauses{{Title: "crash"}},
+					Labels: v1.Labels{Add: []string{"bug"}},
+					Assign: []string{"clivern"},
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(file, Event{
+		Issue: Issue{Title: "crash on save"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+		{Kind: policy.Assign, Users: []string{"clivern"}},
+		{Kind: policy.Comment, Body: "Triaged this issue: labeled `bug`, assigned @clivern."},
+	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedOutcomeAllNone(t *testing.T) {
+	file := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled:  true,
+			Comments: policy.CommentsAll,
+			Rules: []v1.Rule{
+				{
+					Name:   "bot",
+					When:   v1.Clauses{{AuthorIn: []string{"dependabot"}}},
+					Labels: v1.Labels{Add: []string{"bot"}},
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(file, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.Comment, Body: "Triage ran; no rules matched."},
+	}, plan.Actions)
+
+	file.IssueTriage.Comments = policy.CommentsNone
+
+	plan = EvaluateIssueOpened(file, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
+type stubClient struct {
+	got        []string
+	intentions []string
+	teams      []string
+}
+
+func (s *stubClient) EvaluateIssue(_ Issue, intentions []string) []string {
+	s.got = intentions
+
+	return s.intentions
+}
+
+func (s *stubClient) GetTeams(string) []string {
+	return s.teams
 }

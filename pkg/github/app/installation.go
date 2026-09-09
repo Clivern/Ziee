@@ -87,7 +87,7 @@ func (a *App) CreateInstallationToken(ctx context.Context, installationID int64)
 			return nil, err
 		}
 
-		log.Debug().
+		log.Info().
 			Int64("installationId", installationID).
 			Str("cacheKey", cacheKey).
 			Time("expiresAt", expiresAt.UTC()).

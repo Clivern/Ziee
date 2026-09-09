@@ -142,6 +142,7 @@ type AllowEntry struct {
 	Permission string   `json:"permission,omitempty" yaml:"permission,omitempty"`
 	Teams      []string `json:"teams,omitempty" yaml:"teams,omitempty"`
 	Users      []string `json:"users,omitempty" yaml:"users,omitempty"`
+	Self       bool     `json:"self,omitempty" yaml:"self,omitempty"`
 }
 
 // BatchSize is either a single int or {min, max}.

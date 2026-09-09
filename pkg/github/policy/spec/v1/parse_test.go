@@ -69,6 +69,7 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "write", queue.Allow[0].Permission)
 	assert.Equal(t, []string{"sre", "core"}, queue.Allow[1].Teams)
 	assert.Equal(t, []string{"clivern"}, queue.Allow[2].Users)
+	assert.True(t, queue.Allow[3].Self)
 
 	assert.Equal(t, "hotfix", file.MergeQueue.PriorityRules[0].Name)
 	assert.Equal(t, "hotfix", file.MergeQueue.PriorityRules[0].When[0].Label)

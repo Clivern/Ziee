@@ -232,6 +232,7 @@ merge_queue:
   #   permission — GitHub repo role minimum (write = write / maintain / admin)
   #   teams      — org team slugs
   #   users      — GitHub logins
+  #   self       — the PR author
   # Omit `permission` so people without repo access can still interact; Ziee uses the app token.
   commands:
     # `@ziee queue` or `@ziee queue hotfix`
@@ -241,6 +242,7 @@ merge_queue:
         - permission: write
         - teams: [sre, core]
         - users: [clivern]
+        - self: true
     # `@ziee dequeue` — pull the PR out of the queue
     dequeue:
       allow:
@@ -403,6 +405,7 @@ issue_triage:
   # `allow` is who may run them (any matching entry is enough):
   #   teams — org team slugs
   #   users — GitHub logins
+  #   self  — the issue author
   # Omit `permission` so people without repo access can still interact.
   commands:
     # `@ziee label bug security` — add GitHub labels named in the comment

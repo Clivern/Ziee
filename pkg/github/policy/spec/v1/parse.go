@@ -89,6 +89,8 @@ func (e *AllowEntry) UnmarshalYAML(value *yaml.Node) error {
 			err = node.Decode(&e.Teams)
 		case "users":
 			err = node.Decode(&e.Users)
+		case "self":
+			err = node.Decode(&e.Self)
 		default:
 			return fmt.Errorf("spec: unknown allow key %q", key)
 		}

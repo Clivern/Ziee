@@ -5,6 +5,9 @@ package oauth
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -55,5 +58,56 @@ func TestUnitOAuth(t *testing.T) {
 		token, err := oauth.Exchange(context.Background(), "code", "a", "b")
 		assert.Nil(t, token)
 		assert.ErrorIs(t, err, ErrInvalidOAuthState)
+	})
+
+	t.Run("Exchange User Emails", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch r.URL.Path {
+			case "/login/oauth/access_token":
+				assert.Equal(t, http.MethodPost, r.Method)
+				_ = json.NewEncoder(w).Encode(Token{
+					AccessToken: "gho_token",
+					TokenType:   "bearer",
+					Scope:       "read:user",
+				})
+			case "/user":
+				assert.Equal(t, "Bearer gho_token", r.Header.Get("Authorization"))
+				_ = json.NewEncoder(w).Encode(UserInfo{ID: 7, Login: "octocat", Name: "Octo", Email: "octo@example.com"})
+			case "/user/emails":
+				assert.Equal(t, "Bearer gho_token", r.Header.Get("Authorization"))
+				_ = json.NewEncoder(w).Encode([]Email{
+					{Email: "octo@example.com", Primary: true, Verified: true},
+				})
+			default:
+				http.NotFound(w, r)
+			}
+		}))
+		defer server.Close()
+
+		prevToken, prevUser, prevEmails := OauthTokenURL, OauthUserURL, OauthEmailsURL
+		OauthTokenURL = server.URL + "/login/oauth/access_token"
+		OauthUserURL = server.URL + "/user"
+		OauthEmailsURL = server.URL + "/user/emails"
+		t.Cleanup(func() {
+			OauthTokenURL, OauthUserURL, OauthEmailsURL = prevToken, prevUser, prevEmails
+		})
+
+		oauth := NewOAuth(OAuthConfig{
+			ClientID:     "cid",
+			ClientSecret: "secret",
+		})
+		ctx := context.Background()
+
+		token, err := oauth.Exchange(ctx, "code", "state", "state")
+		assert.NoError(t, err)
+		assert.Equal(t, "gho_token", token.AccessToken)
+
+		user, err := oauth.User(ctx, token.AccessToken)
+		assert.NoError(t, err)
+		assert.Equal(t, "octocat", user.Login)
+
+		emails, err := oauth.Emails(ctx, token.AccessToken)
+		assert.NoError(t, err)
+		assert.Equal(t, "octo@example.com", PrimaryEmail(emails, ""))
 	})
 }

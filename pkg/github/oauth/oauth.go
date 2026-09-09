@@ -10,11 +10,12 @@ import (
 	"strings"
 )
 
-const (
-	OauthAuthorizeURL = "https://github.com/login/oauth/authorize"
-	OauthTokenURL     = "https://github.com/login/oauth/access_token"
-	OauthUserURL      = "https://api.github.com/user"
-	OauthEmailsURL    = "https://api.github.com/user/emails"
+const OauthAuthorizeURL = "https://github.com/login/oauth/authorize"
+
+var (
+	OauthTokenURL  = "https://github.com/login/oauth/access_token"
+	OauthUserURL   = "https://api.github.com/user"
+	OauthEmailsURL = "https://api.github.com/user/emails"
 )
 
 // OAuthConfig holds GitHub OAuth app credentials.

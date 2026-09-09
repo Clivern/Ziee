@@ -122,4 +122,33 @@ func TestUnitPasswordHashing(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEqual(t, hash, hash2)
 	})
+
+	t.Run("MapChecksum", func(t *testing.T) {
+		map1 := map[string]any{
+			"user": map[string]string{"name": "Alice"},
+			"tags": []string{"admin", "tech"},
+			"id":   42,
+		}
+		map2 := map[string]any{
+			"id":   42,
+			"tags": []string{"admin", "tech"},
+			"user": map[string]string{"name": "Alice"},
+		}
+		map3 := map[string]any{
+			"id":   42,
+			"tags": []string{"admin", "tech1"},
+			"user": map[string]string{"name": "Alice"},
+		}
+
+		sum1, err := MapChecksum(map1)
+		assert.NoError(t, err)
+		sum2, err := MapChecksum(map2)
+		assert.NoError(t, err)
+		sum3, err := MapChecksum(map3)
+		assert.NoError(t, err)
+
+		assert.Equal(t, sum1, sum2)
+		assert.NotEqual(t, sum1, sum3)
+		assert.Len(t, sum1, 64)
+	})
 }

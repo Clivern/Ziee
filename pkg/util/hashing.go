@@ -5,7 +5,11 @@ package util
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"sort"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,4 +41,25 @@ func RandomHash() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(b), nil
+}
+
+// MapChecksum returns a deterministic SHA-256 hex checksum of a map.
+func MapChecksum(m map[string]any) (string, error) {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	hasher := sha256.New()
+	for _, k := range keys {
+		valBytes, err := json.Marshal(m[k])
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal value for key %s: %w", k, err)
+		}
+		hasher.Write([]byte(k))
+		hasher.Write(valBytes)
+	}
+
+	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
 }

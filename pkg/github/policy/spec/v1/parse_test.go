@@ -49,15 +49,21 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, 21, *sizeL.When[0].MinFilesChanged)
 	assert.Equal(t, []string{"size/s"}, sizeL.Labels.Remove)
 
-	bug := file.MergeQueue.PRTriage.Rules[7]
-	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bug.When[0].AuthorNotIn)
-	assert.Equal(t, "bug", bug.When[1].Intention)
+	bot := file.MergeQueue.PRTriage.Rules[4]
+	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bot.When[0].AuthorIn)
 
 	fromSre := file.MergeQueue.PRTriage.Rules[5]
 	assert.Equal(t, []string{"sre"}, fromSre.When[0].AuthorInTeam)
 
 	hotfixTitle := file.MergeQueue.PRTriage.Rules[6]
-	assert.Equal(t, "[Hh]otfix", hotfixTitle.When[0].Title)
+	assert.Equal(t, "hotfix", hotfixTitle.When[0].Title)
+
+	hotfixBody := file.MergeQueue.PRTriage.Rules[7]
+	assert.Equal(t, "hotfix", hotfixBody.When[0].Body)
+
+	bug := file.MergeQueue.PRTriage.Rules[8]
+	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bug.When[0].AuthorNotIn)
+	assert.Equal(t, "bug", bug.When[1].Intention)
 
 	queue := file.MergeQueue.Commands["queue"]
 	assert.Equal(t, "write", queue.Allow[0].Permission)
@@ -86,7 +92,7 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
 	assert.Equal(t, "platform_monorepo", file.IssueTriage.AI.KBTags[0].Tag)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
-	assert.Equal(t, "bug", file.IssueTriage.Rules[3].When[1].Intention)
+	assert.Equal(t, "bug", file.IssueTriage.Rules[4].When[1].Intention)
 }
 
 func TestUnitParseWhenAllowBatchSize(t *testing.T) {

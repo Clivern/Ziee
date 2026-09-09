@@ -14,7 +14,7 @@ import (
 )
 
 func TestUnitEvaluateIssueOpened(t *testing.T) {
-	file := &v1.File{
+	conf := &v1.File{
 		IssueTriage: v1.IssueTriage{
 			Enabled: true,
 			Rules: []v1.Rule{
@@ -34,7 +34,7 @@ func TestUnitEvaluateIssueOpened(t *testing.T) {
 		},
 	}
 
-	plan := EvaluateIssueOpened(file, Event{
+	plan := EvaluateIssueOpened(conf, Event{
 		Issue: Issue{
 			Title:  "HOTFIX: cache",
 			Author: "maya",
@@ -49,7 +49,7 @@ func TestUnitEvaluateIssueOpened(t *testing.T) {
 }
 
 func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
-	file := &v1.File{
+	conf := &v1.File{
 		IssueTriage: v1.IssueTriage{
 			Enabled: true,
 			AI:      v1.AI{Enabled: true},
@@ -70,7 +70,7 @@ func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
 
 	client := &stubClient{intentions: []string{"bug"}}
 
-	plan := EvaluateIssueOpened(file, Event{
+	plan := EvaluateIssueOpened(conf, Event{
 		Issue: Issue{Title: "crash on save"},
 	}, client)
 
@@ -81,7 +81,7 @@ func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
 }
 
 func TestUnitEvaluateIssueOpenedTeams(t *testing.T) {
-	file := &v1.File{
+	conf := &v1.File{
 		Teams: []v1.Team{
 			{Name: "sre", Members: []string{"maya"}},
 		},
@@ -107,7 +107,7 @@ func TestUnitEvaluateIssueOpenedTeams(t *testing.T) {
 		},
 	}
 
-	plan := EvaluateIssueOpened(file, Event{
+	plan := EvaluateIssueOpened(conf, Event{
 		Issue: Issue{Author: "maya"},
 	}, &stubClient{teams: []string{"core"}})
 
@@ -118,7 +118,7 @@ func TestUnitEvaluateIssueOpenedTeams(t *testing.T) {
 }
 
 func TestUnitEvaluateIssueOpenedOutcome(t *testing.T) {
-	file := &v1.File{
+	conf := &v1.File{
 		IssueTriage: v1.IssueTriage{
 			Enabled:  true,
 			Comments: policy.CommentsOutcomes,
@@ -133,7 +133,7 @@ func TestUnitEvaluateIssueOpenedOutcome(t *testing.T) {
 		},
 	}
 
-	plan := EvaluateIssueOpened(file, Event{
+	plan := EvaluateIssueOpened(conf, Event{
 		Issue: Issue{Title: "crash on save"},
 	}, &stubClient{})
 
@@ -145,7 +145,7 @@ func TestUnitEvaluateIssueOpenedOutcome(t *testing.T) {
 }
 
 func TestUnitEvaluateIssueOpenedOutcomeAllNone(t *testing.T) {
-	file := &v1.File{
+	conf := &v1.File{
 		IssueTriage: v1.IssueTriage{
 			Enabled:  true,
 			Comments: policy.CommentsAll,
@@ -159,7 +159,7 @@ func TestUnitEvaluateIssueOpenedOutcomeAllNone(t *testing.T) {
 		},
 	}
 
-	plan := EvaluateIssueOpened(file, Event{
+	plan := EvaluateIssueOpened(conf, Event{
 		Issue: Issue{Author: "maya"},
 	}, &stubClient{})
 
@@ -167,9 +167,9 @@ func TestUnitEvaluateIssueOpenedOutcomeAllNone(t *testing.T) {
 		{Kind: policy.Comment, Body: "Triage ran; no rules matched."},
 	}, plan.Actions)
 
-	file.IssueTriage.Comments = policy.CommentsNone
+	conf.IssueTriage.Comments = policy.CommentsNone
 
-	plan = EvaluateIssueOpened(file, Event{
+	plan = EvaluateIssueOpened(conf, Event{
 		Issue: Issue{Author: "maya"},
 	}, &stubClient{})
 

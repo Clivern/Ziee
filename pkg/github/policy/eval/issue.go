@@ -12,25 +12,25 @@ import (
 )
 
 // EvaluateIssueOpened evaluates a new issue against every issue rule.
-func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan {
+func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan
 
-	if !file.IssueTriage.Enabled {
+	if !conf.IssueTriage.Enabled {
 		return plan
 	}
 
 	event.Issue.Teams = MergeTeams(
 		event.Issue.Teams,
-		GetTeamsFromFile(file.Teams, event.Issue.Author),
+		GetTeamsFromFile(conf.Teams, event.Issue.Author),
 		client.GetTeams(event.Issue.Author),
 	)
 
-	intentions := GetIntentionsFromRules(file.IssueTriage.Rules)
-	if file.IssueTriage.AI.Enabled && len(intentions) > 0 {
+	intentions := GetIntentionsFromRules(conf.IssueTriage.Rules)
+	if conf.IssueTriage.AI.Enabled && len(intentions) > 0 {
 		event.Issue.Intentions = client.EvaluateIssue(event.Issue, intentions)
 	}
 
-	for _, rule := range file.IssueTriage.Rules {
+	for _, rule := range conf.IssueTriage.Rules {
 		matched := true
 
 		for _, when := range rule.When {
@@ -59,11 +59,9 @@ func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan 
 				matched = false
 			}
 		}
-
 		if !matched {
 			continue
 		}
-
 		if len(rule.Labels.Add) > 0 {
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind:   policy.AddLabels,
@@ -90,7 +88,7 @@ func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan 
 		}
 	}
 
-	body := OutcomeComment(file.IssueTriage.Comments, plan.Actions)
+	body := OutcomeComment(conf.IssueTriage.Comments, plan.Actions)
 	if !lo.IsEmpty(body) {
 		plan.Actions = append(plan.Actions, action.Action{
 			Kind: policy.Comment,
@@ -102,7 +100,7 @@ func EvaluateIssueOpened(file *v1.File, event Event, client Client) action.Plan 
 }
 
 // EvaluateIssueEdited re-evaluates an edited issue against every issue rule.
-func EvaluateIssueEdited(file *v1.File, event Event, client Client) action.Plan {
+func EvaluateIssueEdited(conf *v1.File, event Event, client Client) action.Plan {
 	// 1. Ignore the event when event.Actor is the Ziee GitHub App.
 	// 2. Enrich the event with author teams and AI intention.
 	// 3. Evaluate every issue rule against the updated issue.
@@ -116,7 +114,7 @@ func EvaluateIssueEdited(file *v1.File, event Event, client Client) action.Plan 
 }
 
 // EvaluateIssueLabelChange re-evaluates an issue after a label is added or removed.
-func EvaluateIssueLabelChange(file *v1.File, event Event, client Client) action.Plan {
+func EvaluateIssueLabelChange(conf *v1.File, event Event, client Client) action.Plan {
 	// 1. Ignore the event when event.Actor is the Ziee GitHub App.
 	// 2. Evaluate every issue rule against event.Issue.Labels, which is the current label set.
 	// 3. Compare the matching actions with the issue's current labels and assignees.
@@ -127,11 +125,11 @@ func EvaluateIssueLabelChange(file *v1.File, event Event, client Client) action.
 }
 
 // EvaluateIssueComment evaluates an issue comment as a Ziee command.
-func EvaluateIssueComment(file *v1.File, event Event, client Client) action.Plan {
+func EvaluateIssueComment(conf *v1.File, event Event, client Client) action.Plan {
 	// 1. Ignore the event when event.Actor is the Ziee GitHub App.
 	// 2. Ignore comments that do not start with `@ziee`.
 	// 3. Parse the command verb and arguments from event.Comment.
-	// 4. Find the verb in file.IssueTriage.Commands.
+	// 4. Find the verb in conf.IssueTriage.Commands.
 	// 5. Use client to load the actor's repository permission and teams.
 	// 6. Allow the command when any permission, team, or user entry matches.
 	// 7. Convert the command and arguments into label, assignment, or state actions.

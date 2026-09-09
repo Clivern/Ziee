@@ -1,4 +1,4 @@
-FROM golang:1.26.5 AS builder
+FROM golang:1.26.6 AS builder
 
 ARG ZIEE_VERSION=0.1.0
 ARG ZIEE_COMMIT=none

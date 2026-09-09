@@ -50,7 +50,7 @@ func TestUnitAppHTTP(t *testing.T) {
 			assert.Equal(t, "/app/installations/42", r.URL.Path)
 			assert.True(t, strings.HasPrefix(r.Header.Get("Authorization"), "Bearer "))
 			_ = json.NewEncoder(w).Encode(Installation{
-				ID: 42,
+				ID:      42,
 				Account: InstallationAccount{Login: "acme"},
 			})
 		})
@@ -77,7 +77,7 @@ func TestUnitAppHTTP(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/installation/repositories", r.URL.Path)
 			_ = json.NewEncoder(w).Encode(RepositoriesResponse{
-				TotalCount: 1,
+				TotalCount:   1,
 				Repositories: []Repository{{ID: 1, Name: "ziee", FullName: "acme/ziee"}},
 			})
 		}))

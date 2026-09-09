@@ -54,7 +54,7 @@ func TestUnitLocale(t *testing.T) {
 	t.Run("Load skips non-po files", func(t *testing.T) {
 		locales = make(map[string]*gotext.Po)
 		fsys := fstest.MapFS{
-			"en.po": &fstest.MapFile{Data: []byte("msgid \"hi\"\nmsgstr \"Hello\"\n")},
+			"en.po":     &fstest.MapFile{Data: []byte("msgid \"hi\"\nmsgstr \"Hello\"\n")},
 			"notes.txt": &fstest.MapFile{Data: []byte("ignore")},
 			"subdir":    &fstest.MapFile{Mode: os.ModeDir},
 		}

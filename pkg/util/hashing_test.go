@@ -150,5 +150,19 @@ func TestUnitPasswordHashing(t *testing.T) {
 		assert.Equal(t, sum1, sum2)
 		assert.NotEqual(t, sum1, sum3)
 		assert.Len(t, sum1, 64)
+
+		empty, err := MapChecksum(map[string]any{})
+		assert.NoError(t, err)
+		assert.Len(t, empty, 64)
+
+		withNil, err := MapChecksum(map[string]any{"a": nil})
+		assert.NoError(t, err)
+		assert.NotEqual(t, empty, withNil)
+
+		nested, err := MapChecksum(map[string]any{
+			"meta": map[string]any{"count": 1, "ok": true},
+		})
+		assert.NoError(t, err)
+		assert.Len(t, nested, 64)
 	})
 }

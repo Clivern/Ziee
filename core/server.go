@@ -177,7 +177,7 @@ func RunServer(handler http.Handler) error {
 		return fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	err = app.Init()
+	err = app.Init(module.NewCache(db.NewKVRepository(db.GetDB())))
 	if err != nil {
 		return fmt.Errorf("failed to initialize github app: %w", err)
 	}

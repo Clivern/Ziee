@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"os"
+	"time"
 )
 
 const (
@@ -24,15 +25,24 @@ type App struct {
 	config Config
 	key    *rsa.PrivateKey
 	apiURL string
+	cache  Cache
 }
 
-// Init loads the GitHub App private key from config.
-func Init() error {
+// Cache stores encrypted values by key with an optional expiry.
+type Cache interface {
+	Get(key string) (string, *time.Time, error)
+	Set(key, value string, expiresAt *time.Time) error
+	DeleteExpired() (int64, error)
+}
+
+// Init loads the GitHub App private key and attaches the cache.
+func Init(cache Cache) error {
 	client, err := New()
 	if err != nil {
 		return err
 	}
 
+	client.cache = cache
 	app = client
 
 	return nil

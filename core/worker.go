@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
@@ -38,7 +39,7 @@ func RunWorker() error {
 		}
 	}()
 
-	err = app.Init()
+	err = app.Init(module.NewCache(db.NewKVRepository(db.GetDB())))
 	if err != nil {
 		return fmt.Errorf("failed to initialize github app: %w", err)
 	}

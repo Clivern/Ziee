@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -26,10 +27,45 @@ func testApp(t *testing.T, handler http.HandlerFunc) (*App, *httptest.Server) {
 	t.Cleanup(server.Close)
 
 	return &App{
-		config: Config{ClientID: "Iv1.test"},
+		config: Config{ClientID: "Iv1.test", EncryptionKey: "test-secret"},
 		key:    key,
 		apiURL: server.URL,
+		cache:  &memCache{items: map[string]memItem{}},
 	}, server
+}
+
+type memItem struct {
+	value     string
+	expiresAt *time.Time
+}
+
+type memCache struct {
+	items map[string]memItem
+}
+
+func (c *memCache) Get(key string) (string, *time.Time, error) {
+	item, ok := c.items[key]
+	if !ok {
+		return "", nil, nil
+	}
+	return item.value, item.expiresAt, nil
+}
+
+func (c *memCache) Set(key, value string, expiresAt *time.Time) error {
+	c.items[key] = memItem{value: value, expiresAt: expiresAt}
+	return nil
+}
+
+func (c *memCache) DeleteExpired() (int64, error) {
+	now := time.Now().UTC()
+	var n int64
+	for key, item := range c.items {
+		if item.expiresAt != nil && !item.expiresAt.After(now) {
+			delete(c.items, key)
+			n++
+		}
+	}
+	return n, nil
 }
 
 func withInstallToken(next http.HandlerFunc) http.HandlerFunc {
@@ -65,7 +101,7 @@ func TestUnitAppHTTP(t *testing.T) {
 		client, _ := testApp(t, func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/app/installations/7/access_tokens", r.URL.Path)
-			_ = json.NewEncoder(w).Encode(InstallationToken{Token: "ghs_abc"})
+			_ = json.NewEncoder(w).Encode(InstallationToken{Token: "ghs_abc", ExpiresAt: "2099-01-01T00:00:00Z"})
 		})
 
 		token, err := client.CreateInstallationToken(ctx, 7)

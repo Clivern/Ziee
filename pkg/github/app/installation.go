@@ -7,6 +7,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/clivern/ziee/pkg/util"
+
+	"github.com/rs/zerolog/log"
 )
 
 // Installation is a GitHub App installation.
@@ -58,8 +63,42 @@ func (a *App) GetInstallation(ctx context.Context, installationID int64) (*Insta
 	return &installation, nil
 }
 
-// CreateInstallationToken creates an installation access token.
+// CreateInstallationToken returns a cached installation token when still valid
 func (a *App) CreateInstallationToken(ctx context.Context, installationID int64) (*InstallationToken, error) {
+	cacheKey := fmt.Sprintf("ghi:%d", installationID)
+
+	count, err := a.cache.DeleteExpired()
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		log.Info().
+			Int64("count", count).
+			Msg("Expired cache entries deleted")
+	}
+
+	value, expiresAt, err := a.cache.Get(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if value != "" {
+		token, err := util.Decrypt(a.config.EncryptionKey, value)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Debug().
+			Int64("installationId", installationID).
+			Str("cacheKey", cacheKey).
+			Time("expiresAt", expiresAt.UTC()).
+			Msg("GitHub installation token cache hit")
+
+		return &InstallationToken{
+			Token:     token,
+			ExpiresAt: expiresAt.UTC().Format(time.RFC3339),
+		}, nil
+	}
+
 	jwt, err := a.JWT()
 	if err != nil {
 		return nil, err
@@ -75,6 +114,28 @@ func (a *App) CreateInstallationToken(ctx context.Context, installationID int64)
 	if err != nil {
 		return nil, err
 	}
+
+	expiry, err := time.Parse(time.RFC3339, token.ExpiresAt)
+	if err != nil {
+		return nil, err
+	}
+	expiry = expiry.UTC().Add(-20 * time.Minute)
+
+	encrypted, err := util.Encrypt(a.config.EncryptionKey, token.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.cache.Set(cacheKey, encrypted, &expiry)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info().
+		Int64("installationId", installationID).
+		Str("cacheKey", cacheKey).
+		Time("expiresAt", expiry).
+		Msg("GitHub installation token cached")
 
 	return &token, nil
 }

@@ -3,7 +3,7 @@
     <div class="max-w-md w-full text-center">
       <div class="mb-8">
         <router-link to="/">
-          <img src="/logo.png" :alt="$t('common.logo_alt')" class="h-24 w-auto mx-auto">
+          <AppLogo :alt="$t('common.logo_alt')" class="h-24 w-auto mx-auto text-theme-text" />
         </router-link>
       </div>
       <p class="text-6xl font-semibold text-theme-textLight mb-2">404</p>
@@ -24,5 +24,5 @@
 </template>
 
 <script setup>
-// 404 Not Found page
+import AppLogo from '@/components/AppLogo.vue'
 </script>

@@ -3,7 +3,7 @@
     <div class="max-w-md w-full">
       <div class="text-center mb-10">
         <div class="flex justify-center mb-6">
-          <img src="/logo.png" :alt="$t('common.logo_alt')" class="h-24 w-auto">
+          <AppLogo :alt="$t('common.logo_alt')" class="h-24 w-auto text-theme-text" />
         </div>
         <h1 class="text-2xl font-semibold text-theme-text mb-2">{{ $t('setup.title') }}</h1>
         <p class="text-sm text-theme-textLight">{{ $t('setup.subtitle') }}</p>
@@ -65,6 +65,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { setup_api } from '@/api'
 import { showFlash } from '@/lib/flash'
+import AppLogo from '@/components/AppLogo.vue'
 
 const { t } = useI18n()
 const router = useRouter()

@@ -2,8 +2,8 @@
   <div class="min-h-screen flex items-center justify-center bg-theme-bg px-4 py-12">
     <div class="max-w-md w-full">
       <div class="text-center mb-10">
-        <router-link to="/" class="inline-flex justify-center">
-          <img src="/logo.png" :alt="$t('common.logo_alt')" class="h-20 w-auto">
+        <router-link to="/" class="inline-flex justify-center text-theme-text">
+          <AppLogo :alt="$t('common.logo_alt')" class="h-20 w-auto" />
         </router-link>
       </div>
 
@@ -59,6 +59,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { user } from '@/lib/auth'
+import AppLogo from '@/components/AppLogo.vue'
 
 const { t } = useI18n()
 const route = useRoute()

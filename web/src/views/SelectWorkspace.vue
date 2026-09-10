@@ -2,11 +2,7 @@
   <div class="min-h-screen bg-theme-bg flex flex-col items-center justify-center px-4 py-12">
     <div class="w-full max-w-md">
       <div class="flex justify-center mb-6">
-        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-primary-200">
-          <svg class="h-8 w-8 text-theme-text" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-        </div>
+        <AppLogo :alt="$t('common.logo_alt')" class="h-14 w-auto text-theme-text" />
       </div>
 
       <h1 class="text-xl font-semibold text-theme-text text-center">
@@ -201,6 +197,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { github_api, workspace_api } from '@/api'
 import { loadWorkspaceFromStorage, saveWorkspaceToStorage } from '@/utils/storage'
+import AppLogo from '@/components/AppLogo.vue'
 
 const { t } = useI18n()
 const router = useRouter()

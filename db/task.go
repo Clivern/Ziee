@@ -44,6 +44,7 @@ type AsyncTaskRepository interface {
 	Complete(id Id) error
 	Fail(id Id, message string) error
 	CountByStatus(status string) (int64, error)
+	ListByStatus(status string) ([]*AsyncTask, error)
 }
 
 type AsyncTaskRepositoryPostgres struct {
@@ -143,6 +144,36 @@ func (r *AsyncTaskRepositoryPostgres) CountByStatus(status string) (int64, error
 		status,
 	).Scan(&count)
 	return count, err
+}
+
+// ListByStatus lists async tasks with the given status.
+func (r *AsyncTaskRepositoryPostgres) ListByStatus(status string) ([]*AsyncTask, error) {
+	rows, err := r.db.Query(
+		`SELECT id, type, payload::text
+		FROM async_tasks
+		WHERE status = $1
+		ORDER BY priority DESC, created_at`,
+		status,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*AsyncTask
+	for rows.Next() {
+		task := &AsyncTask{}
+		var payload string
+		err := rows.Scan(&task.Id, &task.Type, &payload)
+		if err != nil {
+			return nil, err
+		}
+
+		task.Payload = &payload
+		list = append(list, task)
+	}
+
+	return list, rows.Err()
 }
 
 // AsyncTaskMeta is a single row in the async_tasks_meta table.

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/broker"
 
@@ -80,4 +81,42 @@ func EnqueueTask(taskType, subject string, payload map[string]string, workspaceI
 	}
 
 	return GetBus().Flush()
+}
+
+// RepublishPendingTasks publishes pending async tasks to NATS again.
+func RepublishPendingTasks() (int, error) {
+	tasks, err := db.NewAsyncTaskRepository(db.GetDB()).ListByStatus(db.AsyncTaskStatusPending)
+	if err != nil {
+		return 0, err
+	}
+
+	for n, task := range tasks {
+		var subject string
+		switch task.Type {
+		case db.AsyncTaskTypeDocIndex:
+			subject = conf.NATSSubjectDocIndex
+		case db.AsyncTaskTypeDocDelete:
+			subject = conf.NATSSubjectDocDelete
+		case db.AsyncTaskTypeRepoBootstrap:
+			subject = conf.NATSSubjectRepoBootstrap
+		}
+
+		err = GetBus().Publish(subject, []byte(*task.Payload))
+		if err != nil {
+			return n, err
+		}
+
+		log.Info().
+			Str("id", task.Id.String()).
+			Str("type", task.Type).
+			Str("subject", subject).
+			Msg("Pending task republished")
+	}
+
+	err = GetBus().Flush()
+	if err != nil {
+		return 0, err
+	}
+
+	return len(tasks), nil
 }

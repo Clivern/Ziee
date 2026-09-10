@@ -38,7 +38,7 @@ type Comment struct {
 
 // GetIssue fetches an issue by number.
 func (a *App) GetIssue(ctx context.Context, installationID int64, owner, repo string, number int) (*Issue, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (a *App) GetIssue(ctx context.Context, installationID int64, owner, repo st
 
 // ListIssues lists issues in a repository.
 func (a *App) ListIssues(ctx context.Context, installationID int64, owner, repo string) ([]Issue, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +84,33 @@ func (a *App) ListIssues(ctx context.Context, installationID int64, owner, repo 
 	}
 }
 
+// CreateIssue opens an issue in a repository.
+func (a *App) CreateIssue(ctx context.Context, installationID int64, owner, repo, title, body string) (*Issue, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var issue Issue
+	path := fmt.Sprintf("%s/repos/%s/%s/issues", a.apiURL, owner, repo)
+	err = call(ctx, http.MethodPost, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, map[string]string{
+		"title": title,
+		"body":  body,
+	}, &issue)
+	if err != nil {
+		return nil, err
+	}
+
+	return &issue, nil
+}
+
 // CreateComment adds a comment on an issue or pull request.
 func (a *App) CreateComment(ctx context.Context, installationID int64, owner, repo string, number int, body string) (*Comment, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +150,7 @@ func (a *App) RemoveAssignees(ctx context.Context, installationID int64, owner, 
 }
 
 func (a *App) setIssueState(ctx context.Context, installationID int64, owner, repo string, number int, state string) error {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return err
 	}
@@ -141,7 +165,7 @@ func (a *App) setIssueState(ctx context.Context, installationID int64, owner, re
 }
 
 func (a *App) mutateAssignees(ctx context.Context, method string, installationID int64, owner, repo string, number int, users []string) error {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return err
 	}

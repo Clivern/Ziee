@@ -20,7 +20,7 @@ type Label struct {
 
 // ListLabels lists labels in a repository.
 func (a *App) ListLabels(ctx context.Context, installationID int64, owner, repo string) ([]Label, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (a *App) ListLabels(ctx context.Context, installationID int64, owner, repo 
 
 // AddLabels adds labels to an issue or pull request.
 func (a *App) AddLabels(ctx context.Context, installationID int64, owner, repo string, number int, labels []string) error {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (a *App) AddLabels(ctx context.Context, installationID int64, owner, repo s
 
 // RemoveLabels removes labels from an issue or pull request.
 func (a *App) RemoveLabels(ctx context.Context, installationID int64, owner, repo string, number int, labels []string) error {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return err
 	}

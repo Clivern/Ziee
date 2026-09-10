@@ -97,14 +97,14 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.Equal(t, "acme", inst.Account.Login)
 	})
 
-	t.Run("CreateInstallationToken", func(t *testing.T) {
+	t.Run("GetInstallationToken", func(t *testing.T) {
 		client, _ := testApp(t, func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/app/installations/7/access_tokens", r.URL.Path)
 			_ = json.NewEncoder(w).Encode(InstallationToken{Token: "ghs_abc", ExpiresAt: "2099-01-01T00:00:00Z"})
 		})
 
-		token, err := client.CreateInstallationToken(ctx, 7)
+		token, err := client.GetInstallationToken(ctx, 7)
 		assert.NoError(t, err)
 		assert.Equal(t, "ghs_abc", token.Token)
 	})
@@ -129,6 +129,8 @@ func TestUnitAppHTTP(t *testing.T) {
 			switch {
 			case r.Method == http.MethodGet && r.URL.Path == "/repos/acme/ziee/issues/3":
 				_ = json.NewEncoder(w).Encode(Issue{Number: 3, Title: "Bug", State: "open"})
+			case r.Method == http.MethodPost && r.URL.Path == "/repos/acme/ziee/issues":
+				_ = json.NewEncoder(w).Encode(Issue{Number: 4, Title: "Setup"})
 			case r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/repos/acme/ziee/issues"):
 				_ = json.NewEncoder(w).Encode([]Issue{{Number: 3, Title: "Bug"}})
 			case r.Method == http.MethodPost && r.URL.Path == "/repos/acme/ziee/issues/3/comments":
@@ -158,6 +160,10 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.NoError(t, client.ReopenIssue(ctx, 1, "acme", "ziee", 3))
 		assert.NoError(t, client.AddAssignees(ctx, 1, "acme", "ziee", 3, []string{"octocat"}))
 		assert.NoError(t, client.RemoveAssignees(ctx, 1, "acme", "ziee", 3, []string{"octocat"}))
+
+		created, err := client.CreateIssue(ctx, 1, "acme", "ziee", "Setup", "body")
+		assert.NoError(t, err)
+		assert.Equal(t, 4, created.Number)
 	})
 
 	t.Run("PullRequests", func(t *testing.T) {
@@ -179,6 +185,59 @@ func TestUnitAppHTTP(t *testing.T) {
 		prs, err := client.ListPullRequests(ctx, 1, "acme", "ziee")
 		assert.NoError(t, err)
 		assert.Len(t, prs, 1)
+	})
+
+	t.Run("FileExists", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/repos/acme/ziee/contents/.ziee.yml", r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"path":".ziee.yml"}`))
+		}))
+
+		exists, err := client.FileExists(ctx, 1, "acme", "ziee", ".ziee.yml")
+		assert.NoError(t, err)
+		assert.True(t, exists)
+	})
+
+	t.Run("FileExists missing", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			http.NotFound(w, r)
+		}))
+
+		exists, err := client.FileExists(ctx, 1, "acme", "ziee", ".ziee.yml")
+		assert.NoError(t, err)
+		assert.False(t, exists)
+	})
+
+	t.Run("CreatePullRequest", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			switch {
+			case r.Method == http.MethodGet && r.URL.Path == "/repos/acme/ziee":
+				_ = json.NewEncoder(w).Encode(Repository{DefaultBranch: "main"})
+			case r.Method == http.MethodGet && r.URL.Path == "/repos/acme/ziee/git/ref/heads/main":
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"object": map[string]string{"sha": "abc123"},
+				})
+			case r.Method == http.MethodPost && r.URL.Path == "/repos/acme/ziee/git/refs":
+				w.WriteHeader(http.StatusCreated)
+			case r.Method == http.MethodPut && r.URL.Path == "/repos/acme/ziee/contents/.ziee.yml":
+				w.WriteHeader(http.StatusCreated)
+			case r.Method == http.MethodPost && r.URL.Path == "/repos/acme/ziee/pulls":
+				_ = json.NewEncoder(w).Encode(PullRequest{Number: 8, Title: "Add .ziee.yml"})
+			default:
+				http.NotFound(w, r)
+			}
+		}))
+
+		pr, err := client.CreatePullRequest(ctx, 1, "acme", "ziee", NewPullRequest{
+			Branch:  "ziee/init",
+			Path:    ".ziee.yml",
+			Content: DefaultZieeYML,
+			Title:   "Add .ziee.yml",
+			Body:    "starter",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 8, pr.Number)
 	})
 
 	t.Run("Labels", func(t *testing.T) {

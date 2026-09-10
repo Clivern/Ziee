@@ -11,12 +11,13 @@ import (
 
 // Repository is a repo accessible to an installation.
 type Repository struct {
-	ID       int64  `json:"id"`
-	NodeID   string `json:"node_id"`
-	Name     string `json:"name"`
-	FullName string `json:"full_name"`
-	Private  bool   `json:"private"`
-	Owner    struct {
+	ID            int64  `json:"id"`
+	NodeID        string `json:"node_id"`
+	Name          string `json:"name"`
+	FullName      string `json:"full_name"`
+	Private       bool   `json:"private"`
+	DefaultBranch string `json:"default_branch"`
+	Owner         struct {
 		Login string `json:"login"`
 	} `json:"owner"`
 }
@@ -28,7 +29,7 @@ type RepositoriesResponse struct {
 
 // ListRepositories lists all repos the installation can access.
 func (a *App) ListRepositories(ctx context.Context, installationID int64) ([]Repository, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,4 +52,25 @@ func (a *App) ListRepositories(ctx context.Context, installationID int64) ([]Rep
 			return all, nil
 		}
 	}
+}
+
+// GetRepository fetches a repository by owner and name.
+func (a *App) GetRepository(ctx context.Context, installationID int64, owner, repo string) (*Repository, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var repository Repository
+	path := fmt.Sprintf("%s/repos/%s/%s", a.apiURL, owner, repo)
+	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, nil, &repository)
+	if err != nil {
+		return nil, err
+	}
+
+	return &repository, nil
 }

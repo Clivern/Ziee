@@ -31,7 +31,7 @@ type PullRequest struct {
 
 // GetPullRequest fetches a pull request by number.
 func (a *App) GetPullRequest(ctx context.Context, installationID int64, owner, repo string, number int) (*PullRequest, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (a *App) GetPullRequest(ctx context.Context, installationID int64, owner, r
 
 // ListPullRequests lists pull requests in a repository.
 func (a *App) ListPullRequests(ctx context.Context, installationID int64, owner, repo string) ([]PullRequest, error) {
-	token, err := a.CreateInstallationToken(ctx, installationID)
+	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,4 +75,77 @@ func (a *App) ListPullRequests(ctx context.Context, installationID int64, owner,
 			return all, nil
 		}
 	}
+}
+
+// NewPullRequest is a branch, file, and pull request to open against the default branch.
+type NewPullRequest struct {
+	Branch  string
+	Path    string
+	Content string
+	Title   string
+	Body    string
+}
+
+// CreatePullRequest creates a branch, adds a file, and opens a pull request.
+func (a *App) CreatePullRequest(ctx context.Context, installationID int64, owner, repo string, in NewPullRequest) (*PullRequest, error) {
+	repository, err := a.GetRepository(ctx, installationID, owner, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var ref struct {
+		Object struct {
+			SHA string `json:"sha"`
+		} `json:"object"`
+	}
+	path := fmt.Sprintf("%s/repos/%s/%s/git/ref/heads/%s", a.apiURL, owner, repo, repository.DefaultBranch)
+	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, nil, &ref)
+	if err != nil {
+		return nil, err
+	}
+
+	path = fmt.Sprintf("%s/repos/%s/%s/git/refs", a.apiURL, owner, repo)
+	err = call(ctx, http.MethodPost, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, map[string]string{
+		"ref": "refs/heads/" + in.Branch,
+		"sha": ref.Object.SHA,
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.CreateFile(ctx, installationID, owner, repo, in.Branch, in.Path, in.Content, in.Title)
+	if err != nil {
+		return nil, err
+	}
+
+	var pull PullRequest
+	path = fmt.Sprintf("%s/repos/%s/%s/pulls", a.apiURL, owner, repo)
+	err = call(ctx, http.MethodPost, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, map[string]string{
+		"title": in.Title,
+		"body":  in.Body,
+		"head":  in.Branch,
+		"base":  repository.DefaultBranch,
+	}, &pull)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pull, nil
 }

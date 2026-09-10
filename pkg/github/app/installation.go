@@ -64,8 +64,8 @@ func (a *App) GetInstallation(ctx context.Context, installationID int64) (*Insta
 	return &installation, nil
 }
 
-// CreateInstallationToken returns a cached installation token when still valid
-func (a *App) CreateInstallationToken(ctx context.Context, installationID int64) (*InstallationToken, error) {
+// GetInstallationToken returns a cached installation token when still valid
+func (a *App) GetInstallationToken(ctx context.Context, installationID int64) (*InstallationToken, error) {
 	key := fmt.Sprintf("ghi:%d", installationID)
 
 	count, err := a.cache.DeleteExpired()

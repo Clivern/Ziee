@@ -12,6 +12,18 @@ import (
 	"net/http"
 )
 
+// StatusError is a non-2xx GitHub API response.
+type StatusError struct {
+	Method string
+	URL    string
+	Status int
+	Body   string
+}
+
+func (e *StatusError) Error() string {
+	return fmt.Sprintf("http %s %s: status %d: %s", e.Method, e.URL, e.Status, e.Body)
+}
+
 func call(ctx context.Context, method, url, token string, headers map[string]string, payload, dest any) error {
 	var bodyReader io.Reader
 	if payload != nil {
@@ -48,7 +60,7 @@ func call(ctx context.Context, method, url, token string, headers map[string]str
 		return fmt.Errorf("http read body: %w", err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("http %s %s: status %d: %s", method, url, resp.StatusCode, body)
+		return &StatusError{Method: method, URL: url, Status: resp.StatusCode, Body: string(body)}
 	}
 
 	if dest == nil {

@@ -20,6 +20,7 @@ func TestUnitConf(t *testing.T) {
 		assert.Equal(t, 10, DefaultSearchLimit)
 		assert.Equal(t, "ziee.doc.index", NATSSubjectDocIndex)
 		assert.Equal(t, "ziee.doc.delete", NATSSubjectDocDelete)
+		assert.Equal(t, "ziee.repo.bootstrap", NATSSubjectRepoBootstrap)
 	})
 
 	t.Run("Edition", func(t *testing.T) {

@@ -5,11 +5,16 @@ package worker
 
 import (
 	"context"
+	"errors"
 
+	"github.com/clivern/ziee/conf"
+	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/broker"
 
 	"github.com/rs/zerolog/log"
 )
+
+var ErrInvalidPayload = errors.New("invalid worker payload")
 
 // Handler processes an inbound NATS message.
 type Handler func(context.Context, *broker.Msg) error
@@ -22,6 +27,32 @@ type Registration struct {
 
 // Registrations is a list of all registered handlers.
 var Registrations []Registration
+
+// Knowledge indexes and deletes workspace documents.
+type Knowledge interface {
+	Index(ctx context.Context, documentId db.Id) error
+	Delete(ctx context.Context, documentId db.Id, internalId string) error
+}
+
+// Dependencies are the services required by worker handlers.
+type Dependencies struct {
+	Knowledge Knowledge
+	Tasks     db.AsyncTaskRepository
+}
+
+type handlers struct {
+	knowledge Knowledge
+	tasks     db.AsyncTaskRepository
+}
+
+// Register attaches all worker handlers.
+func Register(deps Dependencies) {
+	h := &handlers{knowledge: deps.Knowledge, tasks: deps.Tasks}
+
+	On(conf.NATSSubjectDocIndex, h.HandleDocumentIndex)
+	On(conf.NATSSubjectDocDelete, h.HandleDocumentDelete)
+	On(conf.NATSSubjectRepoBootstrap, h.HandleRepositoryBootstrap)
+}
 
 // On registers a queue worker handler for subject.
 func On(subject string, handler Handler) {

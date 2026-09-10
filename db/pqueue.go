@@ -13,10 +13,10 @@ const (
 	PQueuePriorityMedium = "medium"
 	PQueuePriorityLow    = "low"
 
-	PQueueStatusQueued    = "queued"
-	PQueueStatusChecking  = "checking"
-	PQueueStatusMerged    = "merged"
-	PQueueStatusDequeued  = "dequeued"
+	PQueueStatusQueued   = "queued"
+	PQueueStatusChecking = "checking"
+	PQueueStatusMerged   = "merged"
+	PQueueStatusDequeued = "dequeued"
 )
 
 // PQueue is a pull request waiting in a repository merge queue.

@@ -14,8 +14,9 @@ const (
 	AsyncTaskStatusCompleted = "completed"
 	AsyncTaskStatusFailed    = "failed"
 
-	AsyncTaskTypeDocIndex  = "doc.index"
-	AsyncTaskTypeDocDelete = "doc.delete"
+	AsyncTaskTypeDocIndex      = "doc.index"
+	AsyncTaskTypeDocDelete     = "doc.delete"
+	AsyncTaskTypeRepoBootstrap = "repo.bootstrap"
 )
 
 // AsyncTask is a single row in the async_tasks table.

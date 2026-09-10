@@ -8,9 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/github/app"
 
@@ -100,15 +102,30 @@ func (i *Installation) UpdateRepositories(githubId int64, added []app.Repository
 		return nil
 	}
 
-	for _, repo := range added {
-		err = i.StoreRepository(item.WorkspaceId, githubId, repo)
+	for _, repository := range added {
+		err = i.StoreRepository(item.WorkspaceId, githubId, repository)
 		if err != nil {
 			return err
 		}
+
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, conf.NATSSubjectRepoBootstrap, map[string]string{
+			"workspaceId":    item.WorkspaceId.String(),
+			"installationId": strconv.FormatInt(githubId, 10),
+			"fullName":       repository.FullName,
+			"name":           repository.Name,
+		}, item.WorkspaceId)
+
+		if err != nil {
+			log.Error().
+				Err(err).
+				Int64("installationId", githubId).
+				Str("repository", repository.FullName).
+				Msg("Failed to enqueue repository bootstrap task")
+		}
 	}
 
-	for _, repoId := range removed {
-		err = i.RepoRepository.DeleteByGitHubId(repoId)
+	for _, repositoryId := range removed {
+		err = i.RepoRepository.DeleteByGitHubId(repositoryId)
 		if err != nil {
 			return fmt.Errorf("delete installation repo: %w", err)
 		}
@@ -189,15 +206,30 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 		return ErrInstallationNotFound
 	}
 
-	repos, err := app.Get().ListRepositories(ctx, item.GitHubId)
+	repositories, err := app.Get().ListRepositories(ctx, item.GitHubId)
 	if err != nil {
 		return fmt.Errorf("list installation repos: %w", err)
 	}
 
-	for _, repo := range repos {
-		err = i.StoreRepository(workspaceId, item.GitHubId, repo)
+	for _, repository := range repositories {
+		err = i.StoreRepository(workspaceId, item.GitHubId, repository)
 		if err != nil {
 			return err
+		}
+
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, conf.NATSSubjectRepoBootstrap, map[string]string{
+			"workspaceId":    workspaceId.String(),
+			"installationId": strconv.FormatInt(item.GitHubId, 10),
+			"fullName":       repository.FullName,
+			"name":           repository.Name,
+		}, workspaceId)
+
+		if err != nil {
+			log.Error().
+				Err(err).
+				Int64("installationId", item.GitHubId).
+				Str("repository", repository.FullName).
+				Msg("Failed to enqueue repository bootstrap task")
 		}
 	}
 
@@ -209,7 +241,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 	log.Info().
 		Str("id", id.String()).
 		Str("workspaceId", workspaceId.String()).
-		Int("repos", len(repos)).
+		Int("repositories", len(repositories)).
 		Msg("GitHub installation attached")
 
 	return nil

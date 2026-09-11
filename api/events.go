@@ -25,12 +25,12 @@ import (
 var Webhook = event.New[webhook.Delivery]("github.webhook")
 
 func init() {
-	Webhook.On(onDump)
-	Webhook.On(onInstallation)
-	Webhook.On(onInstallationRepositories)
+	Webhook.On(dump)
+	Webhook.On(installation)
+	Webhook.On(installationRepositories)
 }
 
-func onDump(_ context.Context, d webhook.Delivery) {
+func dump(_ context.Context, d webhook.Delivery) {
 	err := os.MkdirAll("events", 0o755)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create GitHub webhook events dir")
@@ -56,7 +56,7 @@ func onDump(_ context.Context, d webhook.Delivery) {
 	}
 }
 
-func onInstallation(_ context.Context, d webhook.Delivery) {
+func installation(_ context.Context, d webhook.Delivery) {
 	if d.Event != "installation" {
 		return
 	}
@@ -99,7 +99,7 @@ func onInstallation(_ context.Context, d webhook.Delivery) {
 	}
 }
 
-func onInstallationRepositories(_ context.Context, d webhook.Delivery) {
+func installationRepositories(_ context.Context, d webhook.Delivery) {
 	if d.Event != "installation_repositories" {
 		return
 	}

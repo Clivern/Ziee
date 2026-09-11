@@ -53,7 +53,14 @@ func dump(_ context.Context, d webhook.Delivery) {
 	err = os.WriteFile(path, pretty.Bytes(), 0o644)
 	if err != nil {
 		log.Error().Err(err).Str("path", path).Msg("Failed to dump GitHub webhook")
+		return
 	}
+
+	log.Info().
+		Str("event", d.Event).
+		Str("deliveryId", d.ID).
+		Str("path", path).
+		Msg("GitHub webhook dumped")
 }
 
 func installation(_ context.Context, d webhook.Delivery) {
@@ -73,7 +80,15 @@ func installation(_ context.Context, d webhook.Delivery) {
 		err := i.Delete(payload.Installation.ID)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to persist GitHub installation")
+			return
 		}
+
+		log.Info().
+			Str("deliveryId", d.ID).
+			Str("action", payload.Action).
+			Int64("githubId", payload.Installation.ID).
+			Msg("GitHub installation webhook handled")
+
 		return
 	}
 
@@ -96,7 +111,16 @@ func installation(_ context.Context, d webhook.Delivery) {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to persist GitHub installation")
+		return
 	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Str("action", payload.Action).
+		Int64("githubId", payload.Installation.ID).
+		Str("accountLogin", payload.Installation.Account.Login).
+		Str("accountType", payload.Installation.Account.Type).
+		Msg("GitHub installation webhook handled")
 }
 
 func installationRepositories(_ context.Context, d webhook.Delivery) {
@@ -131,5 +155,14 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 	err := i.UpdateRepositories(payload.Installation.ID, added, removed)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to persist GitHub installation repositories")
+		return
 	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Str("action", payload.Action).
+		Int64("githubId", payload.Installation.ID).
+		Int("added", len(added)).
+		Int("removed", len(removed)).
+		Msg("GitHub installation repositories webhook handled")
 }

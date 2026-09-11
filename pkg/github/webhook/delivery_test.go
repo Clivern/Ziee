@@ -5,10 +5,10 @@ package webhook
 
 import (
 	"bytes"
-	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -74,40 +74,20 @@ func TestUnitSignBody(t *testing.T) {
 	assert.Equal(t, SignBodyHex("secret", body), "sha1="+hex.EncodeToString(SignBody("secret", body)))
 }
 
-func TestUnitDispatch(t *testing.T) {
-	ctx := context.Background()
+func TestUnitInstallationEvent(t *testing.T) {
+	var installation InstallationEvent
+	json.Unmarshal([]byte(`{"action":"created","installation":{"id":99}}`), &installation)
 
-	t.Run("installation", func(t *testing.T) {
-		var received Delivery
-		var installation InstallationEvent
-		Received.On(func(_ context.Context, d Delivery) { received = d })
-		Installation.On(func(_ context.Context, e InstallationEvent) { installation = e })
+	assert.Equal(t, "created", installation.Action)
+	assert.Equal(t, int64(99), installation.Installation.ID)
+}
 
-		d := Delivery{
-			Event: "installation",
-			ID:    "1",
-			Body:  []byte(`{"action":"created","installation":{"id":99}}`),
-		}
-		d.Dispatch(ctx)
+func TestUnitInstallationRepositoriesEvent(t *testing.T) {
+	var event InstallationRepositoriesEvent
+	json.Unmarshal([]byte(`{"action":"added","installation":{"id":7},"repositories_added":[{"id":1,"name":"repo","full_name":"o/repo"}]}`), &event)
 
-		assert.Equal(t, "installation", received.Event)
-		assert.Equal(t, "created", installation.Action)
-		assert.Equal(t, int64(99), installation.Installation.ID)
-	})
-
-	t.Run("installation_repositories", func(t *testing.T) {
-		var event InstallationRepositoriesEvent
-		InstallationRepositories.On(func(_ context.Context, e InstallationRepositoriesEvent) { event = e })
-
-		d := Delivery{
-			Event: "installation_repositories",
-			Body:  []byte(`{"action":"added","installation":{"id":7},"repositories_added":[{"id":1,"name":"repo","full_name":"o/repo"}]}`),
-		}
-		d.Dispatch(ctx)
-
-		assert.Equal(t, "added", event.Action)
-		assert.Equal(t, int64(7), event.Installation.ID)
-		assert.Len(t, event.RepositoriesAdded, 1)
-		assert.Equal(t, "repo", event.RepositoriesAdded[0].Name)
-	})
+	assert.Equal(t, "added", event.Action)
+	assert.Equal(t, int64(7), event.Installation.ID)
+	assert.Len(t, event.RepositoriesAdded, 1)
+	assert.Equal(t, "repo", event.RepositoriesAdded[0].Name)
 }

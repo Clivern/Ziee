@@ -182,8 +182,6 @@ func RunServer(handler http.Handler) error {
 		return fmt.Errorf("failed to initialize github app: %w", err)
 	}
 
-	module.RegisterEventListeners()
-
 	err = module.StartBus()
 	if err != nil {
 		return fmt.Errorf("failed to start nats bus: %w", err)

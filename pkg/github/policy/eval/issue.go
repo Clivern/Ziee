@@ -4,6 +4,8 @@
 package eval
 
 import (
+	"strings"
+
 	"github.com/clivern/ziee/pkg/github/policy"
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
@@ -19,6 +21,10 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 		return plan
 	}
 
+	if strings.ToLower(event.Account.Type) == "organization" {
+		event.Org = event.Account.Login
+	}
+
 	event.Issue.Teams = MergeTeams(
 		event.Issue.Teams,
 		GetTeamsFromFile(conf.Teams, event.Issue.Author),
@@ -32,7 +38,6 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 
 	for _, rule := range conf.IssueTriage.Rules {
 		matched := true
-
 		for _, when := range rule.When {
 			if !lo.IsEmpty(when.Title) && !MatchPattern(when.Title, event.Issue.Title) {
 				matched = false

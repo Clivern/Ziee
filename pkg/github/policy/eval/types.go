@@ -11,9 +11,16 @@ import (
 type Event struct {
 	Kind    string
 	Org     string
+	Account Account
 	Issue   Issue
 	Comment string
 	Actor   Actor
+}
+
+// Account is the user or org the GitHub App is installed on.
+type Account struct {
+	Login string
+	Type  string
 }
 
 // Issue is the ticket the event is about.

@@ -110,14 +110,29 @@ func TestUnitEvaluateIssueOpenedTeams(t *testing.T) {
 		},
 	}
 
-	plan := EvaluateIssueOpened(conf, Event{
-		Org:   "acme",
-		Issue: Issue{Author: "maya"},
-	}, &stubClient{teams: []string{"core"}})
+	client := &stubClient{teams: []string{"core"}}
 
+	plan := EvaluateIssueOpened(conf, Event{
+		Account: Account{Type: "Organization", Login: "acme"},
+		Issue:   Issue{Author: "maya"},
+	}, client)
+
+	assert.Equal(t, "acme", client.org)
 	assert.Equal(t, []action.Action{
 		{Kind: policy.AddLabels, Labels: []string{"team/sre"}},
 		{Kind: policy.AddLabels, Labels: []string{"area/api"}},
+	}, plan.Actions)
+
+	client = &stubClient{}
+
+	plan = EvaluateIssueOpened(conf, Event{
+		Account: Account{Type: "User", Login: "maya"},
+		Issue:   Issue{Author: "maya"},
+	}, client)
+
+	assert.Empty(t, client.org)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"team/sre"}},
 	}, plan.Actions)
 }
 
@@ -184,6 +199,7 @@ type stubClient struct {
 	got        []v1.Intention
 	intentions []string
 	teams      []string
+	org        string
 }
 
 func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) []string {
@@ -192,6 +208,8 @@ func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) []string 
 	return s.intentions
 }
 
-func (s *stubClient) GetTeams(string, string) []string {
+func (s *stubClient) GetTeams(org, _ string) []string {
+	s.org = org
+
 	return s.teams
 }

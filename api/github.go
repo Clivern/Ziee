@@ -4,13 +4,8 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
@@ -50,48 +45,11 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Remove this after testing
-	err = os.MkdirAll("events", 0o755)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create GitHub webhook events dir")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
-		})
-		return
-	}
-
-	path := filepath.Join(
-		"events",
-		fmt.Sprintf("gh-%s-%s.json", delivery.Event, delivery.ID),
-	)
-
-	var pretty bytes.Buffer
-	err = json.Indent(&pretty, delivery.Body, "", "  ")
-	if err != nil {
-		log.Error().Err(err).Str("path", path).Msg("Failed to format GitHub webhook")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
-		})
-		return
-	}
-
-	pretty.WriteByte('\n')
-	err = os.WriteFile(path, pretty.Bytes(), 0o644)
-	if err != nil {
-		log.Error().Err(err).Str("path", path).Msg("Failed to dump GitHub webhook")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "invalid_webhook_payload"),
-		})
-		return
-	}
-	// TODO: Remove this after testing
-
-	delivery.Dispatch(r.Context())
+	Webhook.Emit(r.Context(), delivery)
 
 	log.Info().
 		Str("event", delivery.Event).
 		Str("deliveryId", delivery.ID).
-		Str("path", path).
 		Int("payloadBytes", len(delivery.Body)).
 		Msg("GitHub webhook received")
 

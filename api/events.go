@@ -190,12 +190,12 @@ func issues(_ context.Context, d webhook.Delivery) {
 		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
 	)
 
-	item, err := i.GetByGitHubId(payload.Installation.ID)
+	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub issue webhook")
 		return
 	}
-	if lo.IsEmpty(lo.FromPtr(item).WorkspaceId) {
+	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
 		return
 	}
 
@@ -208,7 +208,7 @@ func issues(_ context.Context, d webhook.Delivery) {
 		"owner":          payload.Repository.Owner.Login,
 		"repo":           payload.Repository.Name,
 		"number":         strconv.Itoa(payload.Issue.Number),
-	}, item.WorkspaceId)
+	}, installation.WorkspaceId)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub issue webhook")
@@ -242,12 +242,12 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
 	)
 
-	item, err := i.GetByGitHubId(payload.Installation.ID)
+	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
 		return
 	}
-	if lo.IsEmpty(lo.FromPtr(item).WorkspaceId) {
+	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
 		return
 	}
 
@@ -260,7 +260,7 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		"owner":          payload.Repository.Owner.Login,
 		"repo":           payload.Repository.Name,
 		"number":         strconv.Itoa(payload.Issue.Number),
-	}, item.WorkspaceId)
+	}, installation.WorkspaceId)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")

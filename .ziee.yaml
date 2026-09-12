@@ -4,7 +4,7 @@ version: 1.0.0
 labels:
   - name: "state/queued"
     color: "0E8A16"
-    description: "PR is currently waiting in the merge queue line."
+    description: "PR is currently waiting in the merge queue line"
   - name: "state/checking"
     color: "FBCA04"
     description: "Speculative CI checks are running on this PR."

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // User is a GitHub user on an issue, pull request, or assignee list.
@@ -82,6 +83,56 @@ func (a *App) ListIssues(ctx context.Context, installationID int64, owner, repo 
 			return all, nil
 		}
 	}
+}
+
+// IsFirstIssue reports whether login has at most one issue in the repository.
+func (a *App) IsFirstIssue(ctx context.Context, installationID int64, owner, repo, login string) (bool, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return false, err
+	}
+
+	var result struct {
+		TotalCount int `json:"total_count"`
+	}
+	path := fmt.Sprintf("%s/search/issues?per_page=1&q=%s", a.apiURL, url.QueryEscape(
+		fmt.Sprintf("repo:%s/%s author:%s type:issue", owner, repo, login),
+	))
+	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, nil, &result)
+	if err != nil {
+		return false, err
+	}
+
+	return result.TotalCount <= 1, nil
+}
+
+// IsFirstPullRequest reports whether login has at most one pull request in the repository.
+func (a *App) IsFirstPullRequest(ctx context.Context, installationID int64, owner, repo, login string) (bool, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return false, err
+	}
+
+	var result struct {
+		TotalCount int `json:"total_count"`
+	}
+	path := fmt.Sprintf("%s/search/issues?per_page=1&q=%s", a.apiURL, url.QueryEscape(
+		fmt.Sprintf("repo:%s/%s author:%s type:pr", owner, repo, login),
+	))
+	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, nil, &result)
+	if err != nil {
+		return false, err
+	}
+
+	return result.TotalCount <= 1, nil
 }
 
 // CreateIssue opens an issue in a repository.

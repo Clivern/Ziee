@@ -166,6 +166,35 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.Equal(t, 4, created.Number)
 	})
 
+	t.Run("FirstIssueAndPullRequest", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/search/issues", r.URL.Path)
+			_ = json.NewEncoder(w).Encode(map[string]int{"total_count": 1})
+		}))
+
+		firstIssue, err := client.IsFirstIssue(ctx, 1, "acme", "ziee", "maya")
+		assert.NoError(t, err)
+		assert.True(t, firstIssue)
+
+		firstPR, err := client.IsFirstPullRequest(ctx, 1, "acme", "ziee", "maya")
+		assert.NoError(t, err)
+		assert.True(t, firstPR)
+	})
+
+	t.Run("NotFirstIssueOrPullRequest", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			_ = json.NewEncoder(w).Encode(map[string]int{"total_count": 2})
+		}))
+
+		firstIssue, err := client.IsFirstIssue(ctx, 1, "acme", "ziee", "maya")
+		assert.NoError(t, err)
+		assert.False(t, firstIssue)
+
+		firstPR, err := client.IsFirstPullRequest(ctx, 1, "acme", "ziee", "maya")
+		assert.NoError(t, err)
+		assert.False(t, firstPR)
+	})
+
 	t.Run("PullRequests", func(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			switch {

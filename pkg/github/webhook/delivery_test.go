@@ -113,3 +113,23 @@ func TestUnitIssueCommentEvent(t *testing.T) {
 	assert.Equal(t, "@ziee label bug", event.Comment.Body)
 	assert.Equal(t, int64(9), event.Installation.ID)
 }
+
+func TestUnitPushEventChanged(t *testing.T) {
+	var event PushEvent
+	json.Unmarshal([]byte(`{
+		"ref":"refs/heads/main",
+		"repository":{"name":"ziee","full_name":"acme/ziee","owner":{"login":"acme"}},
+		"installation":{"id":9},
+		"commits":[{
+			"added":["worker/labels.go"],
+			"removed":[],
+			"modified":["conf/conf.go",".ziee.yml"]
+		}]
+	}`), &event)
+
+	assert.Equal(t, "refs/heads/main", event.Ref)
+	assert.Equal(t, int64(9), event.Installation.ID)
+	assert.True(t, event.Changed(".ziee.yml"))
+	assert.True(t, event.Changed("worker/labels.go", "pkg/missing.go"))
+	assert.False(t, event.Changed("README.md"))
+}

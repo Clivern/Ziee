@@ -118,7 +118,7 @@ func TestUnitPushEventChanged(t *testing.T) {
 	var event PushEvent
 	json.Unmarshal([]byte(`{
 		"ref":"refs/heads/main",
-		"repository":{"name":"ziee","full_name":"acme/ziee","owner":{"login":"acme"}},
+		"repository":{"name":"ziee","full_name":"acme/ziee","owner":{"login":"acme"},"default_branch":"main"},
 		"installation":{"id":9},
 		"commits":[{
 			"added":["worker/labels.go"],
@@ -128,8 +128,10 @@ func TestUnitPushEventChanged(t *testing.T) {
 	}`), &event)
 
 	assert.Equal(t, "refs/heads/main", event.Ref)
+	assert.Equal(t, "main", event.Repository.DefaultBranch)
 	assert.Equal(t, int64(9), event.Installation.ID)
 	assert.True(t, event.Changed(".ziee.yml"))
+	assert.True(t, event.Changed(".ziee.yml", ".ziee.yaml"))
 	assert.True(t, event.Changed("worker/labels.go", "pkg/missing.go"))
 	assert.False(t, event.Changed("README.md"))
 }

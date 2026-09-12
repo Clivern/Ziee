@@ -29,9 +29,10 @@ type InstallationRef struct {
 
 // RepositoryPayload is the repository object on a webhook.
 type RepositoryPayload struct {
-	Name     string      `json:"name"`
-	FullName string      `json:"full_name"`
-	Owner    UserPayload `json:"owner"`
+	Name          string      `json:"name"`
+	FullName      string      `json:"full_name"`
+	Owner         UserPayload `json:"owner"`
+	DefaultBranch string      `json:"default_branch"`
 }
 
 // IssuePayload is the issue object on a webhook.

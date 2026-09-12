@@ -32,6 +32,7 @@ func init() {
 	Webhook.On(installationRepositories)
 	Webhook.On(issues)
 	Webhook.On(issueComment)
+	Webhook.On(push)
 }
 
 func dump(_ context.Context, d webhook.Delivery) {
@@ -275,4 +276,54 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		Str("repo", payload.Repository.Name).
 		Int("number", payload.Issue.Number).
 		Msg("GitHub issue comment webhook handled")
+}
+
+func push(_ context.Context, d webhook.Delivery) {
+	if d.Event != "push" {
+		return
+	}
+
+	var payload webhook.PushEvent
+	json.Unmarshal(d.Body, &payload)
+
+	if payload.Ref != fmt.Sprintf("refs/heads/%s", payload.Repository.DefaultBranch) {
+		return
+	}
+	if !payload.Changed(".ziee.yml", ".ziee.yaml") {
+		return
+	}
+
+	i := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+	)
+
+	installation, err := i.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub push webhook")
+		return
+	}
+	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
+		return
+	}
+
+	err = module.EnqueueTask(db.AsyncTaskTypeRepoLabels, conf.NATSSubjectRepoLabels, map[string]string{
+		"deliveryId":     d.ID,
+		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
+		"fullName":       payload.Repository.FullName,
+		"name":           payload.Repository.Name,
+	}, installation.WorkspaceId)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub push webhook")
+		return
+	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Int64("githubId", payload.Installation.ID).
+		Str("owner", payload.Repository.Owner.Login).
+		Str("repo", payload.Repository.Name).
+		Str("ref", payload.Ref).
+		Msg("GitHub push webhook handled")
 }

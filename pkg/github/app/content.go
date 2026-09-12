@@ -12,29 +12,33 @@ import (
 	"strings"
 )
 
-// FileExists reports whether a path exists in the repository's default branch.
-func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo, path string) (bool, error) {
+// FileExists reports whether any of the paths exist in the repository's default branch.
+func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo string, paths ...string) (bool, error) {
 	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return false, err
 	}
 
-	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
-	err = call(ctx, http.MethodGet, url, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, nil)
-	if err == nil {
-		return true, nil
+	for _, path := range paths {
+		url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
+		err = call(ctx, http.MethodGet, url, token.Token, map[string]string{
+			"Accept":               AppAccept,
+			"User-Agent":           AppUserAgent,
+			"X-GitHub-Api-Version": AppAPIVersion,
+		}, nil, nil)
+		if err == nil {
+			return true, nil
+		}
+
+		var status *StatusError
+		if errors.As(err, &status) && status.Status == http.StatusNotFound {
+			continue
+		}
+
+		return false, err
 	}
 
-	var status *StatusError
-	if errors.As(err, &status) && status.Status == http.StatusNotFound {
-		return false, nil
-	}
-
-	return false, err
+	return false, nil
 }
 
 // GetFile returns the decoded contents of a path on the default branch.

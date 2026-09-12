@@ -253,6 +253,21 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.False(t, exists)
 	})
 
+	t.Run("FileExists either path", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/repos/acme/ziee/contents/.ziee.yaml" {
+				http.NotFound(w, r)
+				return
+			}
+			assert.Equal(t, "/repos/acme/ziee/contents/.ziee.yml", r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+		}))
+
+		exists, err := client.FileExists(ctx, 1, "acme", "ziee", ".ziee.yaml", ".ziee.yml")
+		assert.NoError(t, err)
+		assert.True(t, exists)
+	})
+
 	t.Run("CreatePullRequest", func(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			switch {

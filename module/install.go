@@ -16,6 +16,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/app"
 
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 )
 
 var ErrInstallationNotFound = errors.New("installation not found")
@@ -229,7 +230,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 	if err != nil {
 		return fmt.Errorf("get installation: %w", err)
 	}
-	if item == nil || item.GitHubUserId != githubUserId {
+	if lo.FromPtr(item).GitHubUserId != githubUserId {
 		return ErrInstallationNotFound
 	}
 

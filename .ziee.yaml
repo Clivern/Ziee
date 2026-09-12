@@ -1,0 +1,599 @@
+version: 1.0.0
+
+# Labels definitions
+labels:
+  - name: "state/queued"
+    color: "0E8A16"
+    description: "PR is currently waiting in the merge queue line."
+  - name: "state/checking"
+    color: "FBCA04"
+    description: "Speculative CI checks are running on this PR."
+  - name: "state/dequeued"
+    color: "D93F0B"
+    description: "PR was kicked out or removed from the merge queue."
+  - name: "area/api"
+    color: "1D76DB"
+    description: "Changes made inside the API or core PKG paths."
+  - name: "area/web"
+    color: "C2E0C6"
+    description: "Changes related to frontend web paths."
+  - name: "lang/go"
+    color: "00ADD8"
+    description: "PR changes one or more Go files."
+  - name: "lang/yaml"
+    color: "CB171E"
+    description: "PR changes one or more YAML files."
+  - name: "lang/json"
+    color: "292929"
+    description: "PR changes one or more JSON files."
+  - name: "size/s"
+    color: "0E8A16"
+    description: "Small PR with 20 or fewer files changed."
+  - name: "size/l"
+    color: "B60205"
+    description: "Large PR with 21 or more files changed."
+  - name: "bot"
+    color: "EEEEEE"
+    description: "Automated PR created by a bot account."
+  - name: "team/sre"
+    color: "5319E7"
+    description: "PR originated from a member of the SRE team."
+  - name: "hotfix"
+    color: "D93F0B"
+    description: "High-priority critical fix bypassing standard queues."
+  - name: "bug"
+    color: "D93F0B"
+    description: "Identified bug fix requiring patch-level verification."
+  - name: "enhancement"
+    color: "A2EEEF"
+    description: "New feature or system optimization."
+  - name: "docs"
+    color: "0075CA"
+    description: "Documentation changes only."
+  - name: "first-contribution"
+    color: "C5DEF5"
+    description: "Author's first issue or pull request on this repository."
+  - name: "security"
+    color: "E99695"
+    description: "Vulnerability remediation or security improvement."
+
+# Teams definitions (union with GitHub org teams for author_in_team)
+teams:
+  - name: sre
+    members:
+      - clivern
+      - maya
+  - name: core
+    members:
+      - tj
+      - kiran
+
+merge_queue:
+  # Whether to enable the merge queue
+  enabled: false
+  # Speculative CI: nothing lands on real main until the front of the line is green.
+  # Ziee builds temp branches only:
+  #   mq/1 = main + #1, mq/2 = main + #1 + #2, … up to max_parallel_checks.
+  # If mq/1 is green, #1 merges to main. mq/2 already tested “main after #1”.
+  # If mq/1 fails, #1 is dequeued and mq/2… are rebuilt without it.
+  #
+  # how PRs stack for CI: serial | parallel | isolated
+  #
+  # serial
+  #   Queue order is #1, #2, #3. Ziee still builds stacked temp branches
+  #   (mq/1 = main+#1, mq/2 = main+#1+#2, …) but only advances the line
+  #   one PR at a time. #2 is not treated as merge-ready until #1 is green
+  #   and merged (or dequeued). Slowest. Strongest guarantee that what you
+  #   tested is what lands next.
+  #
+  # parallel
+  #   Same stacked branches as serial (mq/2 includes #1), but CI for
+  #   mq/1, mq/2, mq/3 can run at the same time, up to max_parallel_checks.
+  #   Faster. If mq/1 fails, #1 is kicked out and later stacks are rebuilt
+  #   without it. You pay CI cost to speculate “what if #1 already merged”.
+  #
+  # isolated
+  #   Each PR is tested alone: mq/N = main + that PR only. No stacking.
+  #   Fastest per-PR signal, and one red PR does not invalidate others.
+  #   You do not know whether #1 and #2 together still pass until they
+  #   actually land on main (possible break between otherwise-green PRs).
+  mode: serial
+  # speculative CI slots (1 = wait for the front of the line)
+  max_parallel_checks: 5
+  # restart if main moved outside the queue: always | never
+  reset_on_external_merge: always
+  # GitHub labels Ziee applies for queue state
+  labels:
+    # waiting in line
+    queued: state/queued
+    # speculative CI running
+    checking: state/checking
+    # kicked out of the queue if merge_when is not met
+    dequeued: state/dequeued
+  # How chatty Ziee is on the PR. Labels still update either way.
+  #   outcomes — only when something happened (queued, merged, failed, dequeued)
+  #   all      — every state change, including speculative CI started
+  #   none     — no comments; queue state is labels only
+  comments: outcomes
+
+  # Pull request triage only (not issues). Re-run on PR open, sync, and edit.
+  # Every matching rule fires (not first-wins).
+  pr_triage:
+    # Classify intention once from title, body, and diff.
+    # enabled: false → skip classification; `intention:` matchers never match.
+    ai:
+      enabled: true
+      # Workspace knowledge `tag=` values used as classify context.
+      kb_tags:
+        # Few-shot examples to better label PRs
+        - tag: platform_monorepo
+    # `when` matchers (all must match):
+    #   files, min_files_changed, max_files_changed, title,
+    #   author_in / author_not_in (user logins),
+    #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
+    #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
+    #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
+    # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams).
+    rules:
+      # Paths under api/ or pkg/
+      - name: area-api
+        when:
+          - files: [api/**, pkg/**]
+        labels:
+          add: [area/api]
+        assign: [clivern]
+        reviewers: [maya]
+        review_teams: [core]
+
+      # Paths under web/
+      - name: area-web
+        when:
+          - files: [web/**]
+        labels:
+          add: [area/web]
+        assign: [maya]
+        reviewers: [clivern]
+
+      # Go files
+      - name: lang-go
+        when:
+          - files: ["**/*.go"]
+        labels:
+          add: [lang/go]
+
+      # YAML files
+      - name: lang-yaml
+        when:
+          - files: ["**/*.yml", "**/*.yaml"]
+        labels:
+          add: [lang/yaml]
+
+      # JSON files
+      - name: lang-json
+        when:
+          - files: ["**/*.json"]
+        labels:
+          add: [lang/json]
+
+      # 20 files or fewer
+      - name: size-s
+        when:
+          - max_files_changed: 20
+        labels:
+          add: [size/s]
+
+      # 21 files or more; drops size/s if it was applied
+      - name: size-l
+        when:
+          - min_files_changed: 21
+        labels:
+          add: [size/l]
+          remove: [size/s]
+        assign: [clivern]
+
+      # Bot authors (user logins)
+      - name: bot
+        when:
+          - author_in: [dependabot, ziee-bot]
+        labels:
+          add: [bot]
+        assign: []
+        reviewers: []
+
+      # First pull request from a new contributor
+      - name: first-contribution
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - first_contribution: true
+        labels:
+          add: [first-contribution]
+        comment: "Welcome — thanks for your first pull request! A maintainer will review it soon."
+
+      # Author is a member of org team sre
+      - name: from-sre
+        when:
+          - author_in_team: [sre]
+        labels:
+          add: [team/sre]
+        review_teams: [sre]
+
+      # Title matches hotfix
+      - name: hotfix
+        when:
+          - title: "hotfix"
+        labels:
+          add: [hotfix]
+        assign: [clivern]
+        review_teams: [sre]
+
+      # Body matches hotfix
+      - name: hotfix
+        when:
+          - body: "hotfix"
+        labels:
+          add: [hotfix]
+        assign: [clivern]
+        review_teams: [sre]
+
+      # AI intention: bug
+      - name: bug
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - intention:
+              name: bug
+              description: "A defect or unexpected behavior that needs a fix."
+        labels:
+          add: [bug]
+        assign: [clivern]
+
+      # AI intention: enhancement
+      - name: enhancement
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - intention:
+              name: enhancement
+              description: "A new feature or improvement."
+        labels:
+          add: [enhancement]
+
+      # AI intention: docs
+      - name: docs
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - intention:
+              name: docs
+              description: "Documentation-only changes."
+        labels:
+          add: [docs]
+        reviewers: [maya]
+
+      # AI intention: security (no-op when ai.enabled is false)
+      - name: security
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - intention:
+              name: security
+              description: "A vulnerability or security improvement."
+        labels:
+          add: [security]
+        assign: [clivern]
+        review_teams: [sre]
+
+      # Author is not a member of org team sre
+      - name: not-sre
+        when:
+          - author_not_in_team: [sre]
+
+  # Commands are typed on the PR. `allow` is who may run them (any matching entry is enough):
+  #   permission — GitHub repo role minimum (write = write / maintain / admin)
+  #   teams      — org team slugs
+  #   users      — GitHub logins
+  #   self       — the PR author
+  # Omit `permission` so people without repo access can still interact; Ziee uses the app token.
+  commands:
+    # `@ziee queue` or `@ziee queue hotfix`
+    # No name → first queue_rule whose queue_when matches and whose allow includes the commenter
+    queue:
+      allow:
+        - permission: write
+        - teams: [sre, core]
+        - users: [clivern]
+        - self: true
+    # `@ziee dequeue` — pull the PR out of the queue
+    dequeue:
+      allow:
+        - permission: write
+    # `@ziee requeue` — dequeue then queue again (fresh speculative checks)
+    requeue:
+      allow:
+        - permission: write
+    # `@ziee rebase` — rebase the PR onto latest main
+    rebase:
+      allow:
+        - permission: write
+    # `@ziee update` — merge latest main into the PR branch
+    update:
+      allow:
+        - permission: write
+    # `@ziee refresh` — re-run triage and re-evaluate queue_when
+    refresh:
+      allow:
+        - permission: write
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee label bug security` — add GitHub labels named in the comment
+    label:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unlabel bot` — remove GitHub labels named in the comment
+    unlabel:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee assign clivern` — assign users named in the comment
+    assign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unassign clivern` — remove assignees named in the comment
+    unassign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee reviewers maya` — request reviewers (user logins)
+    reviewers:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee close` — close the PR (dequeues if it was in line)
+    close:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@ziee reopen` — reopen the PR
+    reopen:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+
+  # Same merge pipeline, different place in line. Not extra queues.
+  # First matching rule wins. priority: high > medium > low.
+  priority_rules:
+    # Hotfix label jumps the line
+    - name: hotfix
+      when:
+        - label: hotfix
+      priority: high
+      # Cancel in-flight speculative CI and rebuild the line with this PR as mq/1.
+      # Example: slots are busy on #1 #2 #3; a hotfix queues → those temp branches
+      # are dropped and rebuilt as mq/1 = main+hotfix, mq/2 = main+hotfix+#1, …
+      # false (or omit) = jump the waiting line only; don't kill checks already running.
+      interrupt_checks: true
+    # Bot PRs wait behind humans
+    - name: agents
+      when:
+        - author_in: [ziee-bot]
+      priority: low
+    # Everyone else
+    - name: normal
+      when: []
+      priority: medium
+
+  # How a PR is allowed to enter and land. Walked in order.
+  # `@ziee queue` (no name) → first rule whose queue_when matches and whose allow includes the commenter.
+  # `@ziee queue hotfix` → this named rule only; reject if not allowed.
+  queue_rules:
+    # Narrow rule first. Only SRE may target it.
+    - name: hotfix
+      # Who may `@ziee queue hotfix` (on top of commands.queue.allow)
+      allow:
+        - teams: [sre]
+      # Must all match before the PR may enter this queue
+      queue_when:
+        - label: hotfix
+      # Must all match before the front of the line actually merges to main
+      merge_when:
+        - approvals:
+            # At least this many approvals
+            min: 1
+            # This person must be among them (user logins)
+            from: [clivern]
+        - check: ci
+      # PRs merged one at a time (no batching)
+      batch_size: 1
+      merge_method: squash
+      # Give speculative CI this long before dequeueing
+      checks_timeout: 45m
+      # Retry failed checks this many times before giving up
+      max_checks_retries: 1
+    # Everyone with write who can `@ziee queue` lands here unless hotfix matched.
+    - name: default
+      queue_when:
+        - approvals:
+            # Any eligible reviewer (write+)
+            min: 1
+        - check: ci
+        # This means someone has explicitly queued the PR
+        - label: state/queued
+      merge_when:
+        # Two-step: cheap `ci` to enter, heavy `ci-full` to land
+        - check: ci-full
+      # Speculative batch: hold 1–8 PRs together, wait up to batch_max_wait for a fuller batch
+      batch_size:
+        min: 1
+        max: 8
+      batch_max_wait: 5m
+      merge_method: squash
+      # auto = derive from GitHub required checks
+      checks_timeout: auto
+      max_checks_retries: 2
+
+pr_reviews:
+  # Whether to enable AI-assisted PR reviews
+  enabled: false
+
+
+issue_triage:
+  # GitHub issues only (not PRs). Re-run on issue open and edit.
+  # Every matching rule fires (not first-wins).
+  enabled: true
+  # How chatty Ziee is on the issue. Labels still update either way.
+  #   outcomes — only when something happened (triaged, labeled, assigned, closed)
+  #     "Triaged this issue: labeled `bug`, assigned @clivern."
+  #     "Labeled `security` as requested by @maya."
+  #     "Closed this issue as requested by @clivern."
+  #   all — every state change, including no-ops
+  #     "Triage ran; no rules matched."
+  #     "Re-evaluated after edit; labels unchanged."
+  #   none — no comments; state is labels / assignees only
+  comments: outcomes
+  # Classify intention once from title and body (no diff).
+  # enabled: false → skip classification; `intention:` matchers never match.
+  ai:
+    enabled: true
+    # Workspace knowledge `tag=` values used as classify context.
+    kb_tags:
+      # Few-shot examples to better label issues
+      - tag: platform_monorepo
+  # Commands are typed on the issue. Ziee performs the action with the app token,
+  # so the commenter does not need repo write (or any GitHub permission on this repo).
+  # `allow` is who may run them (any matching entry is enough):
+  #   teams — org team slugs
+  #   users — GitHub logins
+  #   self  — the issue author
+  # Omit `permission` so people without repo access can still interact.
+  commands:
+    # `@ziee label bug security` — add GitHub labels named in the comment
+    label:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unlabel bot` — remove GitHub labels named in the comment
+    unlabel:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee assign clivern` — assign users named in the comment
+    assign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee unassign clivern` — remove assignees named in the comment
+    unassign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@ziee close` — close the issue
+    close:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@ziee reopen` — reopen the issue
+    reopen:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+
+    # `@ziee summarize` — summarize the issue
+    summarize:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+  # `when` matchers (all must match):
+  #   title, body,
+  #   author_in / author_not_in (user logins),
+  #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
+  #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
+  #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
+  # Actions: labels.add / labels.remove, assign (users), comment (body).
+  rules:
+    # Bot authors (user logins)
+    - name: bot
+      when:
+        - author_in: [dependabot, ziee-bot]
+      labels:
+        add: [bot]
+      assign: []
+
+    # First issue from a new contributor
+    - name: first-contribution
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - first_contribution: true
+      labels:
+        add: [first-contribution]
+      comment: "Welcome — thanks for opening your first issue here! A maintainer will take a look soon."
+
+    # Author is a member of org team sre
+    - name: from-sre
+      when:
+        - author_in_team: [sre]
+      labels:
+        add: [team/sre]
+
+    # Title matches Hotfix / hotfix
+    - name: hotfix
+      when:
+        - title: "hotfix"
+      labels:
+        add: [hotfix]
+      assign: [clivern]
+
+    # Body matches hotfix
+    - name: hotfix
+      when:
+        - body: "hotfix"
+      labels:
+        add: [hotfix]
+      assign: [clivern]
+
+    # AI intention: bug
+    - name: bug
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: bug
+            description: "A defect or unexpected behavior that needs a fix."
+      labels:
+        add: [bug]
+      assign: [clivern]
+      comment: "Thanks for the report. We'll investigate this bug."
+
+    # AI intention: enhancement
+    - name: enhancement
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: enhancement
+            description: "A new feature or improvement."
+      labels:
+        add: [enhancement]
+
+    # AI intention: docs
+    - name: docs
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: docs
+            description: "A documentation request or docs-only report."
+      labels:
+        add: [docs]
+      assign: [maya]
+
+    # AI intention: security (no-op when ai.enabled is false)
+    - name: security
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: security
+            description: "A vulnerability or security improvement."
+      labels:
+        add: [security]
+      assign: [clivern]
+
+    # Author is not a member of org team sre
+    - name: not-sre
+      when:
+        - author_not_in_team: [sre]
+      comment: "Thanks for opening this. Someone from the team will take a look."

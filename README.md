@@ -15,9 +15,9 @@
     </p>
 </p>
 
-Agent teams ship faster when branches, reviews, and releases merge themselves. You still babysit PR queues, reconcile conflicts by hand, and throttle delivery because merge capacity doesn't scale with agent output.
+Teams ship more than they used to. More branches, more reviews, more `PRs` hitting main at once — from people, bots, and agents sharing the same repos. The bottleneck moved to merge: someone still has to order the work, wait on `CI`, and land it by hand.
 
-**Ziee is the autonomous merge layer for agent-scale delivery** — infrastructure that merges agent work safely, resolves conflicts automatically, and keeps shipping continuous as parallel agents multiply. Built for teams who need merge throughput, control, and reliability at agent scale.
+`Ziee` is the merge layer for that pace. Pull requests get queued, checked, and merged without a human on the button, so delivery can keep climbing without the queue falling behind.
 
 
 ### Versioning

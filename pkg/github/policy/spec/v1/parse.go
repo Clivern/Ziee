@@ -53,6 +53,10 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			err = node.Decode(&c.AuthorInTeam)
 		case "author_not_in_team":
 			err = node.Decode(&c.AuthorNotInTeam)
+		case "first_contribution":
+			var v bool
+			err = node.Decode(&v)
+			c.FirstContribution = &v
 		case "intention":
 			err = node.Decode(&c.Intention)
 		case "label":

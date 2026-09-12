@@ -25,15 +25,16 @@ type Account struct {
 
 // Issue is the ticket the event is about.
 type Issue struct {
-	Number     int
-	Title      string
-	Body       string
-	Author     string
-	Labels     []string
-	Assignees  []string
-	Teams      []string
-	Files      []string
-	Intentions []string
+	Number      int
+	Title       string
+	Body        string
+	Author      string
+	Association string
+	Labels      []string
+	Assignees   []string
+	Teams       []string
+	Files       []string
+	Intentions  []string
 }
 
 // Actor is who opened the issue or typed the comment.

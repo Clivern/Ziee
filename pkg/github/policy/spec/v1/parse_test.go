@@ -56,16 +56,20 @@ func TestUnitParseRepoFile(t *testing.T) {
 	bot := file.MergeQueue.PRTriage.Rules[4]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bot.When[0].AuthorIn)
 
-	fromSre := file.MergeQueue.PRTriage.Rules[5]
+	firstPR := file.MergeQueue.PRTriage.Rules[5]
+	assert.Equal(t, "first-contribution", firstPR.Name)
+	assert.True(t, *firstPR.When[1].FirstContribution)
+
+	fromSre := file.MergeQueue.PRTriage.Rules[6]
 	assert.Equal(t, []string{"sre"}, fromSre.When[0].AuthorInTeam)
 
-	hotfixTitle := file.MergeQueue.PRTriage.Rules[6]
+	hotfixTitle := file.MergeQueue.PRTriage.Rules[7]
 	assert.Equal(t, "hotfix", hotfixTitle.When[0].Title)
 
-	hotfixBody := file.MergeQueue.PRTriage.Rules[7]
+	hotfixBody := file.MergeQueue.PRTriage.Rules[8]
 	assert.Equal(t, "hotfix", hotfixBody.When[0].Body)
 
-	bug := file.MergeQueue.PRTriage.Rules[8]
+	bug := file.MergeQueue.PRTriage.Rules[9]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bug.When[0].AuthorNotIn)
 	assert.Equal(t, "bug", bug.When[1].Intention.Name)
 	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", bug.When[1].Intention.Description)
@@ -98,11 +102,17 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
 	assert.Equal(t, "platform_monorepo", file.IssueTriage.AI.KBTags[0].Tag)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
-	assert.Equal(t, "bug", file.IssueTriage.Rules[4].When[1].Intention.Name)
-	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", file.IssueTriage.Rules[4].When[1].Intention.Description)
-	assert.Equal(t, "Thanks for the report. We'll investigate this bug.", file.IssueTriage.Rules[4].Comment)
-	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[8].When[0].AuthorNotInTeam)
-	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[12].When[0].AuthorNotInTeam)
+	assert.Equal(t, []string{"sre", "core"}, file.IssueTriage.Commands["summarize"].Allow[0].Teams)
+	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["summarize"].Allow[1].Users)
+	assert.Equal(t, "bug", file.IssueTriage.Rules[5].When[1].Intention.Name)
+	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", file.IssueTriage.Rules[5].When[1].Intention.Description)
+	assert.Equal(t, "Thanks for the report. We'll investigate this bug.", file.IssueTriage.Rules[5].Comment)
+	assert.Equal(t, "first-contribution", file.IssueTriage.Rules[1].Name)
+	assert.True(t, *file.IssueTriage.Rules[1].When[1].FirstContribution)
+	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[9].When[0].AuthorNotInTeam)
+	assert.Equal(t, "first-contribution", file.MergeQueue.PRTriage.Rules[5].Name)
+	assert.True(t, *file.MergeQueue.PRTriage.Rules[5].When[1].FirstContribution)
+	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[13].When[0].AuthorNotInTeam)
 }
 
 func TestUnitParseWhenAllowBatchSize(t *testing.T) {

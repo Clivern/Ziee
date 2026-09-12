@@ -36,12 +36,13 @@ type RepositoryPayload struct {
 
 // IssuePayload is the issue object on a webhook.
 type IssuePayload struct {
-	Number    int           `json:"number"`
-	Title     string        `json:"title"`
-	Body      string        `json:"body"`
-	User      UserPayload   `json:"user"`
-	Labels    []NamePayload `json:"labels"`
-	Assignees []UserPayload `json:"assignees"`
+	Number            int           `json:"number"`
+	Title             string        `json:"title"`
+	Body              string        `json:"body"`
+	User              UserPayload   `json:"user"`
+	AuthorAssociation string        `json:"author_association"`
+	Labels            []NamePayload `json:"labels"`
+	Assignees         []UserPayload `json:"assignees"`
 }
 
 // CommentPayload is the comment object on an issue_comment webhook.

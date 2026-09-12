@@ -37,6 +37,16 @@ func MatchPattern(pattern, value string) bool {
 	return matched
 }
 
+// IsFirstContribution reports whether GitHub author_association is a first-time contributor.
+func IsFirstContribution(association string) bool {
+	switch strings.ToUpper(association) {
+	case "FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR":
+		return true
+	default:
+		return false
+	}
+}
+
 // GetTeamsFromFile returns `.ziee.yml` team names that include login.
 func GetTeamsFromFile(teams []v1.Team, login string) []string {
 	var names []string

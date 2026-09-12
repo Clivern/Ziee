@@ -41,6 +41,9 @@ labels:
   - name: "docs"
     color: "0075CA"
     description: "Documentation changes only."
+  - name: "first-contribution"
+    color: "C5DEF5"
+    description: "Author's first issue or pull request on this repository."
   - name: "security"
     color: "E99695"
     description: "Vulnerability remediation or security improvement."
@@ -119,6 +122,7 @@ merge_queue:
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
     #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
+    #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
     #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
     # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams).
     rules:
@@ -165,6 +169,15 @@ merge_queue:
           add: [bot]
         assign: []
         reviewers: []
+
+      # First pull request from a new contributor
+      - name: first-contribution
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - first_contribution: true
+        labels:
+          add: [first-contribution]
+        comment: "Welcome — thanks for your first pull request! A maintainer will review it soon."
 
       # Author is a member of org team sre
       - name: from-sre
@@ -451,10 +464,17 @@ issue_triage:
       allow:
         - teams: [sre]
         - users: [clivern]
+
+    # `@ziee summarize` — summarize the issue
+    summarize:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
   # `when` matchers (all must match):
   #   title, body,
   #   author_in / author_not_in (user logins),
   #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
+  #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
   #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
   # Actions: labels.add / labels.remove, assign (users), comment (body).
   rules:
@@ -465,6 +485,15 @@ issue_triage:
       labels:
         add: [bot]
       assign: []
+
+    # First issue from a new contributor
+    - name: first-contribution
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - first_contribution: true
+      labels:
+        add: [first-contribution]
+      comment: "Welcome — thanks for opening your first issue here! A maintainer will take a look soon."
 
     # Author is a member of org team sre
     - name: from-sre

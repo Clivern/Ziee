@@ -195,6 +195,38 @@ func TestUnitEvaluateIssueOpenedOutcomeAllNone(t *testing.T) {
 	assert.Empty(t, plan.Actions)
 }
 
+func TestUnitEvaluateIssueOpenedFirstContribution(t *testing.T) {
+	first := true
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name:    "first-contribution",
+					When:    v1.Clauses{{FirstContribution: &first}},
+					Labels:  v1.Labels{Add: []string{"first-contribution"}},
+					Comment: "Welcome — thanks for opening your first issue here! A maintainer will take a look soon.",
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "newcomer", Association: "FIRST_TIME_CONTRIBUTOR"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"first-contribution"}},
+		{Kind: policy.Comment, Body: "Welcome — thanks for opening your first issue here! A maintainer will take a look soon."},
+	}, plan.Actions)
+
+	plan = EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya", Association: "MEMBER"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
 type stubClient struct {
 	got        []v1.Intention
 	intentions []string

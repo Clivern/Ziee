@@ -13,6 +13,8 @@ import (
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy/spec"
+
+	"github.com/rs/zerolog/log"
 )
 
 // HandleRepositoryLabels creates GitHub labels defined in `.ziee.yml`.
@@ -34,6 +36,13 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
+
+	log.Info().
+		Str("taskId", taskId.String()).
+		Int64("installationId", installationId).
+		Str("owner", owner).
+		Str("repo", repo).
+		Msg("Repository labels sync started")
 
 	data, err := app.Get().GetFile(ctx, installationId, owner, repo, ".ziee.yml")
 	if err != nil {
@@ -75,6 +84,12 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 		}
 
 		created++
+
+		log.Info().
+			Str("owner", owner).
+			Str("repo", repo).
+			Str("label", label.Name).
+			Msg("GitHub label created")
 	}
 
 	result, err := json.Marshal(map[string]int{"created": created})
@@ -82,6 +97,13 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
+
+	log.Info().
+		Str("owner", owner).
+		Str("repo", repo).
+		Int("created", created).
+		Int("defined", len(file.Labels)).
+		Msg("Repository labels synced")
 
 	return h.tasks.Complete(taskId, string(result))
 }

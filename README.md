@@ -10,7 +10,7 @@
             <img src="https://img.shields.io/badge/Version-v0.1.0-red.svg">
         </a>
         <a href="https://github.com/clivern/ziee/blob/main/LICENSE">
-            <img src="https://img.shields.io/badge/LICENSE-MIT-grey.svg">
+            <img src="https://img.shields.io/badge/LICENSE-MIT-blue.svg">
         </a>
     </p>
 </p>

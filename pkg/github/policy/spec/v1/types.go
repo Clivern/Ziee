@@ -6,10 +6,18 @@ package v1
 // File is a parsed `.ziee.yml`.
 type File struct {
 	Version     string      `yaml:"version"`
+	Labels      []Label     `yaml:"labels"`
 	Teams       []Team      `yaml:"teams"`
 	MergeQueue  MergeQueue  `yaml:"merge_queue"`
 	PRReviews   PRReviews   `yaml:"pr_reviews"`
 	IssueTriage IssueTriage `yaml:"issue_triage"`
+}
+
+// Label is a GitHub label defined in `.ziee.yml`.
+type Label struct {
+	Name        string `yaml:"name"`
+	Color       string `yaml:"color"`
+	Description string `yaml:"description"`
 }
 
 // Team is a named group of GitHub logins in `.ziee.yml`.

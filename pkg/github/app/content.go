@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // DefaultZieeYML is the starter policy file added on repository bootstrap.
@@ -37,6 +38,29 @@ func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo,
 	}
 
 	return false, err
+}
+
+// GetFile returns the decoded contents of a path on the default branch.
+func (a *App) GetFile(ctx context.Context, installationID int64, owner, repo, path string) ([]byte, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var file struct {
+		Content string `json:"content"`
+	}
+	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
+	err = call(ctx, http.MethodGet, url, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, nil, &file)
+	if err != nil {
+		return nil, err
+	}
+
+	return base64.StdEncoding.DecodeString(strings.ReplaceAll(file.Content, "\n", ""))
 }
 
 // CreateFile creates a file on a branch.

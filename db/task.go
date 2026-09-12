@@ -18,6 +18,7 @@ const (
 	AsyncTaskTypeDocDelete     = "doc.delete"
 	AsyncTaskTypeRepoBootstrap = "repo.bootstrap"
 	AsyncTaskTypeGitHubIssue   = "github.issue"
+	AsyncTaskTypeRepoLabels    = "repo.labels"
 )
 
 // AsyncTask is a single row in the async_tasks table.

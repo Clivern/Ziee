@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // Label is a GitHub repository label.
@@ -81,4 +82,24 @@ func (a *App) RemoveLabels(ctx context.Context, installationID int64, owner, rep
 	}
 
 	return nil
+}
+
+// CreateLabel creates a repository label.
+func (a *App) CreateLabel(ctx context.Context, installationID int64, owner, repo string, label Label) error {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%s/repos/%s/%s/labels", a.apiURL, owner, repo)
+
+	return call(ctx, http.MethodPost, path, token.Token, map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}, map[string]string{
+		"name":        label.Name,
+		"color":       strings.TrimPrefix(label.Color, "#"),
+		"description": label.Description,
+	}, nil)
 }

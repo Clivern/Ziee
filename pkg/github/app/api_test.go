@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -228,6 +229,20 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.True(t, exists)
 	})
 
+	t.Run("GetFile", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/repos/acme/ziee/contents/.ziee.yml", r.URL.Path)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"content":  base64.StdEncoding.EncodeToString([]byte("version: 1.0.0\n")),
+				"encoding": "base64",
+			})
+		}))
+
+		data, err := client.GetFile(ctx, 1, "acme", "ziee", ".ziee.yml")
+		assert.NoError(t, err)
+		assert.Equal(t, "version: 1.0.0\n", string(data))
+	})
+
 	t.Run("FileExists missing", func(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
@@ -289,5 +304,10 @@ func TestUnitAppHTTP(t *testing.T) {
 
 		assert.NoError(t, client.AddLabels(ctx, 1, "acme", "ziee", 3, []string{"bug"}))
 		assert.NoError(t, client.RemoveLabels(ctx, 1, "acme", "ziee", 3, []string{"bug"}))
+		assert.NoError(t, client.CreateLabel(ctx, 1, "acme", "ziee", Label{
+			Name:        "lang/go",
+			Color:       "#00ADD8",
+			Description: "Go files",
+		}))
 	})
 }

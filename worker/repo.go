@@ -85,7 +85,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	err = install.SetRepoMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
+	err = install.UpsertRepositoryMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
@@ -112,7 +112,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	err = install.SetRepoMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
+	err = install.UpsertRepositoryMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err

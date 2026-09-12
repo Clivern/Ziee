@@ -179,8 +179,8 @@ func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, 
 	return nil
 }
 
-// SetRepoMeta stores a repositories_meta value by GitHub repository id.
-func (i *Installation) SetRepoMeta(githubRepoId int64, key, value string) error {
+// UpsertRepositoryMeta stores a repositories_meta value by GitHub repository id.
+func (i *Installation) UpsertRepositoryMeta(githubRepoId int64, key, value string) error {
 	repo, err := i.RepoRepository.GetByGitHubId(githubRepoId)
 	if err != nil {
 		return fmt.Errorf("get repo: %w", err)

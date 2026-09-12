@@ -52,11 +52,7 @@ func (a *App) GetInstallation(ctx context.Context, installationID int64) (*Insta
 
 	var installation Installation
 	path := fmt.Sprintf("%s/app/installations/%d", a.apiURL, installationID)
-	err = call(ctx, http.MethodGet, path, token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &installation)
+	err = Call(ctx, http.MethodGet, path, token, GetHeaders(), nil, &installation)
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +103,7 @@ func (a *App) GetInstallationToken(ctx context.Context, installationID int64) (*
 
 	var token InstallationToken
 	path := fmt.Sprintf("%s/app/installations/%d/access_tokens", a.apiURL, installationID)
-	err = call(ctx, http.MethodPost, path, jwt, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &token)
+	err = Call(ctx, http.MethodPost, path, jwt, GetHeaders(), nil, &token)
 	if err != nil {
 		return nil, err
 	}

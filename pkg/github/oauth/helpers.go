@@ -4,59 +4,40 @@
 package oauth
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+
+	"github.com/imroc/req/v3"
+	"github.com/samber/lo"
 )
 
-func call(ctx context.Context, method, url, token string, headers map[string]string, payload, dest any) error {
-	var bodyReader io.Reader
-	if payload != nil {
-		encoded, err := json.Marshal(payload)
-		if err != nil {
-			return fmt.Errorf("http encode body: %w", err)
-		}
-		bodyReader = bytes.NewReader(encoded)
+var httpClient = req.C()
+
+// Call sends an authenticated JSON request to GitHub OAuth APIs.
+func Call(ctx context.Context, method, url, token string, headers map[string]string, payload, dest any) error {
+	r := httpClient.R().
+		SetContext(ctx).
+		SetHeaders(headers)
+
+	if lo.IsNotEmpty(token) {
+		r.SetBearerAuthToken(token)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, bodyReader)
-	if err != nil {
-		return fmt.Errorf("http request: %w", err)
+	if !lo.IsNil(payload) {
+		r.SetBody(payload)
 	}
 
-	if token != "" {
-		req.Header.Set("Authorization", "Bearer "+token)
-	}
-	for key, value := range headers {
-		req.Header.Set(key, value)
-	}
-	if payload != nil && req.Header.Get("Content-Type") == "" {
-		req.Header.Set("Content-Type", "application/json")
+	if !lo.IsNil(dest) {
+		r.SetSuccessResult(dest)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := r.Send(method, url)
 	if err != nil {
 		return fmt.Errorf("http %s %s: %w", method, url, err)
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("http read body: %w", err)
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("http %s %s: status %d: %s", method, url, resp.StatusCode, body)
-	}
-
-	if dest == nil {
-		return nil
-	}
-
-	if err := json.Unmarshal(body, dest); err != nil {
-		return fmt.Errorf("http decode body: %w", err)
+	if !resp.IsSuccessState() {
+		return fmt.Errorf("http %s %s: status %d: %s", method, url, resp.StatusCode, resp.Bytes())
 	}
 
 	return nil

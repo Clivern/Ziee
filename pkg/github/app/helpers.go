@@ -4,13 +4,15 @@
 package app
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+
+	"github.com/imroc/req/v3"
+	"github.com/samber/lo"
 )
+
+// httpClient is the default HTTP client for the GitHub API.
+var httpClient = req.C()
 
 // StatusError is a non-2xx GitHub API response.
 type StatusError struct {
@@ -20,55 +22,50 @@ type StatusError struct {
 	Body   string
 }
 
+// Error returns the error message.
 func (e *StatusError) Error() string {
 	return fmt.Sprintf("http %s %s: status %d: %s", e.Method, e.URL, e.Status, e.Body)
 }
 
-func call(ctx context.Context, method, url, token string, headers map[string]string, payload, dest any) error {
-	var bodyReader io.Reader
-	if payload != nil {
-		encoded, err := json.Marshal(payload)
-		if err != nil {
-			return fmt.Errorf("http encode body: %w", err)
-		}
-		bodyReader = bytes.NewReader(encoded)
+// GetHeaders returns the default GitHub API request headers.
+func GetHeaders() map[string]string {
+	return map[string]string{
+		"Accept":               AppAccept,
+		"User-Agent":           AppUserAgent,
+		"X-GitHub-Api-Version": AppAPIVersion,
+	}
+}
+
+// Call sends an authenticated JSON request to the GitHub API.
+func Call(ctx context.Context, method, url, token string, headers map[string]string, payload, dest any) error {
+	r := httpClient.R().
+		SetContext(ctx).
+		SetHeaders(headers)
+
+	if lo.IsNotEmpty(token) {
+		r.SetBearerAuthToken(token)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, bodyReader)
-	if err != nil {
-		return fmt.Errorf("http request: %w", err)
+	if !lo.IsNil(payload) {
+		r.SetBody(payload)
 	}
 
-	if token != "" {
-		req.Header.Set("Authorization", "Bearer "+token)
-	}
-	for key, value := range headers {
-		req.Header.Set(key, value)
-	}
-	if payload != nil && req.Header.Get("Content-Type") == "" {
-		req.Header.Set("Content-Type", "application/json")
+	if !lo.IsNil(dest) {
+		r.SetSuccessResult(dest)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := r.Send(method, url)
 	if err != nil {
 		return fmt.Errorf("http %s %s: %w", method, url, err)
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("http read body: %w", err)
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return &StatusError{Method: method, URL: url, Status: resp.StatusCode, Body: string(body)}
-	}
-
-	if dest == nil {
-		return nil
-	}
-
-	if err := json.Unmarshal(body, dest); err != nil {
-		return fmt.Errorf("http decode body: %w", err)
+	if !resp.IsSuccessState() {
+		return &StatusError{
+			Method: method,
+			URL:    url,
+			Status: resp.StatusCode,
+			Body:   resp.String(),
+		}
 	}
 
 	return nil

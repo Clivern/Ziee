@@ -21,11 +21,7 @@ func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo 
 
 	for _, path := range paths {
 		url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
-		err = call(ctx, http.MethodGet, url, token.Token, map[string]string{
-			"Accept":               AppAccept,
-			"User-Agent":           AppUserAgent,
-			"X-GitHub-Api-Version": AppAPIVersion,
-		}, nil, nil)
+		err = Call(ctx, http.MethodGet, url, token.Token, GetHeaders(), nil, nil)
 		if err == nil {
 			return true, nil
 		}
@@ -52,11 +48,7 @@ func (a *App) GetFile(ctx context.Context, installationID int64, owner, repo, pa
 		Content string `json:"content"`
 	}
 	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
-	err = call(ctx, http.MethodGet, url, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &file)
+	err = Call(ctx, http.MethodGet, url, token.Token, GetHeaders(), nil, &file)
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +65,7 @@ func (a *App) CreateFile(ctx context.Context, installationID int64, owner, repo,
 
 	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
 
-	return call(ctx, http.MethodPut, url, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]string{
+	return Call(ctx, http.MethodPut, url, token.Token, GetHeaders(), map[string]string{
 		"message": message,
 		"content": base64.StdEncoding.EncodeToString([]byte(content)),
 		"branch":  branch,

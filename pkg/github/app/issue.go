@@ -10,33 +10,6 @@ import (
 	"net/url"
 )
 
-// User is a GitHub user on an issue, pull request, or assignee list.
-type User struct {
-	ID    int64  `json:"id"`
-	Login string `json:"login"`
-}
-
-// Issue is a GitHub issue.
-type Issue struct {
-	ID        int64   `json:"id"`
-	Number    int     `json:"number"`
-	Title     string  `json:"title"`
-	State     string  `json:"state"`
-	Body      string  `json:"body"`
-	HTMLURL   string  `json:"html_url"`
-	User      User    `json:"user"`
-	Labels    []Label `json:"labels"`
-	Assignees []User  `json:"assignees"`
-}
-
-// Comment is a GitHub issue or pull request comment.
-type Comment struct {
-	ID      int64  `json:"id"`
-	Body    string `json:"body"`
-	HTMLURL string `json:"html_url"`
-	User    User   `json:"user"`
-}
-
 // GetIssue fetches an issue by number.
 func (a *App) GetIssue(ctx context.Context, installationID int64, owner, repo string, number int) (*Issue, error) {
 	token, err := a.GetInstallationToken(ctx, installationID)
@@ -46,11 +19,7 @@ func (a *App) GetIssue(ctx context.Context, installationID int64, owner, repo st
 
 	var issue Issue
 	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d", a.apiURL, owner, repo, number)
-	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &issue)
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &issue)
 	if err != nil {
 		return nil, err
 	}
@@ -69,11 +38,7 @@ func (a *App) ListIssues(ctx context.Context, installationID int64, owner, repo 
 	for page := 1; ; page++ {
 		var issues []Issue
 		path := fmt.Sprintf("%s/repos/%s/%s/issues?per_page=%d&page=%d", a.apiURL, owner, repo, AppPerPage, page)
-		err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-			"Accept":               AppAccept,
-			"User-Agent":           AppUserAgent,
-			"X-GitHub-Api-Version": AppAPIVersion,
-		}, nil, &issues)
+		err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &issues)
 		if err != nil {
 			return nil, err
 		}
@@ -98,11 +63,7 @@ func (a *App) IsFirstIssue(ctx context.Context, installationID int64, owner, rep
 	path := fmt.Sprintf("%s/search/issues?per_page=1&q=%s", a.apiURL, url.QueryEscape(
 		fmt.Sprintf("repo:%s/%s author:%s type:issue", owner, repo, login),
 	))
-	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &result)
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &result)
 	if err != nil {
 		return false, err
 	}
@@ -123,11 +84,8 @@ func (a *App) IsFirstPullRequest(ctx context.Context, installationID int64, owne
 	path := fmt.Sprintf("%s/search/issues?per_page=1&q=%s", a.apiURL, url.QueryEscape(
 		fmt.Sprintf("repo:%s/%s author:%s type:pr", owner, repo, login),
 	))
-	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &result)
+
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &result)
 	if err != nil {
 		return false, err
 	}
@@ -144,11 +102,7 @@ func (a *App) CreateIssue(ctx context.Context, installationID int64, owner, repo
 
 	var issue Issue
 	path := fmt.Sprintf("%s/repos/%s/%s/issues", a.apiURL, owner, repo)
-	err = call(ctx, http.MethodPost, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]string{
+	err = Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), map[string]string{
 		"title": title,
 		"body":  body,
 	}, &issue)
@@ -168,11 +122,7 @@ func (a *App) CreateComment(ctx context.Context, installationID int64, owner, re
 
 	var comment Comment
 	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", a.apiURL, owner, repo, number)
-	err = call(ctx, http.MethodPost, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]string{"body": body}, &comment)
+	err = Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), map[string]string{"body": body}, &comment)
 	if err != nil {
 		return nil, err
 	}
@@ -182,25 +132,6 @@ func (a *App) CreateComment(ctx context.Context, installationID int64, owner, re
 
 // CloseIssue closes an issue or pull request.
 func (a *App) CloseIssue(ctx context.Context, installationID int64, owner, repo string, number int) error {
-	return a.setIssueState(ctx, installationID, owner, repo, number, "closed")
-}
-
-// ReopenIssue reopens an issue or pull request.
-func (a *App) ReopenIssue(ctx context.Context, installationID int64, owner, repo string, number int) error {
-	return a.setIssueState(ctx, installationID, owner, repo, number, "open")
-}
-
-// AddAssignees assigns users to an issue or pull request.
-func (a *App) AddAssignees(ctx context.Context, installationID int64, owner, repo string, number int, users []string) error {
-	return a.mutateAssignees(ctx, http.MethodPost, installationID, owner, repo, number, users)
-}
-
-// RemoveAssignees removes users from an issue or pull request.
-func (a *App) RemoveAssignees(ctx context.Context, installationID int64, owner, repo string, number int, users []string) error {
-	return a.mutateAssignees(ctx, http.MethodDelete, installationID, owner, repo, number, users)
-}
-
-func (a *App) setIssueState(ctx context.Context, installationID int64, owner, repo string, number int, state string) error {
 	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return err
@@ -208,14 +139,23 @@ func (a *App) setIssueState(ctx context.Context, installationID int64, owner, re
 
 	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d", a.apiURL, owner, repo, number)
 
-	return call(ctx, http.MethodPatch, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]string{"state": state}, nil)
+	return Call(ctx, http.MethodPatch, path, token.Token, GetHeaders(), map[string]string{"state": "closed"}, nil)
 }
 
-func (a *App) mutateAssignees(ctx context.Context, method string, installationID int64, owner, repo string, number int, users []string) error {
+// ReopenIssue reopens an issue or pull request.
+func (a *App) ReopenIssue(ctx context.Context, installationID int64, owner, repo string, number int) error {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d", a.apiURL, owner, repo, number)
+
+	return Call(ctx, http.MethodPatch, path, token.Token, GetHeaders(), map[string]string{"state": "open"}, nil)
+}
+
+// AddAssignees assigns users to an issue or pull request.
+func (a *App) AddAssignees(ctx context.Context, installationID int64, owner, repo string, number int, users []string) error {
 	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
 		return err
@@ -223,9 +163,17 @@ func (a *App) mutateAssignees(ctx context.Context, method string, installationID
 
 	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", a.apiURL, owner, repo, number)
 
-	return call(ctx, method, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string][]string{"assignees": users}, nil)
+	return Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), map[string][]string{"assignees": users}, nil)
+}
+
+// RemoveAssignees removes users from an issue or pull request.
+func (a *App) RemoveAssignees(ctx context.Context, installationID int64, owner, repo string, number int, users []string) error {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", a.apiURL, owner, repo, number)
+
+	return Call(ctx, http.MethodDelete, path, token.Token, GetHeaders(), map[string][]string{"assignees": users}, nil)
 }

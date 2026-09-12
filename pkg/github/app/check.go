@@ -28,11 +28,7 @@ func (a *App) CreateCheckRun(ctx context.Context, installationID int64, owner, r
 
 	var run CheckRun
 	url := fmt.Sprintf("%s/repos/%s/%s/check-runs", a.apiURL, owner, repo)
-	err = call(ctx, http.MethodPost, url, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]string{
+	err = Call(ctx, http.MethodPost, url, token.Token, GetHeaders(), map[string]string{
 		"name":     name,
 		"head_sha": sha,
 		"status":   "in_progress",
@@ -53,11 +49,7 @@ func (a *App) CompleteCheckRun(ctx context.Context, installationID int64, owner,
 
 	url := fmt.Sprintf("%s/repos/%s/%s/check-runs/%d", a.apiURL, owner, repo, id)
 
-	return call(ctx, http.MethodPatch, url, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]any{
+	return Call(ctx, http.MethodPatch, url, token.Token, GetHeaders(), map[string]any{
 		"status":     "completed",
 		"conclusion": conclusion,
 		"output": map[string]string{

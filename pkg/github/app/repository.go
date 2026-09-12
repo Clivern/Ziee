@@ -38,11 +38,7 @@ func (a *App) ListRepositories(ctx context.Context, installationID int64) ([]Rep
 	for page := 1; ; page++ {
 		var body RepositoriesResponse
 		path := fmt.Sprintf("%s/installation/repositories?per_page=%d&page=%d", a.apiURL, AppPerPage, page)
-		err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-			"Accept":               AppAccept,
-			"User-Agent":           AppUserAgent,
-			"X-GitHub-Api-Version": AppAPIVersion,
-		}, nil, &body)
+		err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &body)
 		if err != nil {
 			return nil, err
 		}
@@ -63,11 +59,7 @@ func (a *App) GetRepository(ctx context.Context, installationID int64, owner, re
 
 	var repository Repository
 	path := fmt.Sprintf("%s/repos/%s/%s", a.apiURL, owner, repo)
-	err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, nil, &repository)
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &repository)
 	if err != nil {
 		return nil, err
 	}

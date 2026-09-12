@@ -30,11 +30,7 @@ func (a *App) ListLabels(ctx context.Context, installationID int64, owner, repo 
 	for page := 1; ; page++ {
 		var labels []Label
 		path := fmt.Sprintf("%s/repos/%s/%s/labels?per_page=%d&page=%d", a.apiURL, owner, repo, AppPerPage, page)
-		err = call(ctx, http.MethodGet, path, token.Token, map[string]string{
-			"Accept":               AppAccept,
-			"User-Agent":           AppUserAgent,
-			"X-GitHub-Api-Version": AppAPIVersion,
-		}, nil, &labels)
+		err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &labels)
 		if err != nil {
 			return nil, err
 		}
@@ -55,11 +51,7 @@ func (a *App) AddLabels(ctx context.Context, installationID int64, owner, repo s
 
 	path := fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels", a.apiURL, owner, repo, number)
 
-	return call(ctx, http.MethodPost, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, labels, nil)
+	return Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), labels, nil)
 }
 
 // RemoveLabels removes labels from an issue or pull request.
@@ -71,11 +63,7 @@ func (a *App) RemoveLabels(ctx context.Context, installationID int64, owner, rep
 
 	for _, label := range labels {
 		path := fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", a.apiURL, owner, repo, number, url.PathEscape(label))
-		err = call(ctx, http.MethodDelete, path, token.Token, map[string]string{
-			"Accept":               AppAccept,
-			"User-Agent":           AppUserAgent,
-			"X-GitHub-Api-Version": AppAPIVersion,
-		}, nil, nil)
+		err = Call(ctx, http.MethodDelete, path, token.Token, GetHeaders(), nil, nil)
 		if err != nil {
 			return err
 		}
@@ -93,11 +81,7 @@ func (a *App) CreateLabel(ctx context.Context, installationID int64, owner, repo
 
 	path := fmt.Sprintf("%s/repos/%s/%s/labels", a.apiURL, owner, repo)
 
-	return call(ctx, http.MethodPost, path, token.Token, map[string]string{
-		"Accept":               AppAccept,
-		"User-Agent":           AppUserAgent,
-		"X-GitHub-Api-Version": AppAPIVersion,
-	}, map[string]string{
+	return Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), map[string]string{
 		"name":        label.Name,
 		"color":       strings.TrimPrefix(label.Color, "#"),
 		"description": label.Description,

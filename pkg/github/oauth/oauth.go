@@ -109,7 +109,7 @@ func (o *OAuth) Exchange(ctx context.Context, code, state, expectedState string)
 	}
 
 	var token Token
-	err := call(ctx, http.MethodPost, OauthTokenURL, "", map[string]string{
+	err := Call(ctx, http.MethodPost, OauthTokenURL, "", map[string]string{
 		"Accept": "application/json",
 	}, OauthTokenRequest{
 		ClientID:     o.cfg.ClientID,
@@ -127,7 +127,7 @@ func (o *OAuth) Exchange(ctx context.Context, code, state, expectedState string)
 // User fetches the authenticated GitHub user.
 func (o *OAuth) User(ctx context.Context, accessToken string) (*UserInfo, error) {
 	var user UserInfo
-	err := call(ctx, http.MethodGet, OauthUserURL, accessToken, map[string]string{
+	err := Call(ctx, http.MethodGet, OauthUserURL, accessToken, map[string]string{
 		"Accept": "application/json",
 	}, nil, &user)
 	if err != nil {
@@ -140,7 +140,7 @@ func (o *OAuth) User(ctx context.Context, accessToken string) (*UserInfo, error)
 // Emails fetches the authenticated user's email addresses.
 func (o *OAuth) Emails(ctx context.Context, accessToken string) ([]Email, error) {
 	var emails []Email
-	err := call(ctx, http.MethodGet, OauthEmailsURL, accessToken, map[string]string{
+	err := Call(ctx, http.MethodGet, OauthEmailsURL, accessToken, map[string]string{
 		"Accept": "application/json",
 	}, nil, &emails)
 	if err != nil {

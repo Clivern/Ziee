@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/broker"
 
@@ -51,7 +50,7 @@ func StopBus() {
 }
 
 // EnqueueTask records a pending async task and publishes it on NATS.
-func EnqueueTask(taskType, subject string, payload map[string]string, workspaceId db.Id) error {
+func EnqueueTask(taskType string, payload map[string]string, workspaceId db.Id) error {
 	taskId, err := db.NewId()
 	if err != nil {
 		return err
@@ -75,7 +74,7 @@ func EnqueueTask(taskType, subject string, payload map[string]string, workspaceI
 		return err
 	}
 
-	err = GetBus().Publish(subject, raw)
+	err = GetBus().Publish(taskType, raw)
 	if err != nil {
 		return err
 	}
@@ -91,21 +90,7 @@ func RepublishPendingTasks() (int, error) {
 	}
 
 	for n, task := range tasks {
-		var subject string
-		switch task.Type {
-		case db.AsyncTaskTypeDocIndex:
-			subject = conf.NATSSubjectDocIndex
-		case db.AsyncTaskTypeDocDelete:
-			subject = conf.NATSSubjectDocDelete
-		case db.AsyncTaskTypeRepoBootstrap:
-			subject = conf.NATSSubjectRepoBootstrap
-		case db.AsyncTaskTypeGitHubIssue:
-			subject = conf.NATSSubjectGitHubIssue
-		case db.AsyncTaskTypeRepoLabels:
-			subject = conf.NATSSubjectRepoLabels
-		}
-
-		err = GetBus().Publish(subject, []byte(*task.Payload))
+		err = GetBus().Publish(task.Type, []byte(*task.Payload))
 		if err != nil {
 			return n, err
 		}
@@ -113,7 +98,6 @@ func RepublishPendingTasks() (int, error) {
 		log.Info().
 			Str("id", task.Id.String()).
 			Str("type", task.Type).
-			Str("subject", subject).
 			Msg("Pending task republished")
 	}
 

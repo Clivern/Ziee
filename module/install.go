@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/github/app"
 
@@ -118,7 +117,7 @@ func (i *Installation) UpdateRepositories(githubId int64, added []app.Repository
 			return err
 		}
 
-		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, conf.NATSSubjectRepoBootstrap, map[string]string{
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
 			"workspaceId":    item.WorkspaceId.String(),
 			"installationId": strconv.FormatInt(githubId, 10),
 			"fullName":       repository.FullName,
@@ -227,7 +226,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 			return err
 		}
 
-		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, conf.NATSSubjectRepoBootstrap, map[string]string{
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
 			"workspaceId":    workspaceId.String(),
 			"installationId": strconv.FormatInt(item.GitHubId, 10),
 			"fullName":       repository.FullName,

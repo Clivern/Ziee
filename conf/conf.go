@@ -23,11 +23,4 @@ const (
 
 	// DefaultSearchLimit is used when a knowledge search request omits limit.
 	DefaultSearchLimit = 10
-
-	// NATS subjects for workers.
-	NATSSubjectDocIndex      = "ziee.doc.index"
-	NATSSubjectDocDelete     = "ziee.doc.delete"
-	NATSSubjectRepoBootstrap = "ziee.repo.bootstrap"
-	NATSSubjectGitHubIssue   = "ziee.github.issue"
-	NATSSubjectRepoLabels    = "ziee.repo.labels"
 )

@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/broker"
 
@@ -49,11 +48,11 @@ type handlers struct {
 func Register(deps Dependencies) {
 	h := &handlers{knowledge: deps.Knowledge, tasks: deps.Tasks}
 
-	On(conf.NATSSubjectDocIndex, h.HandleDocumentIndex)
-	On(conf.NATSSubjectDocDelete, h.HandleDocumentDelete)
-	On(conf.NATSSubjectRepoBootstrap, h.HandleRepositoryBootstrap)
-	On(conf.NATSSubjectGitHubIssue, h.HandleGitHubIssue)
-	On(conf.NATSSubjectRepoLabels, h.HandleRepositoryLabels)
+	On(db.AsyncTaskTypeDocIndex, h.HandleDocumentIndex)
+	On(db.AsyncTaskTypeDocDelete, h.HandleDocumentDelete)
+	On(db.AsyncTaskTypeRepoBootstrap, h.HandleRepositoryBootstrap)
+	On(db.AsyncTaskTypeGitHubIssue, h.HandleGitHubIssue)
+	On(db.AsyncTaskTypeRepoLabels, h.HandleRepositoryLabels)
 }
 
 // On registers a queue worker handler for subject.

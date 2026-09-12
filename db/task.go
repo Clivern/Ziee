@@ -14,11 +14,11 @@ const (
 	AsyncTaskStatusCompleted = "completed"
 	AsyncTaskStatusFailed    = "failed"
 
-	AsyncTaskTypeDocIndex      = "doc.index"
-	AsyncTaskTypeDocDelete     = "doc.delete"
-	AsyncTaskTypeRepoBootstrap = "repo.bootstrap"
-	AsyncTaskTypeGitHubIssue   = "github.issue"
-	AsyncTaskTypeRepoLabels    = "repo.labels"
+	AsyncTaskTypeDocIndex      = "ziee.doc.index"
+	AsyncTaskTypeDocDelete     = "ziee.doc.delete"
+	AsyncTaskTypeRepoBootstrap = "ziee.repo.bootstrap"
+	AsyncTaskTypeGitHubIssue   = "ziee.github.issue"
+	AsyncTaskTypeRepoLabels    = "ziee.repo.labels"
 )
 
 // AsyncTask is a single row in the async_tasks table.

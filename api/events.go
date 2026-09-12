@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/event"
@@ -200,7 +199,7 @@ func issues(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, conf.NATSSubjectGitHubIssue, map[string]string{
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -252,7 +251,7 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, conf.NATSSubjectGitHubIssue, map[string]string{
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -307,7 +306,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeRepoLabels, conf.NATSSubjectRepoLabels, map[string]string{
+	err = module.EnqueueTask(db.AsyncTaskTypeRepoLabels, map[string]string{
 		"deliveryId":     d.ID,
 		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
 		"fullName":       payload.Repository.FullName,

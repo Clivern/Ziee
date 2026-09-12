@@ -18,11 +18,6 @@ func TestUnitConf(t *testing.T) {
 		assert.Equal(t, 7*24*time.Hour, InviteExpiry)
 		assert.Equal(t, int64(2*1024*1024), int64(MaxUploadBytes))
 		assert.Equal(t, 10, DefaultSearchLimit)
-		assert.Equal(t, "ziee.doc.index", NATSSubjectDocIndex)
-		assert.Equal(t, "ziee.doc.delete", NATSSubjectDocDelete)
-		assert.Equal(t, "ziee.repo.bootstrap", NATSSubjectRepoBootstrap)
-		assert.Equal(t, "ziee.github.issue", NATSSubjectGitHubIssue)
-		assert.Equal(t, "ziee.repo.labels", NATSSubjectRepoLabels)
 	})
 
 	t.Run("Edition", func(t *testing.T) {

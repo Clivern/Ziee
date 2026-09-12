@@ -91,3 +91,25 @@ func TestUnitInstallationRepositoriesEvent(t *testing.T) {
 	assert.Len(t, event.RepositoriesAdded, 1)
 	assert.Equal(t, "repo", event.RepositoriesAdded[0].Name)
 }
+
+func TestUnitIssueEvent(t *testing.T) {
+	var event IssueEvent
+	json.Unmarshal([]byte(`{"action":"opened","issue":{"number":3,"title":"bug","user":{"login":"maya"}},"repository":{"name":"ziee","owner":{"login":"acme","type":"Organization"}},"installation":{"id":9}}`), &event)
+
+	assert.Equal(t, "opened", event.Action)
+	assert.Equal(t, 3, event.Issue.Number)
+	assert.Equal(t, "maya", event.Issue.User.Login)
+	assert.Equal(t, "acme", event.Repository.Owner.Login)
+	assert.Equal(t, "Organization", event.Repository.Owner.Type)
+	assert.Equal(t, int64(9), event.Installation.ID)
+}
+
+func TestUnitIssueCommentEvent(t *testing.T) {
+	var event IssueCommentEvent
+	json.Unmarshal([]byte(`{"action":"created","issue":{"number":3},"comment":{"body":"@ziee label bug","user":{"login":"maya"}},"repository":{"name":"ziee","owner":{"login":"acme"}},"installation":{"id":9}}`), &event)
+
+	assert.Equal(t, "created", event.Action)
+	assert.Equal(t, 3, event.Issue.Number)
+	assert.Equal(t, "@ziee label bug", event.Comment.Body)
+	assert.Equal(t, int64(9), event.Installation.ID)
+}

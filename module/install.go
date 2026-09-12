@@ -56,6 +56,16 @@ func NewInstallation(installations db.GitHubInstallationRepository, repos db.Wor
 	}
 }
 
+// GetByGitHubId returns a GitHub App installation by GitHub installation id.
+func (i *Installation) GetByGitHubId(githubId int64) (*db.GitHubInstallation, error) {
+	item, err := i.InstallationRepository.GetByGitHubId(githubId)
+	if err != nil {
+		return nil, fmt.Errorf("get installation: %w", err)
+	}
+
+	return item, nil
+}
+
 // Upsert stores a GitHub App installation.
 func (i *Installation) Upsert(installation *db.GitHubInstallation) error {
 	err := i.InstallationRepository.Upsert(installation)

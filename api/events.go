@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/event"
@@ -19,6 +20,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/webhook"
 
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 )
 
 // Webhook is emitted for every verified GitHub App delivery.
@@ -28,6 +30,8 @@ func init() {
 	Webhook.On(dump)
 	Webhook.On(installation)
 	Webhook.On(installationRepositories)
+	Webhook.On(issues)
+	Webhook.On(issueComment)
 }
 
 func dump(_ context.Context, d webhook.Delivery) {
@@ -165,4 +169,110 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 		Int("added", len(added)).
 		Int("removed", len(removed)).
 		Msg("GitHub installation repositories webhook handled")
+}
+
+func issues(_ context.Context, d webhook.Delivery) {
+	if d.Event != "issues" {
+		return
+	}
+
+	var payload webhook.IssueEvent
+	json.Unmarshal(d.Body, &payload)
+
+	switch payload.Action {
+	case "opened", "edited", "labeled", "unlabeled":
+	default:
+		return
+	}
+
+	i := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+	)
+
+	item, err := i.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub issue webhook")
+		return
+	}
+	if lo.IsEmpty(lo.FromPtr(item).WorkspaceId) {
+		return
+	}
+
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, conf.NATSSubjectGitHubIssue, map[string]string{
+		"deliveryId":     d.ID,
+		"event":          d.Event,
+		"action":         payload.Action,
+		"body":           string(d.Body),
+		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
+		"owner":          payload.Repository.Owner.Login,
+		"repo":           payload.Repository.Name,
+		"number":         strconv.Itoa(payload.Issue.Number),
+	}, item.WorkspaceId)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub issue webhook")
+		return
+	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Str("action", payload.Action).
+		Int64("githubId", payload.Installation.ID).
+		Str("owner", payload.Repository.Owner.Login).
+		Str("repo", payload.Repository.Name).
+		Int("number", payload.Issue.Number).
+		Msg("GitHub issue webhook handled")
+}
+
+func issueComment(_ context.Context, d webhook.Delivery) {
+	if d.Event != "issue_comment" {
+		return
+	}
+
+	var payload webhook.IssueCommentEvent
+	json.Unmarshal(d.Body, &payload)
+
+	if payload.Action != "created" {
+		return
+	}
+
+	i := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+	)
+
+	item, err := i.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
+		return
+	}
+	if lo.IsEmpty(lo.FromPtr(item).WorkspaceId) {
+		return
+	}
+
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, conf.NATSSubjectGitHubIssue, map[string]string{
+		"deliveryId":     d.ID,
+		"event":          d.Event,
+		"action":         payload.Action,
+		"body":           string(d.Body),
+		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
+		"owner":          payload.Repository.Owner.Login,
+		"repo":           payload.Repository.Name,
+		"number":         strconv.Itoa(payload.Issue.Number),
+	}, item.WorkspaceId)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
+		return
+	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Str("action", payload.Action).
+		Int64("githubId", payload.Installation.ID).
+		Str("owner", payload.Repository.Owner.Login).
+		Str("repo", payload.Repository.Name).
+		Int("number", payload.Issue.Number).
+		Msg("GitHub issue comment webhook handled")
 }

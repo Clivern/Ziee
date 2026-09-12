@@ -52,6 +52,7 @@ func Register(deps Dependencies) {
 	On(conf.NATSSubjectDocIndex, h.HandleDocumentIndex)
 	On(conf.NATSSubjectDocDelete, h.HandleDocumentDelete)
 	On(conf.NATSSubjectRepoBootstrap, h.HandleRepositoryBootstrap)
+	On(conf.NATSSubjectGitHubIssue, h.HandleGitHubIssue)
 }
 
 // On registers a queue worker handler for subject.

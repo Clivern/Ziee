@@ -28,4 +28,5 @@ const (
 	NATSSubjectDocIndex      = "ziee.doc.index"
 	NATSSubjectDocDelete     = "ziee.doc.delete"
 	NATSSubjectRepoBootstrap = "ziee.repo.bootstrap"
+	NATSSubjectGitHubIssue   = "ziee.github.issue"
 )

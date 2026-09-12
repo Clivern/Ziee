@@ -99,6 +99,8 @@ func RepublishPendingTasks() (int, error) {
 			subject = conf.NATSSubjectDocDelete
 		case db.AsyncTaskTypeRepoBootstrap:
 			subject = conf.NATSSubjectRepoBootstrap
+		case db.AsyncTaskTypeGitHubIssue:
+			subject = conf.NATSSubjectGitHubIssue
 		}
 
 		err = GetBus().Publish(subject, []byte(*task.Payload))

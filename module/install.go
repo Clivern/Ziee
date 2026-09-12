@@ -44,11 +44,11 @@ type AttachInstallationRequest struct {
 // Installation is the module for GitHub App installations.
 type Installation struct {
 	InstallationRepository db.GitHubInstallationRepository
-	RepoRepository         db.WorkspaceGitHubRepoRepository
+	RepoRepository         db.RepositoryRepository
 }
 
 // NewInstallation creates an installation module with the given repositories.
-func NewInstallation(installations db.GitHubInstallationRepository, repos db.WorkspaceGitHubRepoRepository) *Installation {
+func NewInstallation(installations db.GitHubInstallationRepository, repos db.RepositoryRepository) *Installation {
 	return &Installation{
 		InstallationRepository: installations,
 		RepoRepository:         repos,
@@ -159,7 +159,7 @@ func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, 
 	raw := string(meta)
 	owner, _, _ := strings.Cut(repo.FullName, "/")
 
-	err = i.RepoRepository.Upsert(&db.WorkspaceGitHubRepo{
+	err = i.RepoRepository.Upsert(&db.Repository{
 		WorkspaceId:    workspaceId,
 		InstallationId: installationId,
 		GitHubId:       repo.ID,
@@ -184,9 +184,9 @@ func (i *Installation) SetConfigPath(githubRepoId int64, path string) error {
 		return fmt.Errorf("get repo: %w", err)
 	}
 
-	meta := db.NewWorkspaceGitHubRepoMetaRepository(db.GetDB())
+	meta := db.NewRepositoryMetaRepository(db.GetDB())
 
-	err = meta.Upsert(repo.Id, db.WorkspaceGitHubRepoMetaConfigPath, path)
+	err = meta.Upsert(repo.Id, db.RepositoryMetaConfigPath, path)
 	if err != nil {
 		return fmt.Errorf("upsert repo config path: %w", err)
 	}

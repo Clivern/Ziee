@@ -31,10 +31,10 @@ const (
 	CanGetWorkspaceBilling    = "CAN_GET_WORKSPACE_BILLING"
 	CanUpdateWorkspaceBilling = "CAN_UPDATE_WORKSPACE_BILLING"
 
-	CanListWorkspaceAccessKeys  = "CAN_LIST_WORKSPACE_ACCESS_KEYS"
-	CanCreateWorkspaceAccessKey = "CAN_CREATE_WORKSPACE_ACCESS_KEY"
-	CanGetWorkspaceAccessKey    = "CAN_GET_WORKSPACE_ACCESS_KEY"
-	CanDeleteWorkspaceAccessKey = "CAN_DELETE_WORKSPACE_ACCESS_KEY"
+	CanListAccessKeys  = "CAN_LIST_WORKSPACE_ACCESS_KEYS"
+	CanCreateAccessKey = "CAN_CREATE_WORKSPACE_ACCESS_KEY"
+	CanGetAccessKey    = "CAN_GET_WORKSPACE_ACCESS_KEY"
+	CanDeleteAccessKey = "CAN_DELETE_WORKSPACE_ACCESS_KEY"
 
 	CanCreateWorkspaceDocument = "CAN_CREATE_WORKSPACE_DOCUMENT"
 	CanListWorkspaceDocuments  = "CAN_LIST_WORKSPACE_DOCUMENTS"
@@ -60,7 +60,7 @@ var AccessKeyPermissions = map[string]bool{
 type Perm struct {
 	WorkspaceRepository db.WorkspaceRepository
 	user                *db.User
-	accessKey           *db.WorkspaceAccessKey
+	accessKey           *db.AccessKey
 	workspace           *db.Workspace
 }
 
@@ -79,7 +79,7 @@ func (p *Perm) WithUser(user *db.User) *Perm {
 }
 
 // WithAccessKey sets the workspace access key principal. Mutually exclusive with WithUser.
-func (p *Perm) WithAccessKey(accessKey *db.WorkspaceAccessKey) *Perm {
+func (p *Perm) WithAccessKey(accessKey *db.AccessKey) *Perm {
 	p.accessKey = accessKey
 	p.user = nil
 	return p
@@ -139,10 +139,10 @@ func (p *Perm) CanAsUser(permission string) (bool, error) {
 		CanGetWorkspaceInvite,
 		CanInviteMember,
 		CanRemoveInvite,
-		CanListWorkspaceAccessKeys,
-		CanCreateWorkspaceAccessKey,
-		CanGetWorkspaceAccessKey,
-		CanDeleteWorkspaceAccessKey,
+		CanListAccessKeys,
+		CanCreateAccessKey,
+		CanGetAccessKey,
+		CanDeleteAccessKey,
 		CanListWorkspaceAudits,
 		CanGetWorkspaceAudit,
 		CanCreateWorkspaceDocument,

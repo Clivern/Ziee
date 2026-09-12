@@ -1,4 +1,4 @@
-CREATE TABLE github_installations (
+CREATE TABLE installations (
 	id UUID PRIMARY KEY,
 	github_id BIGINT NOT NULL UNIQUE,
 	github_user_id VARCHAR(255) NOT NULL,
@@ -13,6 +13,6 @@ CREATE TABLE github_installations (
 	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
 	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 );
-CREATE INDEX idx_github_installations_github_user_id ON github_installations(github_user_id);
-CREATE INDEX idx_github_installations_workspace_id ON github_installations(workspace_id);
-CREATE INDEX idx_github_installations_status ON github_installations(status);
+CREATE INDEX idx_installations_github_user_id ON installations(github_user_id);
+CREATE INDEX idx_installations_workspace_id ON installations(workspace_id);
+CREATE INDEX idx_installations_status ON installations(status);

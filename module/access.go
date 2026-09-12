@@ -27,15 +27,15 @@ var (
 
 // Access is the module for workspace access key CRUD.
 type Access struct {
-	WorkspaceAccessKeyRepository db.WorkspaceAccessKeyRepository
-	WorkspaceRepository          db.WorkspaceRepository
+	AccessKeyRepository db.AccessKeyRepository
+	WorkspaceRepository db.WorkspaceRepository
 }
 
 // NewAccess creates an access key module with the given repositories.
-func NewAccess(accessKeys db.WorkspaceAccessKeyRepository, workspaces db.WorkspaceRepository) *Access {
+func NewAccess(accessKeys db.AccessKeyRepository, workspaces db.WorkspaceRepository) *Access {
 	return &Access{
-		WorkspaceAccessKeyRepository: accessKeys,
-		WorkspaceRepository:          workspaces,
+		AccessKeyRepository: accessKeys,
+		WorkspaceRepository: workspaces,
 	}
 }
 
@@ -64,7 +64,7 @@ type AccessKeyResponse struct {
 	Key         string   `json:"key,omitempty"`
 }
 
-// AccessKeyMeta is the JSON shape stored in workspace_access_keys.meta.
+// AccessKeyMeta is the JSON shape stored in access_keys.meta.
 type AccessKeyMeta struct {
 	Permissions []string `json:"permissions"`
 }
@@ -102,7 +102,7 @@ func (a *Access) CreateAccessKey(workspaceId db.Id, req *CreateAccessKeyRequest)
 		return nil, fmt.Errorf("%w: %v", ErrFailedCreateAccessKey, err)
 	}
 
-	item := &db.WorkspaceAccessKey{
+	item := &db.AccessKey{
 		WorkspaceId: workspaceId,
 		Name:        req.Name,
 		Key:         token.String(),
@@ -110,7 +110,7 @@ func (a *Access) CreateAccessKey(workspaceId db.Id, req *CreateAccessKeyRequest)
 		Meta:        new(string(raw)),
 	}
 
-	err = a.WorkspaceAccessKeyRepository.Create(item)
+	err = a.AccessKeyRepository.Create(item)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedCreateAccessKey, err)
 	}
@@ -143,16 +143,16 @@ func (a *Access) ListAccessKeys(workspaceId db.Id, limit, offset int) (*ListAcce
 		return nil, ErrWorkspaceNotFound
 	}
 
-	if _, err := a.WorkspaceAccessKeyRepository.DeleteExpired(); err != nil {
+	if _, err := a.AccessKeyRepository.DeleteExpired(); err != nil {
 		log.Error().Err(err).Msg("Failed to delete expired workspace access keys")
 	}
 
-	total, err := a.WorkspaceAccessKeyRepository.CountByWorkspaceId(workspaceId)
+	total, err := a.AccessKeyRepository.CountByWorkspaceId(workspaceId)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedListAccessKeys, err)
 	}
 
-	keys, err := a.WorkspaceAccessKeyRepository.ListByWorkspaceId(workspaceId, limit, offset)
+	keys, err := a.AccessKeyRepository.ListByWorkspaceId(workspaceId, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedListAccessKeys, err)
 	}
@@ -193,11 +193,11 @@ func (a *Access) GetAccessKey(workspaceId, id db.Id) (*AccessKeyResponse, error)
 		return nil, ErrWorkspaceNotFound
 	}
 
-	if _, err := a.WorkspaceAccessKeyRepository.DeleteExpired(); err != nil {
+	if _, err := a.AccessKeyRepository.DeleteExpired(); err != nil {
 		log.Error().Err(err).Msg("Failed to delete expired workspace access keys")
 	}
 
-	item, err := a.WorkspaceAccessKeyRepository.GetById(id)
+	item, err := a.AccessKeyRepository.GetById(id)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedGetAccessKey, err)
 	}
@@ -237,7 +237,7 @@ func (a *Access) DeleteAccessKey(workspaceId, id db.Id) error {
 		return ErrWorkspaceNotFound
 	}
 
-	item, err := a.WorkspaceAccessKeyRepository.GetById(id)
+	item, err := a.AccessKeyRepository.GetById(id)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrFailedDeleteAccessKey, err)
 	}
@@ -245,7 +245,7 @@ func (a *Access) DeleteAccessKey(workspaceId, id db.Id) error {
 		return ErrAccessKeyNotFound
 	}
 
-	err = a.WorkspaceAccessKeyRepository.Delete(item.Id)
+	err = a.AccessKeyRepository.Delete(item.Id)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrFailedDeleteAccessKey, err)
 	}

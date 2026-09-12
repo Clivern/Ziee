@@ -1,4 +1,4 @@
-CREATE TABLE workspace_documents (
+CREATE TABLE documents (
 	id UUID PRIMARY KEY,
 	internal_id UUID NOT NULL UNIQUE,
 	workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -16,6 +16,6 @@ CREATE TABLE workspace_documents (
 	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
 	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 );
-CREATE INDEX idx_workspace_documents_workspace_id ON workspace_documents(workspace_id);
-CREATE INDEX idx_workspace_documents_status ON workspace_documents(status);
-CREATE INDEX idx_workspace_documents_labels ON workspace_documents USING GIN (labels jsonb_path_ops);
+CREATE INDEX idx_documents_workspace_id ON documents(workspace_id);
+CREATE INDEX idx_documents_status ON documents(status);
+CREATE INDEX idx_documents_labels ON documents USING GIN (labels jsonb_path_ops);

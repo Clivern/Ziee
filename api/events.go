@@ -77,7 +77,7 @@ func installation(_ context.Context, d webhook.Delivery) {
 
 	i := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	if payload.Action == "deleted" {
@@ -137,7 +137,7 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 
 	i := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	added := make([]app.Repository, len(payload.RepositoriesAdded))
@@ -187,7 +187,7 @@ func issues(_ context.Context, d webhook.Delivery) {
 
 	i := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
@@ -239,7 +239,7 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 
 	i := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
@@ -296,7 +296,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 
 	i := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)

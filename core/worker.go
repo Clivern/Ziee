@@ -64,7 +64,7 @@ func RunWorker() error {
 	}()
 
 	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents: db.NewWorkspaceDocumentRepository(
+		Documents: db.NewDocumentRepository(
 			db.GetDB(true),
 		),
 		Embed:         ai.NewEmbedClient(),

@@ -22,7 +22,7 @@ import (
 type Dependencies struct {
 	Embed         *ai.EmbedClient
 	Vectors       *qdrant.Client
-	Documents     db.WorkspaceDocumentRepository
+	Documents     db.DocumentRepository
 	Store         storage.Store
 	Usage         db.UsageRepository
 	Subscriptions db.SubscriptionRepository
@@ -32,7 +32,7 @@ type Dependencies struct {
 type Service struct {
 	embed         *ai.EmbedClient
 	vectors       *qdrant.Client
-	documents     db.WorkspaceDocumentRepository
+	documents     db.DocumentRepository
 	store         storage.Store
 	usage         db.UsageRepository
 	subscriptions db.SubscriptionRepository
@@ -51,8 +51,8 @@ func New(deps Dependencies) *Service {
 }
 
 // MarkAsFailed marks a workspace document as failed
-func (s *Service) MarkAsFailed(document *db.WorkspaceDocument) {
-	document.Status = db.WorkspaceDocumentStatusFailed
+func (s *Service) MarkAsFailed(document *db.Document) {
+	document.Status = db.DocumentStatusFailed
 	now := time.Now().UTC()
 	document.ProcessedAt = &now
 

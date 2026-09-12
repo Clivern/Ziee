@@ -56,7 +56,7 @@ func Auth() func(http.Handler) http.Handler {
 			// Access Key Check
 			accessKey := r.Header.Get("X-Access-Key")
 			if lo.IsNotEmpty(accessKey) {
-				key, err := db.NewWorkspaceAccessKeyRepository(db.GetDB()).GetByKey(accessKey)
+				key, err := db.NewAccessKeyRepository(db.GetDB()).GetByKey(accessKey)
 				if err != nil {
 					log.Info().
 						Err(err).

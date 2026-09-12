@@ -70,7 +70,7 @@ func ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Request) {
 
 	im := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	installations, err := im.ListPending(lo.FromPtr(user.ProviderUserId))
@@ -117,7 +117,7 @@ func AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Request) {
 
 	im := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewWorkspaceGitHubRepoRepository(db.GetDB()),
+		db.NewRepositoryRepository(db.GetDB()),
 	)
 
 	err = im.Attach(r.Context(), db.Id(id), db.Id(req.WorkspaceId), lo.FromPtr(user.ProviderUserId))

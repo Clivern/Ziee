@@ -25,9 +25,9 @@ type WorkspaceUsageMetrics struct {
 
 // UsageSnapshotDeps holds repositories needed to load workspace usage.
 type UsageSnapshotDeps struct {
-	WorkspaceUserRepository     db.WorkspaceUserRepository
-	WorkspaceDocumentRepository db.WorkspaceDocumentRepository
-	UsageRepository             db.UsageRepository
+	WorkspaceUserRepository db.WorkspaceUserRepository
+	DocumentRepository      db.DocumentRepository
+	UsageRepository         db.UsageRepository
 }
 
 // NewUsage returns a usage module.
@@ -41,12 +41,12 @@ func (u *Usage) MembersCount(workspaceUsers db.WorkspaceUserRepository, workspac
 }
 
 // DocumentsCount returns the number of documents in a workspace.
-func (u *Usage) DocumentsCount(documents db.WorkspaceDocumentRepository, workspaceId db.Id) (int64, error) {
+func (u *Usage) DocumentsCount(documents db.DocumentRepository, workspaceId db.Id) (int64, error) {
 	return documents.CountByWorkspaceId(workspaceId)
 }
 
 // StorageUsed returns total document storage in bytes for a workspace.
-func (u *Usage) StorageUsed(documents db.WorkspaceDocumentRepository, workspaceId db.Id) (int64, error) {
+func (u *Usage) StorageUsed(documents db.DocumentRepository, workspaceId db.Id) (int64, error) {
 	return documents.SumSizeByWorkspaceId(workspaceId)
 }
 
@@ -57,12 +57,12 @@ func (u *Usage) GetWorkspaceUsage(deps UsageSnapshotDeps, workspaceId db.Id) (*W
 		return nil, err
 	}
 
-	documents, err := u.DocumentsCount(deps.WorkspaceDocumentRepository, workspaceId)
+	documents, err := u.DocumentsCount(deps.DocumentRepository, workspaceId)
 	if err != nil {
 		return nil, err
 	}
 
-	storageBytes, err := u.StorageUsed(deps.WorkspaceDocumentRepository, workspaceId)
+	storageBytes, err := u.StorageUsed(deps.DocumentRepository, workspaceId)
 	if err != nil {
 		return nil, err
 	}

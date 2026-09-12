@@ -110,10 +110,10 @@ func SetupServer(Static embed.FS) http.Handler {
 		})
 
 		r.Route("/keys", func(r chi.Router) {
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreateWorkspaceAccessKey})).Post("/", api.CreateWorkspaceAccessKeyAction)          // create workspace access key
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanListWorkspaceAccessKeys})).Get("/", api.ListWorkspaceAccessKeysAction)             // list workspace access keys
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetWorkspaceAccessKey})).Get("/{keyId}", api.GetWorkspaceAccessKeyAction)          // get workspace access key
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeleteWorkspaceAccessKey})).Delete("/{keyId}", api.DeleteWorkspaceAccessKeyAction) // delete workspace access key
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreateAccessKey})).Post("/", api.CreateAccessKeyAction)          // create workspace access key
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanListAccessKeys})).Get("/", api.ListAccessKeysAction)             // list workspace access keys
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetAccessKey})).Get("/{keyId}", api.GetAccessKeyAction)          // get workspace access key
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeleteAccessKey})).Delete("/{keyId}", api.DeleteAccessKeyAction) // delete workspace access key
 		})
 
 		if conf.IsSaaS() {

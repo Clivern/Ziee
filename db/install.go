@@ -59,7 +59,7 @@ func (r *GitHubInstallationRepositoryPostgres) Upsert(installation *GitHubInstal
 	}
 
 	return r.db.QueryRow(
-		`INSERT INTO github_installations
+		`INSERT INTO installations
 		(id, github_id, github_user_id, account_id, account_login, account_type, repository_selection, html_url, meta)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		ON CONFLICT (github_id) DO UPDATE SET
@@ -95,7 +95,7 @@ func (r *GitHubInstallationRepositoryPostgres) GetById(id Id) (*GitHubInstallati
 	item := &GitHubInstallation{}
 	err := r.db.QueryRow(
 		`SELECT id, github_id, github_user_id, account_id, account_login, account_type, workspace_id, status, repository_selection, html_url, meta, created_at, updated_at
-		FROM github_installations
+		FROM installations
 		WHERE id = $1`,
 		id.String(),
 	).Scan(
@@ -125,7 +125,7 @@ func (r *GitHubInstallationRepositoryPostgres) GetByGitHubId(githubId int64) (*G
 	item := &GitHubInstallation{}
 	err := r.db.QueryRow(
 		`SELECT id, github_id, github_user_id, account_id, account_login, account_type, workspace_id, status, repository_selection, html_url, meta, created_at, updated_at
-		FROM github_installations
+		FROM installations
 		WHERE github_id = $1`,
 		githubId,
 	).Scan(
@@ -154,7 +154,7 @@ func (r *GitHubInstallationRepositoryPostgres) GetByGitHubId(githubId int64) (*G
 func (r *GitHubInstallationRepositoryPostgres) ListPendingByGitHubUserId(githubUserId string) ([]*GitHubInstallation, error) {
 	rows, err := r.db.Query(
 		`SELECT id, github_id, github_user_id, account_id, account_login, account_type, workspace_id, status, repository_selection, html_url, meta, created_at, updated_at
-		FROM github_installations
+		FROM installations
 		WHERE github_user_id = $1 AND status = $2
 		ORDER BY created_at DESC`,
 		githubUserId,
@@ -194,7 +194,7 @@ func (r *GitHubInstallationRepositoryPostgres) ListPendingByGitHubUserId(githubU
 // Attach sets the workspace for a GitHub App installation.
 func (r *GitHubInstallationRepositoryPostgres) Attach(id, workspaceId Id) error {
 	_, err := r.db.Exec(
-		`UPDATE github_installations
+		`UPDATE installations
 		SET workspace_id = $1, status = $2, updated_at = $3
 		WHERE id = $4`,
 		workspaceId.String(),
@@ -209,7 +209,7 @@ func (r *GitHubInstallationRepositoryPostgres) Attach(id, workspaceId Id) error 
 // UpdateStatus sets the processing status of a GitHub App installation.
 func (r *GitHubInstallationRepositoryPostgres) UpdateStatus(id Id, status string) error {
 	_, err := r.db.Exec(
-		`UPDATE github_installations
+		`UPDATE installations
 		SET status = $1, updated_at = $2
 		WHERE id = $3`,
 		status,
@@ -222,7 +222,7 @@ func (r *GitHubInstallationRepositoryPostgres) UpdateStatus(id Id, status string
 
 // DeleteByGitHubId deletes a GitHub App installation by GitHub installation id.
 func (r *GitHubInstallationRepositoryPostgres) DeleteByGitHubId(githubId int64) error {
-	_, err := r.db.Exec(`DELETE FROM github_installations WHERE github_id = $1`, githubId)
+	_, err := r.db.Exec(`DELETE FROM installations WHERE github_id = $1`, githubId)
 
 	return err
 }

@@ -31,7 +31,7 @@ func GetMeAction(w http.ResponseWriter, r *http.Request) {
 	mm := module.NewMe(
 		db.NewAPIKeyRepository(db.GetDB()),
 		db.NewUserRepository(db.GetDB()),
-		db.NewWorkspaceAccessKeyRepository(db.GetDB()),
+		db.NewAccessKeyRepository(db.GetDB()),
 	)
 
 	// Check if the request is for an API key

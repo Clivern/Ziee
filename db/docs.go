@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	WorkspaceDocumentStatusProcessing = "processing"
-	WorkspaceDocumentStatusIndexed    = "indexed"
-	WorkspaceDocumentStatusFailed     = "failed"
+	DocumentStatusProcessing = "processing"
+	DocumentStatusIndexed    = "indexed"
+	DocumentStatusFailed     = "failed"
 )
 
-// WorkspaceDocument is a single row in the workspace_documents table.
-type WorkspaceDocument struct {
+// Document is a single row in the documents table.
+type Document struct {
 	Id             Id
 	InternalId     Id
 	WorkspaceId    Id
@@ -36,53 +36,53 @@ type WorkspaceDocument struct {
 	UpdatedAt      time.Time
 }
 
-// WorkspaceDocumentRepository is the interface for workspace document CRUD.
-type WorkspaceDocumentRepository interface {
-	Create(document *WorkspaceDocument) error
-	GetById(id Id) (*WorkspaceDocument, error)
-	GetByInternalId(internalId Id) (*WorkspaceDocument, error)
-	Update(document *WorkspaceDocument) error
+// DocumentRepository is the interface for workspace document CRUD.
+type DocumentRepository interface {
+	Create(document *Document) error
+	GetById(id Id) (*Document, error)
+	GetByInternalId(internalId Id) (*Document, error)
+	Update(document *Document) error
 	Delete(id Id) error
-	ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*WorkspaceDocument, error)
+	ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*Document, error)
 	CountByWorkspaceId(workspaceId Id) (int64, error)
 	SumSizeByWorkspaceId(workspaceId Id) (int64, error)
 }
 
-type WorkspaceDocumentRepositoryPostgres struct {
+type DocumentRepositoryPostgres struct {
 	db *sql.DB
 }
 
-// WorkspaceDocumentMeta is a single row in the workspace_documents_meta table.
-type WorkspaceDocumentMeta struct {
-	Id                  Id
-	WorkspaceDocumentId Id
-	Key                 string
-	Value               string
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
+// DocumentMeta is a single row in the documents_meta table.
+type DocumentMeta struct {
+	Id         Id
+	DocumentId Id
+	Key        string
+	Value      string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
-// WorkspaceDocumentMetaRepository is the interface for workspace document meta CRUD.
-type WorkspaceDocumentMetaRepository interface {
+// DocumentMetaRepository is the interface for workspace document meta CRUD.
+type DocumentMetaRepository interface {
 	Create(id Id, key, value string) error
-	Get(id Id, key string) (*WorkspaceDocumentMeta, error)
+	Get(id Id, key string) (*DocumentMeta, error)
 	Update(id Id, key, value string) error
 	Delete(id Id, key string) error
-	ListByWorkspaceDocumentId(id Id) ([]*WorkspaceDocumentMeta, error)
+	ListByDocumentId(id Id) ([]*DocumentMeta, error)
 	Upsert(id Id, key, value string) error
 }
 
-type WorkspaceDocumentMetaRepositoryPostgres struct {
+type DocumentMetaRepositoryPostgres struct {
 	db *sql.DB
 }
 
-// NewWorkspaceDocumentRepository returns a workspace document repository.
-func NewWorkspaceDocumentRepository(db *sql.DB) WorkspaceDocumentRepository {
-	return &WorkspaceDocumentRepositoryPostgres{db: db}
+// NewDocumentRepository returns a workspace document repository.
+func NewDocumentRepository(db *sql.DB) DocumentRepository {
+	return &DocumentRepositoryPostgres{db: db}
 }
 
 // Create inserts a workspace document row.
-func (r *WorkspaceDocumentRepositoryPostgres) Create(document *WorkspaceDocument) error {
+func (r *DocumentRepositoryPostgres) Create(document *Document) error {
 	id, err := NewId()
 	if err != nil {
 		return err
@@ -96,11 +96,11 @@ func (r *WorkspaceDocumentRepositoryPostgres) Create(document *WorkspaceDocument
 	document.InternalId = internalId
 
 	if lo.IsEmpty(document.Status) {
-		document.Status = WorkspaceDocumentStatusProcessing
+		document.Status = DocumentStatusProcessing
 	}
 
 	return r.db.QueryRow(
-		`INSERT INTO workspace_documents (
+		`INSERT INTO documents (
 			id, internal_id, workspace_id, title, filename, content_type, checksum, size, char_count,
 			labels, processed_at, chunking_config, meta, status
 		)
@@ -124,13 +124,13 @@ func (r *WorkspaceDocumentRepositoryPostgres) Create(document *WorkspaceDocument
 }
 
 // GetById returns a workspace document by id.
-func (r *WorkspaceDocumentRepositoryPostgres) GetById(id Id) (*WorkspaceDocument, error) {
-	item := &WorkspaceDocument{}
+func (r *DocumentRepositoryPostgres) GetById(id Id) (*Document, error) {
+	item := &Document{}
 	err := r.db.QueryRow(
 		`SELECT
 			id, internal_id, workspace_id, title, filename, content_type, checksum, size, char_count,
 			labels, processed_at, chunking_config, meta, status, created_at, updated_at
-		FROM workspace_documents
+		FROM documents
 		WHERE id = $1`,
 		id.String(),
 	).Scan(
@@ -158,13 +158,13 @@ func (r *WorkspaceDocumentRepositoryPostgres) GetById(id Id) (*WorkspaceDocument
 }
 
 // GetByInternalId returns a workspace document by internal id.
-func (r *WorkspaceDocumentRepositoryPostgres) GetByInternalId(internalId Id) (*WorkspaceDocument, error) {
-	item := &WorkspaceDocument{}
+func (r *DocumentRepositoryPostgres) GetByInternalId(internalId Id) (*Document, error) {
+	item := &Document{}
 	err := r.db.QueryRow(
 		`SELECT
 			id, internal_id, workspace_id, title, filename, content_type, checksum, size, char_count,
 			labels, processed_at, chunking_config, meta, status, created_at, updated_at
-		FROM workspace_documents
+		FROM documents
 		WHERE internal_id = $1`,
 		internalId.String(),
 	).Scan(
@@ -192,9 +192,9 @@ func (r *WorkspaceDocumentRepositoryPostgres) GetByInternalId(internalId Id) (*W
 }
 
 // Update updates an existing workspace document row.
-func (r *WorkspaceDocumentRepositoryPostgres) Update(document *WorkspaceDocument) error {
+func (r *DocumentRepositoryPostgres) Update(document *Document) error {
 	_, err := r.db.Exec(
-		`UPDATE workspace_documents
+		`UPDATE documents
 		SET
 			workspace_id = $1,
 			title = $2,
@@ -229,9 +229,9 @@ func (r *WorkspaceDocumentRepositoryPostgres) Update(document *WorkspaceDocument
 }
 
 // Delete deletes a workspace document row.
-func (r *WorkspaceDocumentRepositoryPostgres) Delete(id Id) error {
+func (r *DocumentRepositoryPostgres) Delete(id Id) error {
 	_, err := r.db.Exec(
-		`DELETE FROM workspace_documents
+		`DELETE FROM documents
 		WHERE id = $1`,
 		id.String(),
 	)
@@ -239,12 +239,12 @@ func (r *WorkspaceDocumentRepositoryPostgres) Delete(id Id) error {
 }
 
 // ListByWorkspaceId lists workspace document rows by workspace id.
-func (r *WorkspaceDocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*WorkspaceDocument, error) {
+func (r *DocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*Document, error) {
 	rows, err := r.db.Query(
 		`SELECT
 			id, internal_id, workspace_id, title, filename, content_type, checksum, size, char_count,
 			labels, processed_at, chunking_config, meta, status, created_at, updated_at
-		FROM workspace_documents
+		FROM documents
 		WHERE workspace_id = $1
 		ORDER BY created_at DESC
 		LIMIT $2 OFFSET $3`,
@@ -257,9 +257,9 @@ func (r *WorkspaceDocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, 
 	}
 	defer rows.Close()
 
-	var list []*WorkspaceDocument
+	var list []*Document
 	for rows.Next() {
-		item := &WorkspaceDocument{}
+		item := &Document{}
 		if err := rows.Scan(
 			&item.Id,
 			&item.InternalId,
@@ -286,11 +286,11 @@ func (r *WorkspaceDocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, 
 }
 
 // CountByWorkspaceId counts workspace document rows by workspace id.
-func (r *WorkspaceDocumentRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, error) {
+func (r *DocumentRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, error) {
 	var count int64
 	err := r.db.QueryRow(
 		`SELECT COUNT(*)
-		FROM workspace_documents
+		FROM documents
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&count)
@@ -298,31 +298,31 @@ func (r *WorkspaceDocumentRepositoryPostgres) CountByWorkspaceId(workspaceId Id)
 }
 
 // SumSizeByWorkspaceId sums workspace document size by workspace id.
-func (r *WorkspaceDocumentRepositoryPostgres) SumSizeByWorkspaceId(workspaceId Id) (int64, error) {
+func (r *DocumentRepositoryPostgres) SumSizeByWorkspaceId(workspaceId Id) (int64, error) {
 	var total int64
 	err := r.db.QueryRow(
 		`SELECT COALESCE(SUM(size), 0)
-		FROM workspace_documents
+		FROM documents
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&total)
 	return total, err
 }
 
-// NewWorkspaceDocumentMetaRepository returns the repository for workspace document meta.
-func NewWorkspaceDocumentMetaRepository(db *sql.DB) WorkspaceDocumentMetaRepository {
-	return &WorkspaceDocumentMetaRepositoryPostgres{db: db}
+// NewDocumentMetaRepository returns the repository for workspace document meta.
+func NewDocumentMetaRepository(db *sql.DB) DocumentMetaRepository {
+	return &DocumentMetaRepositoryPostgres{db: db}
 }
 
 // Create inserts a workspace document metadata row.
-func (r *WorkspaceDocumentMetaRepositoryPostgres) Create(id Id, key, value string) error {
+func (r *DocumentMetaRepositoryPostgres) Create(id Id, key, value string) error {
 	metaId, err := NewId()
 	if err != nil {
 		return err
 	}
 	_, err = r.db.Exec(
-		`INSERT INTO workspace_documents_meta (
-			id, workspace_document_id, key, value
+		`INSERT INTO documents_meta (
+			id, document_id, key, value
 		)
 		VALUES ($1, $2, $3, $4)`,
 		metaId.String(), id.String(), key, value,
@@ -331,17 +331,17 @@ func (r *WorkspaceDocumentMetaRepositoryPostgres) Create(id Id, key, value strin
 }
 
 // Get returns workspace document metadata by key.
-func (r *WorkspaceDocumentMetaRepositoryPostgres) Get(id Id, key string) (*WorkspaceDocumentMeta, error) {
-	meta := &WorkspaceDocumentMeta{}
+func (r *DocumentMetaRepositoryPostgres) Get(id Id, key string) (*DocumentMeta, error) {
+	meta := &DocumentMeta{}
 	err := r.db.QueryRow(
 		`SELECT
-			id, workspace_document_id, key, value, created_at, updated_at
-		FROM workspace_documents_meta
-		WHERE workspace_document_id = $1 AND key = $2`,
+			id, document_id, key, value, created_at, updated_at
+		FROM documents_meta
+		WHERE document_id = $1 AND key = $2`,
 		id.String(), key,
 	).Scan(
 		&meta.Id,
-		&meta.WorkspaceDocumentId,
+		&meta.DocumentId,
 		&meta.Key,
 		&meta.Value,
 		&meta.CreatedAt,
@@ -354,35 +354,35 @@ func (r *WorkspaceDocumentMetaRepositoryPostgres) Get(id Id, key string) (*Works
 }
 
 // Update updates an existing workspace document metadata row.
-func (r *WorkspaceDocumentMetaRepositoryPostgres) Update(id Id, key, value string) error {
+func (r *DocumentMetaRepositoryPostgres) Update(id Id, key, value string) error {
 	_, err := r.db.Exec(
-		`UPDATE workspace_documents_meta
+		`UPDATE documents_meta
 		SET
 			value = $1,
 			updated_at = $2
-		WHERE workspace_document_id = $3 AND key = $4`,
+		WHERE document_id = $3 AND key = $4`,
 		value, time.Now().UTC(), id.String(), key,
 	)
 	return err
 }
 
 // Delete deletes a workspace document metadata row.
-func (r *WorkspaceDocumentMetaRepositoryPostgres) Delete(id Id, key string) error {
+func (r *DocumentMetaRepositoryPostgres) Delete(id Id, key string) error {
 	_, err := r.db.Exec(
-		`DELETE FROM workspace_documents_meta
-		WHERE workspace_document_id = $1 AND key = $2`,
+		`DELETE FROM documents_meta
+		WHERE document_id = $1 AND key = $2`,
 		id.String(), key,
 	)
 	return err
 }
 
-// ListByWorkspaceDocumentId lists workspace document metadata rows by workspace document id.
-func (r *WorkspaceDocumentMetaRepositoryPostgres) ListByWorkspaceDocumentId(id Id) ([]*WorkspaceDocumentMeta, error) {
+// ListByDocumentId lists workspace document metadata rows by workspace document id.
+func (r *DocumentMetaRepositoryPostgres) ListByDocumentId(id Id) ([]*DocumentMeta, error) {
 	rows, err := r.db.Query(
 		`SELECT
-			id, workspace_document_id, key, value, created_at, updated_at
-		FROM workspace_documents_meta
-		WHERE workspace_document_id = $1
+			id, document_id, key, value, created_at, updated_at
+		FROM documents_meta
+		WHERE document_id = $1
 		ORDER BY key`,
 		id.String(),
 	)
@@ -391,12 +391,12 @@ func (r *WorkspaceDocumentMetaRepositoryPostgres) ListByWorkspaceDocumentId(id I
 	}
 	defer rows.Close()
 
-	var list []*WorkspaceDocumentMeta
+	var list []*DocumentMeta
 	for rows.Next() {
-		meta := &WorkspaceDocumentMeta{}
+		meta := &DocumentMeta{}
 		err := rows.Scan(
 			&meta.Id,
-			&meta.WorkspaceDocumentId,
+			&meta.DocumentId,
 			&meta.Key,
 			&meta.Value,
 			&meta.CreatedAt,
@@ -411,7 +411,7 @@ func (r *WorkspaceDocumentMetaRepositoryPostgres) ListByWorkspaceDocumentId(id I
 }
 
 // Upsert creates or updates workspace document metadata.
-func (r *WorkspaceDocumentMetaRepositoryPostgres) Upsert(id Id, key, value string) error {
+func (r *DocumentMetaRepositoryPostgres) Upsert(id Id, key, value string) error {
 	existing, err := r.Get(id, key)
 	if err != nil {
 		return err

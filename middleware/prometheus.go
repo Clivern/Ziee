@@ -142,7 +142,7 @@ var (
 			if conn == nil {
 				return 0
 			}
-			count, err := db.NewWorkspaceAccessKeyRepository(conn).Count()
+			count, err := db.NewAccessKeyRepository(conn).Count()
 			if err != nil {
 				return 0
 			}

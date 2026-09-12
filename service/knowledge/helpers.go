@@ -55,7 +55,7 @@ type Chunk struct {
 }
 
 // GetChunkConfig returns the server-side chunking configuration for a document.
-func GetChunkConfig(document *db.WorkspaceDocument) chunk.Config {
+func GetChunkConfig(document *db.Document) chunk.Config {
 	opts := util.DefaultChunkingOptions(document.CharCount, document.Filename)
 
 	return chunk.Config{
@@ -66,7 +66,7 @@ func GetChunkConfig(document *db.WorkspaceDocument) chunk.Config {
 }
 
 // GetDocumentPayload returns the payload for a workspace document chunk.
-func GetDocumentPayload(document *db.WorkspaceDocument, text string, chunkIndex int) map[string]string {
+func GetDocumentPayload(document *db.Document, text string, chunkIndex int) map[string]string {
 	payload := map[string]string{
 		migration.PayloadText:               text,
 		migration.PayloadDocumentInternalID: document.InternalId.String(),

@@ -1,6 +1,6 @@
 CREATE TABLE pqueue (
 	id UUID PRIMARY KEY,
-	repo_id UUID NOT NULL REFERENCES workspace_github_repos(id) ON DELETE CASCADE,
+	repo_id UUID NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
 	github_pr_id BIGINT NOT NULL,
 	priority VARCHAR(20) NOT NULL DEFAULT 'medium',
 	rank INTEGER NOT NULL,

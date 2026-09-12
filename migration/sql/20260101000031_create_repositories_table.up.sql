@@ -1,4 +1,4 @@
-CREATE TABLE workspace_github_repos (
+CREATE TABLE repositories (
 	id UUID PRIMARY KEY,
 	workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
 	installation_id BIGINT NOT NULL,
@@ -12,5 +12,5 @@ CREATE TABLE workspace_github_repos (
 	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
 	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 );
-CREATE INDEX idx_workspace_github_repos_workspace_id ON workspace_github_repos(workspace_id);
-CREATE INDEX idx_workspace_github_repos_installation_id ON workspace_github_repos(installation_id);
+CREATE INDEX idx_repositories_workspace_id ON repositories(workspace_id);
+CREATE INDEX idx_repositories_installation_id ON repositories(installation_id);

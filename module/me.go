@@ -14,9 +14,9 @@ import (
 
 // Me resolves API key and access key principals for /me.
 type Me struct {
-	APIKeyRepository             db.APIKeyRepository
-	UserRepository               db.UserRepository
-	WorkspaceAccessKeyRepository db.WorkspaceAccessKeyRepository
+	APIKeyRepository    db.APIKeyRepository
+	UserRepository      db.UserRepository
+	AccessKeyRepository db.AccessKeyRepository
 }
 
 // MeAPIKeyOwner is the user who owns an API key.
@@ -50,11 +50,11 @@ type MeAccessKeyResponse struct {
 }
 
 // NewMe creates a /me module with the given repositories.
-func NewMe(apiKeys db.APIKeyRepository, users db.UserRepository, accessKeys db.WorkspaceAccessKeyRepository) *Me {
+func NewMe(apiKeys db.APIKeyRepository, users db.UserRepository, accessKeys db.AccessKeyRepository) *Me {
 	return &Me{
-		APIKeyRepository:             apiKeys,
-		UserRepository:               users,
-		WorkspaceAccessKeyRepository: accessKeys,
+		APIKeyRepository:    apiKeys,
+		UserRepository:      users,
+		AccessKeyRepository: accessKeys,
 	}
 }
 
@@ -100,7 +100,7 @@ func (m *Me) GetByAPIKey(key string) (*MeAPIKeyResponse, error) {
 
 // GetByAccessKey returns workspace access key metadata and permissions.
 func (m *Me) GetByAccessKey(key string) (*MeAccessKeyResponse, error) {
-	accessKey, err := m.WorkspaceAccessKeyRepository.GetByKey(key)
+	accessKey, err := m.AccessKeyRepository.GetByKey(key)
 	if err != nil {
 		return nil, err
 	}

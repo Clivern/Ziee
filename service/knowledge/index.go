@@ -152,7 +152,7 @@ func (s *Service) Index(ctx context.Context, documentId db.Id) error {
 		return fmt.Errorf("%w: upsert vectors: %v", ErrIndexFailed, err)
 	}
 
-	document.Status = db.WorkspaceDocumentStatusIndexed
+	document.Status = db.DocumentStatusIndexed
 	document.ProcessedAt = new(time.Now().UTC())
 
 	return s.documents.Update(document)

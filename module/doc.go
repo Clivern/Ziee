@@ -82,7 +82,7 @@ type SearchDocumentsResponse struct {
 
 // Document is the module for workspace document CRUD.
 type Document struct {
-	DocumentRepository     db.WorkspaceDocumentRepository
+	DocumentRepository     db.DocumentRepository
 	WorkspaceRepository    db.WorkspaceRepository
 	Store                  storage.Store
 	Knowledge              *knowledge.Service
@@ -91,7 +91,7 @@ type Document struct {
 }
 
 // NewDocument creates a document module with the given repositories and store.
-func NewDocument(documents db.WorkspaceDocumentRepository, workspaces db.WorkspaceRepository, store storage.Store) *Document {
+func NewDocument(documents db.DocumentRepository, workspaces db.WorkspaceRepository, store storage.Store) *Document {
 	return &Document{
 		DocumentRepository:  documents,
 		WorkspaceRepository: workspaces,
@@ -124,7 +124,7 @@ func (d *Document) UploadDocument(ctx context.Context, form *util.UploadForm, wo
 	}
 	chunking := string(raw)
 
-	document := &db.WorkspaceDocument{
+	document := &db.Document{
 		WorkspaceId:    workspaceId,
 		Title:          form.Title,
 		Filename:       form.Filename,
@@ -134,7 +134,7 @@ func (d *Document) UploadDocument(ctx context.Context, form *util.UploadForm, wo
 		CharCount:      form.CharCount,
 		Labels:         labels,
 		ChunkingConfig: &chunking,
-		Status:         db.WorkspaceDocumentStatusProcessing,
+		Status:         db.DocumentStatusProcessing,
 	}
 
 	err = d.DocumentRepository.Create(document)

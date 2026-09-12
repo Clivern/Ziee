@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// WorkspaceAccessKey is the DB row for a workspace-scoped access key.
-type WorkspaceAccessKey struct {
+// AccessKey is the DB row for a workspace-scoped access key.
+type AccessKey struct {
 	Id          Id
 	WorkspaceId Id
 	Name        string
@@ -20,29 +20,29 @@ type WorkspaceAccessKey struct {
 	UpdatedAt   time.Time
 }
 
-// WorkspaceAccessKeyRepository is the interface for workspace access key CRUD.
-type WorkspaceAccessKeyRepository interface {
-	Create(accessKey *WorkspaceAccessKey) error
-	GetById(id Id) (*WorkspaceAccessKey, error)
-	GetByKey(key string) (*WorkspaceAccessKey, error)
-	ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*WorkspaceAccessKey, error)
+// AccessKeyRepository is the interface for workspace access key CRUD.
+type AccessKeyRepository interface {
+	Create(accessKey *AccessKey) error
+	GetById(id Id) (*AccessKey, error)
+	GetByKey(key string) (*AccessKey, error)
+	ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*AccessKey, error)
 	Delete(id Id) error
 	DeleteExpired() (int64, error)
 	Count() (int64, error)
 	CountByWorkspaceId(workspaceId Id) (int64, error)
 }
 
-type WorkspaceAccessKeyRepositoryPostgres struct {
+type AccessKeyRepositoryPostgres struct {
 	db *sql.DB
 }
 
-// NewWorkspaceAccessKeyRepository returns the repository for workspace access keys.
-func NewWorkspaceAccessKeyRepository(db *sql.DB) WorkspaceAccessKeyRepository {
-	return &WorkspaceAccessKeyRepositoryPostgres{db: db}
+// NewAccessKeyRepository returns the repository for workspace access keys.
+func NewAccessKeyRepository(db *sql.DB) AccessKeyRepository {
+	return &AccessKeyRepositoryPostgres{db: db}
 }
 
 // Create inserts a workspace access key row.
-func (r *WorkspaceAccessKeyRepositoryPostgres) Create(accessKey *WorkspaceAccessKey) error {
+func (r *AccessKeyRepositoryPostgres) Create(accessKey *AccessKey) error {
 	id, err := NewId()
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) Create(accessKey *WorkspaceAccess
 	accessKey.Id = id
 
 	return r.db.QueryRow(
-		`INSERT INTO workspace_access_keys
+		`INSERT INTO access_keys
 		(id, workspace_id, name, token, expires_at, meta)
 		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING created_at, updated_at`,
@@ -64,11 +64,11 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) Create(accessKey *WorkspaceAccess
 }
 
 // GetById returns a workspace access key by id.
-func (r *WorkspaceAccessKeyRepositoryPostgres) GetById(id Id) (*WorkspaceAccessKey, error) {
-	item := &WorkspaceAccessKey{}
+func (r *AccessKeyRepositoryPostgres) GetById(id Id) (*AccessKey, error) {
+	item := &AccessKey{}
 	err := r.db.QueryRow(
 		`SELECT id, workspace_id, name, token, expires_at, meta, created_at, updated_at
-		FROM workspace_access_keys
+		FROM access_keys
 		WHERE id = $1`,
 		id.String(),
 	).Scan(
@@ -88,11 +88,11 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) GetById(id Id) (*WorkspaceAccessK
 }
 
 // GetByKey returns a workspace access key by key.
-func (r *WorkspaceAccessKeyRepositoryPostgres) GetByKey(key string) (*WorkspaceAccessKey, error) {
-	item := &WorkspaceAccessKey{}
+func (r *AccessKeyRepositoryPostgres) GetByKey(key string) (*AccessKey, error) {
+	item := &AccessKey{}
 	err := r.db.QueryRow(
 		`SELECT id, workspace_id, name, token, expires_at, meta, created_at, updated_at
-		FROM workspace_access_keys
+		FROM access_keys
 		WHERE token = $1 AND (expires_at IS NULL OR expires_at > $2)`,
 		key,
 		time.Now().UTC(),
@@ -113,10 +113,10 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) GetByKey(key string) (*WorkspaceA
 }
 
 // ListByWorkspaceId lists workspace access key rows by workspace id.
-func (r *WorkspaceAccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*WorkspaceAccessKey, error) {
+func (r *AccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*AccessKey, error) {
 	rows, err := r.db.Query(
 		`SELECT id, workspace_id, name, token, expires_at, meta, created_at, updated_at
-		FROM workspace_access_keys
+		FROM access_keys
 		WHERE workspace_id = $1
 		ORDER BY created_at DESC
 		LIMIT $2 OFFSET $3`,
@@ -129,9 +129,9 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id,
 	}
 	defer rows.Close()
 
-	var list []*WorkspaceAccessKey
+	var list []*AccessKey
 	for rows.Next() {
-		item := &WorkspaceAccessKey{}
+		item := &AccessKey{}
 		if err := rows.Scan(
 			&item.Id,
 			&item.WorkspaceId,
@@ -150,15 +150,15 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id,
 }
 
 // Delete deletes a workspace access key row.
-func (r *WorkspaceAccessKeyRepositoryPostgres) Delete(id Id) error {
-	_, err := r.db.Exec(`DELETE FROM workspace_access_keys WHERE id = $1`, id.String())
+func (r *AccessKeyRepositoryPostgres) Delete(id Id) error {
+	_, err := r.db.Exec(`DELETE FROM access_keys WHERE id = $1`, id.String())
 	return err
 }
 
 // DeleteExpired deletes expired workspace access keys.
-func (r *WorkspaceAccessKeyRepositoryPostgres) DeleteExpired() (int64, error) {
+func (r *AccessKeyRepositoryPostgres) DeleteExpired() (int64, error) {
 	result, err := r.db.Exec(
-		`DELETE FROM workspace_access_keys
+		`DELETE FROM access_keys
 		WHERE expires_at IS NOT NULL AND expires_at < $1`,
 		time.Now().UTC(),
 	)
@@ -169,11 +169,11 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) DeleteExpired() (int64, error) {
 }
 
 // Count returns the total number of workspace access key rows.
-func (r *WorkspaceAccessKeyRepositoryPostgres) Count() (int64, error) {
+func (r *AccessKeyRepositoryPostgres) Count() (int64, error) {
 	var count int64
 	err := r.db.QueryRow(
 		`SELECT COUNT(*)
-		FROM workspace_access_keys
+		FROM access_keys
 		WHERE expires_at IS NULL OR expires_at > $1`,
 		time.Now().UTC(),
 	).Scan(&count)
@@ -181,11 +181,11 @@ func (r *WorkspaceAccessKeyRepositoryPostgres) Count() (int64, error) {
 }
 
 // CountByWorkspaceId counts workspace access key rows by workspace id.
-func (r *WorkspaceAccessKeyRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, error) {
+func (r *AccessKeyRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, error) {
 	var count int64
 	err := r.db.QueryRow(
 		`SELECT COUNT(*)
-		FROM workspace_access_keys
+		FROM access_keys
 		WHERE workspace_id = $1 AND (expires_at IS NULL OR expires_at > $2)`,
 		workspaceId.String(),
 		time.Now().UTC(),

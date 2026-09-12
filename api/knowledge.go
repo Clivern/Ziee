@@ -50,7 +50,7 @@ func UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		store,
 	)
@@ -100,7 +100,7 @@ func ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		store,
 	)
@@ -163,7 +163,7 @@ func DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		store,
 	)
@@ -237,7 +237,7 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents:     db.NewWorkspaceDocumentRepository(db.GetDB()),
+		Documents:     db.NewDocumentRepository(db.GetDB()),
 		Embed:         ai.NewEmbedClient(),
 		Vectors:       vdb,
 		Store:         store,
@@ -246,7 +246,7 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	})
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		nil,
 	)

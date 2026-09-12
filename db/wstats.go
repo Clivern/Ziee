@@ -37,7 +37,7 @@ func (r *WorkspaceStatsRepositoryPostgres) GetByWorkspaceId(workspaceId Id) (*Wo
 
 	err := r.db.QueryRow(
 		`SELECT COUNT(*)
-		FROM workspace_documents
+		FROM documents
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&stats.DocumentsStored)

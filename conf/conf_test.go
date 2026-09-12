@@ -18,6 +18,7 @@ func TestUnitConf(t *testing.T) {
 		assert.Equal(t, 7*24*time.Hour, InviteExpiry)
 		assert.Equal(t, int64(2*1024*1024), int64(MaxUploadBytes))
 		assert.Equal(t, 10, DefaultSearchLimit)
+		assert.Equal(t, "Ziee configs sync", ConfigSyncCheckName)
 	})
 
 	t.Run("Edition", func(t *testing.T) {

@@ -6,9 +6,11 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
@@ -37,6 +39,7 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
 	path := payload["path"]
+	sha := payload["sha"]
 
 	log.Info().
 		Str("taskId", taskId.String()).
@@ -44,22 +47,47 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 		Str("owner", owner).
 		Str("repo", repo).
 		Str("path", path).
+		Str("sha", sha).
 		Msg("Repository labels sync started")
+
+	check, err := app.Get().CreateCheckRun(ctx, installationId, owner, repo, conf.ConfigSyncCheckName, sha)
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
 
 	data, err := app.Get().GetFile(ctx, installationId, owner, repo, path)
 	if err != nil {
+		app.Get().CompleteCheckRun(
+			ctx, installationId, owner, repo, check.ID,
+			"failure",
+			"Config sync failed",
+			err.Error(),
+		)
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	file, err := spec.Parse(data)
 	if err != nil {
+		app.Get().CompleteCheckRun(
+			ctx, installationId, owner, repo, check.ID,
+			"failure",
+			"Config sync failed",
+			err.Error(),
+		)
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	existing, err := app.Get().ListLabels(ctx, installationId, owner, repo)
 	if err != nil {
+		app.Get().CompleteCheckRun(
+			ctx, installationId, owner, repo, check.ID,
+			"failure",
+			"Config sync failed",
+			err.Error(),
+		)
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
@@ -81,6 +109,12 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 			Description: label.Description,
 		})
 		if err != nil {
+			app.Get().CompleteCheckRun(
+				ctx, installationId, owner, repo, check.ID,
+				"failure",
+				"Config sync failed",
+				err.Error(),
+			)
 			h.tasks.Fail(taskId, err.Error())
 			return err
 		}
@@ -92,6 +126,17 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 			Str("repo", repo).
 			Str("label", label.Name).
 			Msg("GitHub label created")
+	}
+
+	err = app.Get().CompleteCheckRun(
+		ctx, installationId, owner, repo, check.ID,
+		"success",
+		"Config synced",
+		fmt.Sprintf("Created %d labels from `%s`.", created, path),
+	)
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
 	}
 
 	result, err := json.Marshal(map[string]int{"created": created})

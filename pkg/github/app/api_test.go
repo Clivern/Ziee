@@ -310,4 +310,23 @@ func TestUnitAppHTTP(t *testing.T) {
 			Description: "Go files",
 		}))
 	})
+
+	t.Run("CheckRun", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			switch {
+			case r.Method == http.MethodPost && r.URL.Path == "/repos/acme/ziee/check-runs":
+				_ = json.NewEncoder(w).Encode(CheckRun{ID: 42, Name: "Ziee configs sync", Status: "in_progress"})
+			case r.Method == http.MethodPatch && r.URL.Path == "/repos/acme/ziee/check-runs/42":
+				w.WriteHeader(http.StatusOK)
+			default:
+				http.NotFound(w, r)
+			}
+		}))
+
+		run, err := client.CreateCheckRun(ctx, 1, "acme", "ziee", "Ziee configs sync", "abc123")
+		assert.NoError(t, err)
+		assert.Equal(t, int64(42), run.ID)
+
+		assert.NoError(t, client.CompleteCheckRun(ctx, 1, "acme", "ziee", 42, "success", "Config synced", "Created 3 labels."))
+	})
 }

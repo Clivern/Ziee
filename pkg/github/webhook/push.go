@@ -8,6 +8,7 @@ import "strings"
 // PushEvent is a GitHub push webhook payload.
 type PushEvent struct {
 	Ref          string            `json:"ref"`
+	After        string            `json:"after"`
 	Repository   RepositoryPayload `json:"repository"`
 	Installation InstallationRef   `json:"installation"`
 	Commits      []PushCommit      `json:"commits"`

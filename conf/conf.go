@@ -23,4 +23,7 @@ const (
 
 	// DefaultSearchLimit is used when a knowledge search request omits limit.
 	DefaultSearchLimit = 10
+
+	// ConfigSyncCheckName is the GitHub check run created when syncing `.ziee.yml`.
+	ConfigSyncCheckName = "Ziee configs sync"
 )

@@ -320,6 +320,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		"fullName":       payload.Repository.FullName,
 		"name":           payload.Repository.Name,
 		"path":           path,
+		"sha":            payload.After,
 	}, installation.WorkspaceId)
 
 	if err != nil {

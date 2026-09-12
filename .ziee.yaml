@@ -437,10 +437,6 @@ merge_queue:
       checks_timeout: auto
       max_checks_retries: 2
 
-pr_reviews:
-  # Whether to enable AI-assisted PR reviews
-  enabled: false
-
 
 issue_triage:
   # GitHub issues only (not PRs). Re-run on issue open and edit.
@@ -606,3 +602,8 @@ issue_triage:
       when:
         - author_not_in_team: [sre]
       comment: "Thanks for opening this. Someone from the team will take a look."
+
+
+pr_reviews:
+  # Whether to enable AI-assisted PR reviews
+  enabled: false

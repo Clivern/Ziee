@@ -13,7 +13,7 @@ labels:
     description: "PR was kicked out or removed from the merge queue."
   - name: "area/api"
     color: "1D76DB"
-    description: "Changes made inside the API or core PKG paths."
+    description: "Changes made inside the API or core paths."
   - name: "area/web"
     color: "C2E0C6"
     description: "Changes related to frontend web paths."

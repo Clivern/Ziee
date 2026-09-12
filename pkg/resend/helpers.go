@@ -23,8 +23,8 @@ func LoadTemplates(templateFS fs.FS) error {
 	return nil
 }
 
-// renderTemplate renders an email template with data.
-func renderTemplate(name string, data any) (string, error) {
+// RenderTemplate renders an email template with data.
+func RenderTemplate(name string, data any) (string, error) {
 	var buf bytes.Buffer
 	err := templates.ExecuteTemplate(&buf, name, data)
 	if err != nil {

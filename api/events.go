@@ -32,7 +32,7 @@ func init() {
 	Webhook.On(installationRepositories)
 	Webhook.On(issues)
 	Webhook.On(issueComment)
-	Webhook.On(push)
+	Webhook.On(detectConfChanges)
 }
 
 func dump(_ context.Context, d webhook.Delivery) {
@@ -278,7 +278,7 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub issue comment webhook handled")
 }
 
-func push(_ context.Context, d webhook.Delivery) {
+func detectConfChanges(_ context.Context, d webhook.Delivery) {
 	if d.Event != "push" {
 		return
 	}

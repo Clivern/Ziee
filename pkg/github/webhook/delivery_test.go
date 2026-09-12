@@ -114,7 +114,7 @@ func TestUnitIssueCommentEvent(t *testing.T) {
 	assert.Equal(t, int64(9), event.Installation.ID)
 }
 
-func TestUnitPushEventChanged(t *testing.T) {
+func TestUnitPushEventChangedPath(t *testing.T) {
 	var event PushEvent
 	json.Unmarshal([]byte(`{
 		"ref":"refs/heads/main",
@@ -130,8 +130,11 @@ func TestUnitPushEventChanged(t *testing.T) {
 	assert.Equal(t, "refs/heads/main", event.Ref)
 	assert.Equal(t, "main", event.Repository.DefaultBranch)
 	assert.Equal(t, int64(9), event.Installation.ID)
-	assert.True(t, event.Changed(".ziee.yml"))
-	assert.True(t, event.Changed(".ziee.yml", ".ziee.yaml"))
-	assert.True(t, event.Changed("worker/labels.go", "pkg/missing.go"))
-	assert.False(t, event.Changed("README.md"))
+	assert.Equal(t, ".ziee.yml", event.ChangedPath(".ziee.yml", ".ziee.yaml"))
+	assert.Equal(t, "worker/labels.go", event.ChangedPath("worker/labels.go", "pkg/missing.go"))
+	assert.Equal(t, "", event.ChangedPath("README.md"))
+	assert.Equal(t, "", event.ChangedPath(".ziee.yaml"))
+
+	json.Unmarshal([]byte(`{"commits":[{"added":[".ziee.yaml"],"removed":[],"modified":[]}]}`), &event)
+	assert.Equal(t, ".ziee.yaml", event.ChangedPath(".ziee.yml", ".ziee.yaml"))
 }

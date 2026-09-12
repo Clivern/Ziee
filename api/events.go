@@ -288,7 +288,9 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 	if payload.Ref != fmt.Sprintf("refs/heads/%s", payload.Repository.DefaultBranch) {
 		return
 	}
-	if !payload.Changed(".ziee.yml", ".ziee.yaml") {
+
+	path := payload.ChangedPath(".ziee.yml", ".ziee.yaml")
+	if path == "" {
 		return
 	}
 
@@ -311,6 +313,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
 		"fullName":       payload.Repository.FullName,
 		"name":           payload.Repository.Name,
+		"path":           path,
 	}, installation.WorkspaceId)
 
 	if err != nil {
@@ -323,6 +326,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		Int64("githubId", payload.Installation.ID).
 		Str("owner", payload.Repository.Owner.Login).
 		Str("repo", payload.Repository.Name).
+		Str("path", path).
 		Str("ref", payload.Ref).
 		Msg("GitHub push webhook handled")
 }

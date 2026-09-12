@@ -20,13 +20,16 @@ type PushCommit struct {
 	Modified []string `json:"modified"`
 }
 
-// Changed reports whether any commit added, modified, or removed one of the paths.
-func (e PushEvent) Changed(paths ...string) bool {
+// ChangedPath returns the first added or modified path that matches.
+func (e PushEvent) ChangedPath(paths ...string) string {
 	for _, commit := range e.Commits {
-		if lo.Some(lo.Union(commit.Added, commit.Removed, commit.Modified), paths) {
-			return true
+		files := lo.Union(commit.Added, commit.Modified)
+		for _, path := range paths {
+			if lo.Contains(files, path) {
+				return path
+			}
 		}
 	}
 
-	return false
+	return ""
 }

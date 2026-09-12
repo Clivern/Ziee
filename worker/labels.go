@@ -36,15 +36,17 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
+	path := payload["path"]
 
 	log.Info().
 		Str("taskId", taskId.String()).
 		Int64("installationId", installationId).
 		Str("owner", owner).
 		Str("repo", repo).
+		Str("path", path).
 		Msg("Repository labels sync started")
 
-	data, err := app.Get().GetFile(ctx, installationId, owner, repo, ".ziee.yml")
+	data, err := app.Get().GetFile(ctx, installationId, owner, repo, path)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err

@@ -5,9 +5,6 @@ package conf
 
 import (
 	"time"
-
-	"github.com/clivern/ziee/files"
-	"github.com/clivern/ziee/mails"
 )
 
 const (
@@ -38,24 +35,3 @@ const (
 	// SetupPullRequestTitle is the pull request that adds a starter `.ziee.yml`.
 	SetupPullRequestTitle = "Add .ziee.yml"
 )
-
-// SetupIssueBody is the body of the repository setup issue.
-var SetupIssueBody = files.SetupIssueBody
-
-// SetupPullRequestBody is the body of the starter `.ziee.yml` pull request.
-var SetupPullRequestBody = files.SetupPullRequestBody
-
-// DefaultZieeYML is the starter policy file added on repository bootstrap.
-var DefaultZieeYML = files.DefaultZieeYML
-
-// InviteEmail is the workspace invite email body.
-var InviteEmail = mails.Invite
-
-// WelcomeEmail is the account welcome email body.
-var WelcomeEmail = mails.Welcome
-
-// VerifyEmail is the email verification body.
-var VerifyEmail = mails.VerifyEmail
-
-// ResetPwdEmail is the password reset email body.
-var ResetPwdEmail = mails.ResetPwd

@@ -10,7 +10,6 @@ import (
 	"github.com/clivern/ziee/cli"
 	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/locale"
-	"github.com/clivern/ziee/pkg/resend"
 )
 
 var (
@@ -27,9 +26,6 @@ var static embed.FS
 //go:embed locale/locales
 var localeFS embed.FS
 
-//go:embed mails/*.html
-var mailsFS embed.FS
-
 // main is the application entry point.
 func main() {
 	cli.Version = version
@@ -43,14 +39,6 @@ func main() {
 	// Load locales
 	if sub, err := fs.Sub(localeFS, "locale/locales"); err == nil {
 		err = locale.Load(sub)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	// Load mail templates
-	if sub, err := fs.Sub(mailsFS, "mails"); err == nil {
-		err = resend.LoadTemplates(sub)
 		if err != nil {
 			panic(err)
 		}

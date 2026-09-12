@@ -6,20 +6,14 @@
       </div>
 
       <h1 class="text-xl font-semibold text-theme-text text-center">
-        {{ workspaces.length ? $t('select_workspace.select_title') : $t('select_workspace.create_title') }}
+        {{ pageTitle }}
       </h1>
       <p class="mt-2 text-sm text-theme-textLight text-center">
-        {{ workspaces.length ? $t('select_workspace.select_description') : $t('select_workspace.no_workspaces') }}
+        {{ pageDescription }}
       </p>
 
       <div v-if="installations.length" class="mt-6">
-        <h2 class="text-sm font-semibold text-theme-text">
-          {{ $t('select_workspace.installations_title') }}
-        </h2>
-        <p class="mt-1 text-sm text-theme-textLight">
-          {{ $t('select_workspace.installations_description') }}
-        </p>
-        <div class="mt-3 space-y-3">
+        <div class="space-y-3">
           <div
             v-for="installation in installations"
             :key="installation.id"
@@ -43,7 +37,7 @@
         </div>
       </div>
 
-      <div v-if="workspaces.length" class="mt-6 space-y-3">
+      <div v-if="workspaces.length && !installations.length" class="mt-6 space-y-3">
         <div
           v-for="workspace in workspaces"
           :key="workspace.id"
@@ -192,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { github_api, workspace_api } from '@/api'
@@ -214,6 +208,26 @@ const attachModalError = ref(null)
 const createModalError = ref(null)
 const newWorkspaceName = ref('')
 const createLoading = ref(false)
+
+const pageTitle = computed(() => {
+  if (installations.value.length) {
+    return t('select_workspace.installations_title')
+  }
+  if (workspaces.value.length) {
+    return t('select_workspace.select_title')
+  }
+  return t('select_workspace.create_title')
+})
+
+const pageDescription = computed(() => {
+  if (installations.value.length) {
+    return t('select_workspace.installations_description')
+  }
+  if (workspaces.value.length) {
+    return t('select_workspace.select_description')
+  }
+  return t('select_workspace.no_workspaces')
+})
 
 function formatDate(iso) {
   if (!iso) return ''

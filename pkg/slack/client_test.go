@@ -40,7 +40,7 @@ func TestUnitSlackClient(t *testing.T) {
 		defer server.Close()
 
 		client := New(Config{Token: "xoxb-token", Channel: "#general"})
-		_, err := client.PostJSON(context.Background(), server.URL, client.config.Token, Message{Text: "hi", Channel: "#general"})
+		_, err := client.Post(context.Background(), server.URL, client.config.Token, Message{Text: "hi", Channel: "#general"}, nil)
 		assert.NoError(t, err)
 	})
 }

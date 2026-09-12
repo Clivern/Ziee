@@ -4,14 +4,12 @@
 package slack
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 
+	"github.com/imroc/req/v3"
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 )
 
 const ChatPostMessageURL = "https://slack.com/api/chat.postMessage"
@@ -19,6 +17,7 @@ const ChatPostMessageURL = "https://slack.com/api/chat.postMessage"
 // Client sends Slack notifications for a customer workspace.
 type Client struct {
 	config Config
+	http   *req.Client
 }
 
 // Message is a Slack notification payload.
@@ -29,14 +28,14 @@ type Message struct {
 	IconEmoji string
 }
 
-type payload struct {
+type Payload struct {
 	Text      string `json:"text"`
 	Channel   string `json:"channel,omitempty"`
 	Username  string `json:"username,omitempty"`
 	IconEmoji string `json:"icon_emoji,omitempty"`
 }
 
-type apiResponse struct {
+type APIResponse struct {
 	OK    bool   `json:"ok"`
 	Error string `json:"error"`
 }
@@ -45,6 +44,7 @@ type apiResponse struct {
 func New(cfg Config) *Client {
 	return &Client{
 		config: cfg,
+		http:   req.C(),
 	}
 }
 
@@ -55,7 +55,7 @@ func (c *Client) Notify(ctx context.Context, text string) error {
 		Channel: c.config.Channel,
 	}
 
-	if c.config.WebhookURL != "" {
+	if !lo.IsEmpty(c.config.WebhookURL) {
 		return c.PostWebhook(ctx, msg)
 	}
 
@@ -64,13 +64,13 @@ func (c *Client) Notify(ctx context.Context, text string) error {
 
 // PostWebhook posts a message to the customer's Slack incoming webhook.
 func (c *Client) PostWebhook(ctx context.Context, msg Message) error {
-	body, err := c.PostJSON(ctx, c.config.WebhookURL, "", msg)
+	resp, err := c.Post(ctx, c.config.WebhookURL, "", msg, nil)
 	if err != nil {
 		return err
 	}
 
-	if string(body) != "ok" {
-		return fmt.Errorf("slack webhook: %s", body)
+	if resp.String() != "ok" {
+		return fmt.Errorf("slack webhook: %s", resp.String())
 	}
 
 	log.Info().
@@ -87,15 +87,11 @@ func (c *Client) PostMessage(ctx context.Context, msg Message) error {
 		msg.Channel = c.config.Channel
 	}
 
-	body, err := c.PostJSON(ctx, ChatPostMessageURL, c.config.Token, msg)
+	var result APIResponse
+
+	_, err := c.Post(ctx, ChatPostMessageURL, c.config.Token, msg, &result)
 	if err != nil {
 		return err
-	}
-
-	var result apiResponse
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return fmt.Errorf("slack decode response: %w", err)
 	}
 
 	if !result.OK {
@@ -110,42 +106,32 @@ func (c *Client) PostMessage(ctx context.Context, msg Message) error {
 	return nil
 }
 
-// PostJSON posts a JSON payload to a Slack endpoint.
-func (c *Client) PostJSON(ctx context.Context, endpoint, token string, msg Message) ([]byte, error) {
-	raw, err := json.Marshal(payload{
-		Text:      msg.Text,
-		Channel:   msg.Channel,
-		Username:  msg.Username,
-		IconEmoji: msg.IconEmoji,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("slack encode request: %w", err)
-	}
+func (c *Client) Post(ctx context.Context, endpoint, token string, msg Message, dest any) (*req.Response, error) {
+	r := c.http.R().
+		SetContext(ctx).
+		SetBody(Payload{
+			Text:      msg.Text,
+			Channel:   msg.Channel,
+			Username:  msg.Username,
+			IconEmoji: msg.IconEmoji,
+		})
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(raw))
-	if err != nil {
-		return nil, fmt.Errorf("slack build request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
 	if token != "" {
-		req.Header.Set("Authorization", "Bearer "+token)
+		r.SetBearerAuthToken(token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	if dest != nil {
+		r.SetSuccessResult(dest)
+	}
+
+	resp, err := r.Post(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("slack request: %w", err)
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("slack read body: %w", err)
+	if !resp.IsSuccessState() {
+		return nil, fmt.Errorf("slack request: status %d: %s", resp.StatusCode, resp.Bytes())
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("slack request: status %d: %s", resp.StatusCode, body)
-	}
-
-	return body, nil
+	return resp, nil
 }

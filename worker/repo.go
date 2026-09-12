@@ -78,7 +78,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 	}
 
 	pr, err := app.Get().CreatePullRequest(ctx, installationId, owner, repo, app.NewPullRequest{
-		Branch:  "ziee/init",
+		Branch:  "feat/ziee-init",
 		Path:    ".ziee.yaml",
 		Content: conf.DefaultZieeYML,
 		Title:   conf.SetupPullRequestTitle,

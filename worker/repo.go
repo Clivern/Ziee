@@ -42,7 +42,14 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
 
-	exists, err := app.Get().FileExists(ctx, installationId, owner, repo, ".ziee.yaml", ".ziee.yml")
+	exists, err := app.Get().FileExists(
+		ctx,
+		installationId,
+		owner,
+		repo,
+		".ziee.yaml",
+		".ziee.yml",
+	)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
@@ -56,7 +63,14 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		db.NewRepositoriesRepository(db.GetDB()),
 	)
 
-	issue, err := app.Get().CreateIssue(ctx, installationId, owner, repo, conf.SetupIssueTitle, conf.SetupIssueBody)
+	issue, err := app.Get().CreateIssue(
+		ctx,
+		installationId,
+		owner,
+		repo,
+		conf.SetupIssueTitle,
+		conf.SetupIssueBody,
+	)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err

@@ -33,5 +33,18 @@ func (h *handlers) HandleGitHubIssue(_ context.Context, msg *broker.Msg) error {
 		Str("number", payload["number"]).
 		Msg("GitHub issue webhook queued")
 
-	return h.tasks.Complete(taskId)
+	result, err := json.Marshal(map[string]string{
+		"deliveryId": payload["deliveryId"],
+		"event":      payload["event"],
+		"action":     payload["action"],
+		"owner":      payload["owner"],
+		"repo":       payload["repo"],
+		"number":     payload["number"],
+	})
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	return h.tasks.Complete(taskId, string(result))
 }

@@ -40,7 +40,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 	if exists {
-		return h.tasks.Complete(taskId)
+		return h.tasks.Complete(taskId, "")
 	}
 
 	_, err = app.Get().CreateIssue(ctx, installationId, owner, repo,
@@ -64,5 +64,5 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	return h.tasks.Complete(taskId)
+	return h.tasks.Complete(taskId, "")
 }

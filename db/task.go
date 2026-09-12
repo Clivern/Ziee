@@ -42,7 +42,7 @@ type AsyncTask struct {
 type AsyncTaskRepository interface {
 	Create(task *AsyncTask) error
 	MarkRunning(id Id) error
-	Complete(id Id) error
+	Complete(id Id, result string) error
 	Fail(id Id, message string) error
 	CountByStatus(status string) (int64, error)
 	ListByStatus(status string) ([]*AsyncTask, error)
@@ -95,25 +95,32 @@ func (r *AsyncTaskRepositoryPostgres) Create(task *AsyncTask) error {
 
 // MarkRunning sets a task to running.
 func (r *AsyncTaskRepositoryPostgres) MarkRunning(id Id) error {
+	now := time.Now().UTC()
 	_, err := r.db.Exec(
 		`UPDATE async_tasks
-		SET status = $1, locked_at = $2, attempts = attempts + 1, updated_at = $2
+		SET status = $1, locked_at = $2, run_at = $2, attempts = attempts + 1, updated_at = $2
 		WHERE id = $3`,
 		AsyncTaskStatusRunning,
-		time.Now().UTC(),
+		now,
 		id.String(),
 	)
 	return err
 }
 
 // Complete marks a task as completed.
-func (r *AsyncTaskRepositoryPostgres) Complete(id Id) error {
+func (r *AsyncTaskRepositoryPostgres) Complete(id Id, result string) error {
 	now := time.Now().UTC()
+	var raw *string
+	if result != "" {
+		raw = &result
+	}
+
 	_, err := r.db.Exec(
 		`UPDATE async_tasks
-		SET status = $1, completed_at = $2, locked_at = NULL, updated_at = $2
-		WHERE id = $3`,
+		SET status = $1, result = $2::jsonb, completed_at = $3, locked_at = NULL, updated_at = $3
+		WHERE id = $4`,
 		AsyncTaskStatusCompleted,
+		raw,
 		now,
 		id.String(),
 	)

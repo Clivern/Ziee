@@ -28,7 +28,7 @@ func (h *handlers) HandleDocumentIndex(ctx context.Context, msg *broker.Msg) err
 		return err
 	}
 
-	return h.tasks.Complete(taskId)
+	return h.tasks.Complete(taskId, "")
 }
 
 // HandleDocumentDelete deletes a document.
@@ -48,5 +48,5 @@ func (h *handlers) HandleDocumentDelete(ctx context.Context, msg *broker.Msg) er
 		return err
 	}
 
-	return h.tasks.Complete(taskId)
+	return h.tasks.Complete(taskId, "")
 }

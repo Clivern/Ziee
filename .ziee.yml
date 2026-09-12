@@ -17,6 +17,15 @@ labels:
   - name: "area/web"
     color: "C2E0C6"
     description: "Changes related to frontend web paths."
+  - name: "lang/go"
+    color: "00ADD8"
+    description: "PR changes one or more Go files."
+  - name: "lang/yaml"
+    color: "CB171E"
+    description: "PR changes one or more YAML files."
+  - name: "lang/json"
+    color: "292929"
+    description: "PR changes one or more JSON files."
   - name: "size/s"
     color: "0E8A16"
     description: "Small PR with 20 or fewer files changed."
@@ -144,6 +153,27 @@ merge_queue:
           add: [area/web]
         assign: [maya]
         reviewers: [clivern]
+
+      # Go files
+      - name: lang-go
+        when:
+          - files: ["**/*.go"]
+        labels:
+          add: [lang/go]
+
+      # YAML files
+      - name: lang-yaml
+        when:
+          - files: ["**/*.yml", "**/*.yaml"]
+        labels:
+          add: [lang/yaml]
+
+      # JSON files
+      - name: lang-json
+        when:
+          - files: ["**/*.json"]
+        labels:
+          add: [lang/json]
 
       # 20 files or fewer
       - name: size-s

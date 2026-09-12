@@ -46,30 +46,30 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, []string{"maya"}, area.Reviewers)
 	assert.Equal(t, []string{"core"}, area.ReviewTeams)
 
-	sizeS := file.MergeQueue.PRTriage.Rules[2]
+	sizeS := file.MergeQueue.PRTriage.Rules[5]
 	assert.Equal(t, 20, *sizeS.When[0].MaxFilesChanged)
 
-	sizeL := file.MergeQueue.PRTriage.Rules[3]
+	sizeL := file.MergeQueue.PRTriage.Rules[6]
 	assert.Equal(t, 21, *sizeL.When[0].MinFilesChanged)
 	assert.Equal(t, []string{"size/s"}, sizeL.Labels.Remove)
 
-	bot := file.MergeQueue.PRTriage.Rules[4]
+	bot := file.MergeQueue.PRTriage.Rules[7]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bot.When[0].AuthorIn)
 
-	firstPR := file.MergeQueue.PRTriage.Rules[5]
+	firstPR := file.MergeQueue.PRTriage.Rules[8]
 	assert.Equal(t, "first-contribution", firstPR.Name)
 	assert.True(t, *firstPR.When[1].FirstContribution)
 
-	fromSre := file.MergeQueue.PRTriage.Rules[6]
+	fromSre := file.MergeQueue.PRTriage.Rules[9]
 	assert.Equal(t, []string{"sre"}, fromSre.When[0].AuthorInTeam)
 
-	hotfixTitle := file.MergeQueue.PRTriage.Rules[7]
+	hotfixTitle := file.MergeQueue.PRTriage.Rules[10]
 	assert.Equal(t, "hotfix", hotfixTitle.When[0].Title)
 
-	hotfixBody := file.MergeQueue.PRTriage.Rules[8]
+	hotfixBody := file.MergeQueue.PRTriage.Rules[11]
 	assert.Equal(t, "hotfix", hotfixBody.When[0].Body)
 
-	bug := file.MergeQueue.PRTriage.Rules[9]
+	bug := file.MergeQueue.PRTriage.Rules[12]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bug.When[0].AuthorNotIn)
 	assert.Equal(t, "bug", bug.When[1].Intention.Name)
 	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", bug.When[1].Intention.Description)
@@ -110,9 +110,13 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "first-contribution", file.IssueTriage.Rules[1].Name)
 	assert.True(t, *file.IssueTriage.Rules[1].When[1].FirstContribution)
 	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[9].When[0].AuthorNotInTeam)
-	assert.Equal(t, "first-contribution", file.MergeQueue.PRTriage.Rules[5].Name)
-	assert.True(t, *file.MergeQueue.PRTriage.Rules[5].When[1].FirstContribution)
-	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[13].When[0].AuthorNotInTeam)
+	assert.Equal(t, "first-contribution", file.MergeQueue.PRTriage.Rules[8].Name)
+	assert.True(t, *file.MergeQueue.PRTriage.Rules[8].When[1].FirstContribution)
+	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[16].When[0].AuthorNotInTeam)
+	assert.Equal(t, []string{"**/*.go"}, file.MergeQueue.PRTriage.Rules[2].When[0].Files)
+	assert.Equal(t, []string{"lang/go"}, file.MergeQueue.PRTriage.Rules[2].Labels.Add)
+	assert.Equal(t, []string{"**/*.yml", "**/*.yaml"}, file.MergeQueue.PRTriage.Rules[3].When[0].Files)
+	assert.Equal(t, []string{"**/*.json"}, file.MergeQueue.PRTriage.Rules[4].When[0].Files)
 }
 
 func TestUnitParseWhenAllowBatchSize(t *testing.T) {

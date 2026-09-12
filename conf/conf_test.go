@@ -5,45 +5,29 @@ package conf
 
 import (
 	"testing"
-	"time"
+
+	"github.com/clivern/ziee/pkg/github/policy/spec"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestUnitConf(t *testing.T) {
-	t.Run("constants", func(t *testing.T) {
-		assert.Equal(t, time.Second, SlowRequestThreshold)
-		assert.Equal(t, 7*24*time.Hour, DefaultSessionDuration)
-		assert.Equal(t, 30*24*time.Hour, RememberMeSessionDuration)
-		assert.Equal(t, 7*24*time.Hour, InviteExpiry)
-		assert.Equal(t, int64(2*1024*1024), int64(MaxUploadBytes))
-		assert.Equal(t, 10, DefaultSearchLimit)
-		assert.Equal(t, "Ziee configs sync", ConfigSyncCheckName)
-	})
+func TestUnitDefaultZieeYML(t *testing.T) {
+	file, err := spec.Parse([]byte(DefaultZieeYML))
+	require.NoError(t, err)
 
-	t.Run("Edition", func(t *testing.T) {
-		prev := BuiltEdition
-		t.Cleanup(func() { BuiltEdition = prev })
-
-		t.Setenv("ZIEE_EDITION", "")
-		BuiltEdition = EditionOSS
-		assert.Equal(t, EditionOSS, Edition())
-		assert.False(t, IsSaaS())
-
-		BuiltEdition = EditionSaaS
-		assert.Equal(t, EditionSaaS, Edition())
-		assert.True(t, IsSaaS())
-
-		t.Setenv("ZIEE_EDITION", EditionOSS)
-		assert.Equal(t, EditionOSS, Edition())
-		assert.False(t, IsSaaS())
-
-		t.Setenv("ZIEE_EDITION", EditionSaaS)
-		assert.Equal(t, EditionSaaS, Edition())
-		assert.True(t, IsSaaS())
-
-		t.Setenv("ZIEE_EDITION", "unknown")
-		BuiltEdition = EditionOSS
-		assert.Equal(t, EditionOSS, Edition())
-	})
+	assert.Equal(t, "1.0.0", file.Version)
+	assert.Equal(t, "state/queued", file.Labels[0].Name)
+	assert.Equal(t, "maintainers", file.Teams[0].Name)
+	assert.Equal(t, "docs/", file.Knowledge[0].Path)
+	assert.False(t, file.MergeQueue.Enabled)
+	assert.Equal(t, "serial", file.MergeQueue.Mode)
+	assert.Equal(t, "state/queued", file.MergeQueue.Labels.Queued)
+	assert.False(t, file.MergeQueue.PRTriage.AI.Enabled)
+	assert.Equal(t, "size-s", file.MergeQueue.PRTriage.Rules[0].Name)
+	assert.Equal(t, "write", file.MergeQueue.Commands["queue"].Allow[0].Permission)
+	assert.Equal(t, "hotfix", file.MergeQueue.PriorityRules[0].Name)
+	assert.Equal(t, "default", file.MergeQueue.QueueRules[0].Name)
+	assert.False(t, file.IssueTriage.Enabled)
+	assert.False(t, file.PRReviews.Enabled)
 }

@@ -3,7 +3,11 @@
 
 package conf
 
-import "time"
+import (
+	"time"
+
+	"github.com/clivern/ziee/files"
+)
 
 const (
 	// SlowRequestThreshold is the latency at or above which a request is counted as slow.
@@ -26,4 +30,19 @@ const (
 
 	// ConfigSyncCheckName is the GitHub check run created when syncing `.ziee.yml`.
 	ConfigSyncCheckName = "Ziee configurations sync"
+
+	// SetupIssueTitle is the GitHub issue opened when Ziee is installed on a repository.
+	SetupIssueTitle = "Set up Ziee for this repository"
+
+	// SetupPullRequestTitle is the pull request that adds a starter `.ziee.yml`.
+	SetupPullRequestTitle = "Add .ziee.yml"
 )
+
+// SetupIssueBody is the body of the repository setup issue.
+var SetupIssueBody = files.SetupIssueBody
+
+// SetupPullRequestBody is the body of the starter `.ziee.yml` pull request.
+var SetupPullRequestBody = files.SetupPullRequestBody
+
+// DefaultZieeYML is the starter policy file added on repository bootstrap.
+var DefaultZieeYML = files.DefaultZieeYML

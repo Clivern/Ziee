@@ -276,7 +276,7 @@ func TestUnitAppHTTP(t *testing.T) {
 		pr, err := client.CreatePullRequest(ctx, 1, "acme", "ziee", NewPullRequest{
 			Branch:  "ziee/init",
 			Path:    ".ziee.yml",
-			Content: DefaultZieeYML,
+			Content: "version: 1.0.0\n",
 			Title:   "Add .ziee.yml",
 			Body:    "starter",
 		})

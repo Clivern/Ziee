@@ -8,7 +8,11 @@ import (
 	"time"
 )
 
-const RepositoryMetaConfigPath = "_github_config_path"
+const (
+	RepositoryMetaConfigPath = "_github_config_path"
+	RepositoryMetaSetupIssue = "_github_setup_issue"
+	RepositoryMetaSetupPR    = "_github_setup_pr"
+)
 
 // Repository is a GitHub repository that installed the Ziee GitHub App.
 type Repository struct {

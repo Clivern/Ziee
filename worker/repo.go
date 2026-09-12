@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 )
@@ -31,10 +33,16 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
+	githubId, err := strconv.ParseInt(payload["githubId"], 10, 64)
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
+
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
 
-	exists, err := app.Get().FileExists(ctx, installationId, owner, repo, ".ziee.yml")
+	exists, err := app.Get().FileExists(ctx, installationId, owner, repo, ".ziee.yaml")
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
@@ -43,22 +51,54 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return h.tasks.Complete(taskId, "")
 	}
 
-	_, err = app.Get().CreateIssue(ctx, installationId, owner, repo,
-		"Set up Ziee for this repository",
-		"Ziee is installed on this repository. Merge the `.ziee.yml` pull request to start enforcing policy.",
+	install := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewRepositoriesRepository(db.GetDB()),
 	)
+
+	issue, err := app.Get().CreateIssue(ctx, installationId, owner, repo, conf.SetupIssueTitle, conf.SetupIssueBody)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
 
-	_, err = app.Get().CreatePullRequest(ctx, installationId, owner, repo, app.NewPullRequest{
-		Branch:  "ziee/init",
-		Path:    ".ziee.yml",
-		Content: app.DefaultZieeYML,
-		Title:   "Add .ziee.yml",
-		Body:    "Adds a starter `.ziee.yml` so Ziee can enforce repository policy.",
+	meta, err := json.Marshal(map[string]int64{
+		"id":     issue.ID,
+		"number": int64(issue.Number),
 	})
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	err = install.SetRepoMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	pr, err := app.Get().CreatePullRequest(ctx, installationId, owner, repo, app.NewPullRequest{
+		Branch:  "ziee/init",
+		Path:    ".ziee.yaml",
+		Content: conf.DefaultZieeYML,
+		Title:   conf.SetupPullRequestTitle,
+		Body:    conf.SetupPullRequestBody,
+	})
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	prMeta, err := json.Marshal(map[string]int64{
+		"id":     pr.ID,
+		"number": int64(pr.Number),
+	})
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	err = install.SetRepoMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err

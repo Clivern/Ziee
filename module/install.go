@@ -120,6 +120,7 @@ func (i *Installation) UpdateRepositories(githubId int64, added []app.Repository
 		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
 			"workspaceId":    item.WorkspaceId.String(),
 			"installationId": strconv.FormatInt(githubId, 10),
+			"githubId":       strconv.FormatInt(repository.ID, 10),
 			"fullName":       repository.FullName,
 			"name":           repository.Name,
 		}, item.WorkspaceId)
@@ -177,8 +178,8 @@ func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, 
 	return nil
 }
 
-// SetConfigPath stores the repository `.ziee.yml` or `.ziee.yaml` path.
-func (i *Installation) SetConfigPath(githubRepoId int64, path string) error {
+// SetRepoMeta stores a repositories_meta value by GitHub repository id.
+func (i *Installation) SetRepoMeta(githubRepoId int64, key, value string) error {
 	repo, err := i.RepoRepository.GetByGitHubId(githubRepoId)
 	if err != nil {
 		return fmt.Errorf("get repo: %w", err)
@@ -186,9 +187,9 @@ func (i *Installation) SetConfigPath(githubRepoId int64, path string) error {
 
 	meta := db.NewRepositoryMetaRepository(db.GetDB())
 
-	err = meta.Upsert(repo.Id, db.RepositoryMetaConfigPath, path)
+	err = meta.Upsert(repo.Id, key, value)
 	if err != nil {
-		return fmt.Errorf("upsert repo config path: %w", err)
+		return fmt.Errorf("upsert repo meta: %w", err)
 	}
 
 	return nil
@@ -246,6 +247,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
 			"workspaceId":    workspaceId.String(),
 			"installationId": strconv.FormatInt(item.GitHubId, 10),
+			"githubId":       strconv.FormatInt(repository.ID, 10),
 			"fullName":       repository.FullName,
 			"name":           repository.Name,
 		}, workspaceId)

@@ -308,7 +308,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = i.SetConfigPath(payload.Repository.ID, path)
+	err = i.SetRepoMeta(payload.Repository.ID, db.RepositoryMetaConfigPath, path)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to store GitHub config path")
 		return

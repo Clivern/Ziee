@@ -12,9 +12,6 @@ import (
 	"strings"
 )
 
-// DefaultZieeYML is the starter policy file added on repository bootstrap.
-const DefaultZieeYML = "version: 1.0.0\n"
-
 // FileExists reports whether a path exists in the repository's default branch.
 func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo, path string) (bool, error) {
 	token, err := a.GetInstallationToken(ctx, installationID)

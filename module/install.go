@@ -44,11 +44,11 @@ type AttachInstallationRequest struct {
 // Installation is the module for GitHub App installations.
 type Installation struct {
 	InstallationRepository db.GitHubInstallationRepository
-	RepoRepository         db.RepositoryRepository
+	RepoRepository         db.RepositoriesRepository
 }
 
 // NewInstallation creates an installation module with the given repositories.
-func NewInstallation(installations db.GitHubInstallationRepository, repos db.RepositoryRepository) *Installation {
+func NewInstallation(installations db.GitHubInstallationRepository, repos db.RepositoriesRepository) *Installation {
 	return &Installation{
 		InstallationRepository: installations,
 		RepoRepository:         repos,

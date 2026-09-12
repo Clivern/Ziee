@@ -26,8 +26,8 @@ type Repository struct {
 	UpdatedAt      time.Time
 }
 
-// RepositoryRepository is the interface for workspace GitHub repo CRUD.
-type RepositoryRepository interface {
+// RepositoriesRepository is the interface for workspace GitHub repo CRUD.
+type RepositoriesRepository interface {
 	Create(repo *Repository) error
 	Upsert(repo *Repository) error
 	GetById(id Id) (*Repository, error)
@@ -41,17 +41,17 @@ type RepositoryRepository interface {
 	CountByWorkspaceId(workspaceId Id) (int64, error)
 }
 
-type RepositoryRepositoryPostgres struct {
+type RepositoriesRepositoryPostgres struct {
 	db *sql.DB
 }
 
-// NewRepositoryRepository returns the repository for workspace GitHub repos.
-func NewRepositoryRepository(db *sql.DB) RepositoryRepository {
-	return &RepositoryRepositoryPostgres{db: db}
+// NewRepositoriesRepository returns the repository for workspace GitHub repos.
+func NewRepositoriesRepository(db *sql.DB) RepositoriesRepository {
+	return &RepositoriesRepositoryPostgres{db: db}
 }
 
 // Create inserts a workspace GitHub repo row.
-func (r *RepositoryRepositoryPostgres) Create(repo *Repository) error {
+func (r *RepositoriesRepositoryPostgres) Create(repo *Repository) error {
 	id, err := NewId()
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (r *RepositoryRepositoryPostgres) Create(repo *Repository) error {
 }
 
 // Upsert inserts or updates a workspace GitHub repo by GitHub repository id.
-func (r *RepositoryRepositoryPostgres) Upsert(repo *Repository) error {
+func (r *RepositoriesRepositoryPostgres) Upsert(repo *Repository) error {
 	id, err := NewId()
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func (r *RepositoryRepositoryPostgres) Upsert(repo *Repository) error {
 }
 
 // GetById returns a workspace GitHub repo by id.
-func (r *RepositoryRepositoryPostgres) GetById(id Id) (*Repository, error) {
+func (r *RepositoriesRepositoryPostgres) GetById(id Id) (*Repository, error) {
 	item := &Repository{}
 	err := r.db.QueryRow(
 		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
@@ -140,7 +140,7 @@ func (r *RepositoryRepositoryPostgres) GetById(id Id) (*Repository, error) {
 }
 
 // GetByGitHubId returns a workspace GitHub repo by GitHub repository id.
-func (r *RepositoryRepositoryPostgres) GetByGitHubId(githubId int64) (*Repository, error) {
+func (r *RepositoriesRepositoryPostgres) GetByGitHubId(githubId int64) (*Repository, error) {
 	item := &Repository{}
 	err := r.db.QueryRow(
 		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
@@ -168,7 +168,7 @@ func (r *RepositoryRepositoryPostgres) GetByGitHubId(githubId int64) (*Repositor
 }
 
 // Update updates a workspace GitHub repo.
-func (r *RepositoryRepositoryPostgres) Update(repo *Repository) error {
+func (r *RepositoriesRepositoryPostgres) Update(repo *Repository) error {
 	_, err := r.db.Exec(
 		`UPDATE repositories
 		SET
@@ -199,25 +199,25 @@ func (r *RepositoryRepositoryPostgres) Update(repo *Repository) error {
 }
 
 // Delete deletes a workspace GitHub repo row.
-func (r *RepositoryRepositoryPostgres) Delete(id Id) error {
+func (r *RepositoriesRepositoryPostgres) Delete(id Id) error {
 	_, err := r.db.Exec(`DELETE FROM repositories WHERE id = $1`, id.String())
 	return err
 }
 
 // DeleteByGitHubId deletes a workspace GitHub repo by GitHub repository id.
-func (r *RepositoryRepositoryPostgres) DeleteByGitHubId(githubId int64) error {
+func (r *RepositoriesRepositoryPostgres) DeleteByGitHubId(githubId int64) error {
 	_, err := r.db.Exec(`DELETE FROM repositories WHERE github_id = $1`, githubId)
 	return err
 }
 
 // DeleteByInstallationId deletes all repos for a GitHub App installation.
-func (r *RepositoryRepositoryPostgres) DeleteByInstallationId(installationId int64) error {
+func (r *RepositoriesRepositoryPostgres) DeleteByInstallationId(installationId int64) error {
 	_, err := r.db.Exec(`DELETE FROM repositories WHERE installation_id = $1`, installationId)
 	return err
 }
 
 // ListByWorkspaceId lists GitHub repos by workspace id.
-func (r *RepositoryRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*Repository, error) {
+func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*Repository, error) {
 	rows, err := r.db.Query(
 		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
 		FROM repositories
@@ -258,7 +258,7 @@ func (r *RepositoryRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 }
 
 // ListByInstallationId lists GitHub repos by GitHub App installation id.
-func (r *RepositoryRepositoryPostgres) ListByInstallationId(installationId int64) ([]*Repository, error) {
+func (r *RepositoriesRepositoryPostgres) ListByInstallationId(installationId int64) ([]*Repository, error) {
 	rows, err := r.db.Query(
 		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
 		FROM repositories
@@ -296,7 +296,7 @@ func (r *RepositoryRepositoryPostgres) ListByInstallationId(installationId int64
 }
 
 // CountByWorkspaceId counts GitHub repos by workspace id.
-func (r *RepositoryRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, error) {
+func (r *RepositoriesRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, error) {
 	var count int64
 	err := r.db.QueryRow(
 		`SELECT COUNT(*)

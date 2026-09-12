@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const WorkspaceGitHubRepoMetaConfigPath = "_github_config_path"
+
 // WorkspaceGitHubRepo is a GitHub repository that installed the Ziee GitHub App.
 type WorkspaceGitHubRepo struct {
 	Id             Id
@@ -303,4 +305,122 @@ func (r *WorkspaceGitHubRepoRepositoryPostgres) CountByWorkspaceId(workspaceId I
 		workspaceId.String(),
 	).Scan(&count)
 	return count, err
+}
+
+// WorkspaceGitHubRepoMeta is a single row in the workspace_github_repos_meta table.
+type WorkspaceGitHubRepoMeta struct {
+	Id                    Id
+	WorkspaceGitHubRepoId Id
+	Key                   string
+	Value                 string
+	CreatedAt             time.Time
+	UpdatedAt             time.Time
+}
+
+// WorkspaceGitHubRepoMetaRepository is the interface for workspace GitHub repo metadata CRUD.
+type WorkspaceGitHubRepoMetaRepository interface {
+	Create(id Id, key, value string) error
+	Get(id Id, key string) (*WorkspaceGitHubRepoMeta, error)
+	Update(id Id, key, value string) error
+	Delete(id Id, key string) error
+	ListByRepoId(id Id) ([]*WorkspaceGitHubRepoMeta, error)
+	Upsert(id Id, key, value string) error
+}
+
+type WorkspaceGitHubRepoMetaRepositoryPostgres struct {
+	db *sql.DB
+}
+
+// NewWorkspaceGitHubRepoMetaRepository returns the repository for workspace GitHub repo metadata.
+func NewWorkspaceGitHubRepoMetaRepository(db *sql.DB) WorkspaceGitHubRepoMetaRepository {
+	return &WorkspaceGitHubRepoMetaRepositoryPostgres{db: db}
+}
+
+// Create inserts a workspace GitHub repo metadata row.
+func (r *WorkspaceGitHubRepoMetaRepositoryPostgres) Create(id Id, key, value string) error {
+	metaId, err := NewId()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.db.Exec(
+		`INSERT INTO workspace_github_repos_meta (id, workspace_github_repo_id, key, value)
+		VALUES ($1, $2, $3, to_jsonb($4::text))`,
+		metaId.String(), id.String(), key, value,
+	)
+	return err
+}
+
+// Get returns workspace GitHub repo metadata by key.
+func (r *WorkspaceGitHubRepoMetaRepositoryPostgres) Get(id Id, key string) (*WorkspaceGitHubRepoMeta, error) {
+	meta := &WorkspaceGitHubRepoMeta{}
+	err := r.db.QueryRow(
+		`SELECT id, workspace_github_repo_id, key, value #>> '{}', created_at, updated_at
+		FROM workspace_github_repos_meta
+		WHERE workspace_github_repo_id = $1 AND key = $2`,
+		id.String(), key,
+	).Scan(&meta.Id, &meta.WorkspaceGitHubRepoId, &meta.Key, &meta.Value, &meta.CreatedAt, &meta.UpdatedAt)
+	if isNotFound(err) {
+		return nil, nil
+	}
+	return meta, err
+}
+
+// Update updates an existing workspace GitHub repo metadata row.
+func (r *WorkspaceGitHubRepoMetaRepositoryPostgres) Update(id Id, key, value string) error {
+	_, err := r.db.Exec(
+		`UPDATE workspace_github_repos_meta
+		SET value = to_jsonb($1::text), updated_at = $2
+		WHERE workspace_github_repo_id = $3 AND key = $4`,
+		value, time.Now().UTC(), id.String(), key,
+	)
+	return err
+}
+
+// Delete deletes a workspace GitHub repo metadata row.
+func (r *WorkspaceGitHubRepoMetaRepositoryPostgres) Delete(id Id, key string) error {
+	_, err := r.db.Exec(
+		`DELETE FROM workspace_github_repos_meta
+		WHERE workspace_github_repo_id = $1 AND key = $2`,
+		id.String(), key,
+	)
+	return err
+}
+
+// ListByRepoId lists workspace GitHub repo metadata rows by repo id.
+func (r *WorkspaceGitHubRepoMetaRepositoryPostgres) ListByRepoId(id Id) ([]*WorkspaceGitHubRepoMeta, error) {
+	rows, err := r.db.Query(
+		`SELECT id, workspace_github_repo_id, key, value #>> '{}', created_at, updated_at
+		FROM workspace_github_repos_meta
+		WHERE workspace_github_repo_id = $1
+		ORDER BY key`,
+		id.String(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*WorkspaceGitHubRepoMeta
+	for rows.Next() {
+		meta := &WorkspaceGitHubRepoMeta{}
+		err := rows.Scan(&meta.Id, &meta.WorkspaceGitHubRepoId, &meta.Key, &meta.Value, &meta.CreatedAt, &meta.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, meta)
+	}
+	return list, rows.Err()
+}
+
+// Upsert creates or updates workspace GitHub repo metadata.
+func (r *WorkspaceGitHubRepoMetaRepositoryPostgres) Upsert(id Id, key, value string) error {
+	existing, err := r.Get(id, key)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return r.Create(id, key, value)
+	}
+	return r.Update(id, key, value)
 }

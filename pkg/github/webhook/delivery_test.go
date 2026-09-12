@@ -131,10 +131,13 @@ func TestUnitPushEventChangedPath(t *testing.T) {
 	assert.Equal(t, "main", event.Repository.DefaultBranch)
 	assert.Equal(t, int64(9), event.Installation.ID)
 	assert.Equal(t, ".ziee.yml", event.ChangedPath(".ziee.yml", ".ziee.yaml"))
-	assert.Equal(t, "worker/labels.go", event.ChangedPath("worker/labels.go", "pkg/missing.go"))
-	assert.Equal(t, "", event.ChangedPath("README.md"))
-	assert.Equal(t, "", event.ChangedPath(".ziee.yaml"))
+
+	json.Unmarshal([]byte(`{"commits":[{"added":["worker/labels.go"],"removed":[],"modified":["conf/conf.go"]}]}`), &event)
+	assert.Equal(t, "", event.ChangedPath(".ziee.yml", ".ziee.yaml"))
 
 	json.Unmarshal([]byte(`{"commits":[{"added":[".ziee.yaml"],"removed":[],"modified":[]}]}`), &event)
 	assert.Equal(t, ".ziee.yaml", event.ChangedPath(".ziee.yml", ".ziee.yaml"))
+
+	json.Unmarshal([]byte(`{"commits":[{"added":[".github/.ziee.yaml"],"removed":[],"modified":[]}]}`), &event)
+	assert.Equal(t, ".github/.ziee.yaml", event.ChangedPath(".ziee.yml", ".ziee.yaml"))
 }

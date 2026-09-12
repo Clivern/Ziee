@@ -3,7 +3,7 @@
 
 package webhook
 
-import "github.com/samber/lo"
+import "strings"
 
 // PushEvent is a GitHub push webhook payload.
 type PushEvent struct {
@@ -20,13 +20,14 @@ type PushCommit struct {
 	Modified []string `json:"modified"`
 }
 
-// ChangedPath returns the first added or modified path that matches.
-func (e PushEvent) ChangedPath(paths ...string) string {
+// ChangedPath returns the first added or modified file that contains one of the names.
+func (e PushEvent) ChangedPath(names ...string) string {
 	for _, commit := range e.Commits {
-		files := lo.Union(commit.Added, commit.Modified)
-		for _, path := range paths {
-			if lo.Contains(files, path) {
-				return path
+		for _, file := range append(commit.Added, commit.Modified...) {
+			for _, name := range names {
+				if strings.Contains(file, name) {
+					return file
+				}
 			}
 		}
 	}

@@ -177,6 +177,23 @@ func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, 
 	return nil
 }
 
+// SetConfigPath stores the repository `.ziee.yml` or `.ziee.yaml` path.
+func (i *Installation) SetConfigPath(githubRepoId int64, path string) error {
+	repo, err := i.RepoRepository.GetByGitHubId(githubRepoId)
+	if err != nil {
+		return fmt.Errorf("get repo: %w", err)
+	}
+
+	meta := db.NewWorkspaceGitHubRepoMetaRepository(db.GetDB())
+
+	err = meta.Upsert(repo.Id, db.WorkspaceGitHubRepoMetaConfigPath, path)
+	if err != nil {
+		return fmt.Errorf("upsert repo config path: %w", err)
+	}
+
+	return nil
+}
+
 // ListPending lists pending GitHub App installations for a GitHub user to attach to a workspace.
 func (i *Installation) ListPending(githubUserId string) ([]*InstallationResponse, error) {
 	list, err := i.InstallationRepository.ListPendingByGitHubUserId(githubUserId)

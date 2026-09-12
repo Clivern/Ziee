@@ -308,6 +308,12 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
+	err = i.SetConfigPath(payload.Repository.ID, path)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to store GitHub config path")
+		return
+	}
+
 	err = module.EnqueueTask(db.AsyncTaskTypeRepoLabels, map[string]string{
 		"deliveryId":     d.ID,
 		"installationId": strconv.FormatInt(payload.Installation.ID, 10),

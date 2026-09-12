@@ -17,7 +17,7 @@ import (
 
 func TestUnitParseRoutesV1(t *testing.T) {
 	_, thisFile, _, _ := runtime.Caller(0)
-	data, err := os.ReadFile(filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", ".ziee.yml"))
+	data, err := os.ReadFile(filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", ".ziee.yaml"))
 	require.NoError(t, err)
 
 	file, err := Parse(data)

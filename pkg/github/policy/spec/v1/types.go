@@ -8,6 +8,7 @@ type File struct {
 	Version     string      `yaml:"version"`
 	Labels      []Label     `yaml:"labels"`
 	Teams       []Team      `yaml:"teams"`
+	Knowledge   []Knowledge `yaml:"knowledge"`
 	MergeQueue  MergeQueue  `yaml:"merge_queue"`
 	PRReviews   PRReviews   `yaml:"pr_reviews"`
 	IssueTriage IssueTriage `yaml:"issue_triage"`
@@ -24,6 +25,12 @@ type Label struct {
 type Team struct {
 	Name    string   `yaml:"name"`
 	Members []string `yaml:"members"`
+}
+
+// Knowledge is a repository path indexed into the workspace knowledge base.
+type Knowledge struct {
+	Path string       `yaml:"path"`
+	Tags KnowledgeTag `yaml:"tags"`
 }
 
 // MergeQueue is the pull-request automation block.
@@ -69,14 +76,12 @@ type PRReviews struct {
 
 // AI classifies intention from title, body, and (for PRs) diff.
 type AI struct {
-	Enabled bool    `yaml:"enabled"`
-	KBTags  []KBTag `yaml:"kb_tags"`
+	Enabled   bool           `yaml:"enabled"`
+	Knowledge []KnowledgeTag `yaml:"knowledge"`
 }
 
-// KBTag is a workspace knowledge `tag=` value.
-type KBTag struct {
-	Tag string `yaml:"tag"`
-}
+// KnowledgeTag is a set of workspace knowledge label key-value pairs.
+type KnowledgeTag map[string]string
 
 // Rule is one triage rule. Every matching rule fires.
 type Rule struct {

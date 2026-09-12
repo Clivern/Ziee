@@ -15,7 +15,7 @@ import (
 
 func TestUnitParseRepoFile(t *testing.T) {
 	_, thisFile, _, _ := runtime.Caller(0)
-	data, err := os.ReadFile(filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", "..", ".ziee.yml"))
+	data, err := os.ReadFile(filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", "..", ".ziee.yaml"))
 	require.NoError(t, err)
 
 	file, err := Parse(data)
@@ -28,6 +28,8 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, []string{"clivern", "maya"}, file.Teams[0].Members)
 	assert.Equal(t, "core", file.Teams[1].Name)
 	assert.Equal(t, []string{"tj", "kiran"}, file.Teams[1].Members)
+	assert.Equal(t, "docs/", file.Knowledge[0].Path)
+	assert.Equal(t, KnowledgeTag{"tag": "docs", "team": "sre"}, file.Knowledge[0].Tags)
 	assert.False(t, file.MergeQueue.Enabled)
 	assert.Equal(t, "serial", file.MergeQueue.Mode)
 	assert.Equal(t, 5, file.MergeQueue.MaxParallelChecks)
@@ -38,7 +40,7 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "state/dequeued", file.MergeQueue.Labels.Dequeued)
 
 	assert.True(t, file.MergeQueue.PRTriage.AI.Enabled)
-	assert.Equal(t, "platform_monorepo", file.MergeQueue.PRTriage.AI.KBTags[0].Tag)
+	assert.Equal(t, KnowledgeTag{"tag": "docs", "team": "sre"}, file.MergeQueue.PRTriage.AI.Knowledge[0])
 
 	area := file.MergeQueue.PRTriage.Rules[0]
 	assert.Equal(t, "area-api", area.Name)
@@ -102,7 +104,7 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.False(t, file.PRReviews.Enabled)
 	assert.True(t, file.IssueTriage.Enabled)
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
-	assert.Equal(t, "platform_monorepo", file.IssueTriage.AI.KBTags[0].Tag)
+	assert.Equal(t, KnowledgeTag{"tag": "docs", "team": "sre"}, file.IssueTriage.AI.Knowledge[0])
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
 	assert.Equal(t, []string{"sre", "core"}, file.IssueTriage.Commands["summarize"].Allow[0].Teams)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["summarize"].Allow[1].Users)
@@ -127,6 +129,12 @@ version: 1.0.0
 merge_queue:
   enabled: true
   pr_triage:
+    ai:
+      enabled: true
+      knowledge:
+        - tag: docs
+          team: sre
+        - tag: platform_monorepo
     rules:
       - name: size
         when:
@@ -153,6 +161,11 @@ issue_triage:
         - users: [maya]
 `))
 	require.NoError(t, err)
+
+	assert.Equal(t, []KnowledgeTag{
+		{"tag": "docs", "team": "sre"},
+		{"tag": "platform_monorepo"},
+	}, file.MergeQueue.PRTriage.AI.Knowledge)
 
 	when := file.MergeQueue.PRTriage.Rules[0].When
 	assert.Equal(t, 3, *when[0].MaxFilesChanged)

@@ -34,7 +34,6 @@ coverage.html
 ziee
 
 # Documentation (clone from git@github.com:ziee/adoc.git)
-docs/
 .ruff_cache/
 
 # Local commit helper

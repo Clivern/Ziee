@@ -68,6 +68,13 @@ teams:
       - tj
       - kiran
 
+# Repository knowledge base for AI contexts
+knowledge:
+  - path: docs/
+    tags:
+      tag: docs
+      team: sre
+
 merge_queue:
   # Whether to enable the merge queue
   enabled: false
@@ -123,10 +130,11 @@ merge_queue:
     # enabled: false → skip classification; `intention:` matchers never match.
     ai:
       enabled: true
-      # Workspace knowledge `tag=` values used as classify context.
-      kb_tags:
-        # Few-shot examples to better label PRs
-        - tag: platform_monorepo
+      # Workspace knowledge labels used as classify context.
+      # Each item is a key-value set; all keys on that item must match.
+      knowledge:
+        - tag: docs
+          team: sre
     # `when` matchers (all must match):
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
@@ -452,10 +460,11 @@ issue_triage:
   # enabled: false → skip classification; `intention:` matchers never match.
   ai:
     enabled: true
-    # Workspace knowledge `tag=` values used as classify context.
-    kb_tags:
-      # Few-shot examples to better label issues
-      - tag: platform_monorepo
+    # Workspace knowledge labels used as classify context.
+    # Each item is a key-value set; all keys on that item must match.
+    knowledge:
+      - tag: docs
+        team: sre
   # Commands are typed on the issue. Ziee performs the action with the app token,
   # so the commenter does not need repo write (or any GitHub permission on this repo).
   # `allow` is who may run them (any matching entry is enough):

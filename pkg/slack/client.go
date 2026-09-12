@@ -28,6 +28,7 @@ type Message struct {
 	IconEmoji string
 }
 
+// Payload is a Slack notification payload.
 type Payload struct {
 	Text      string `json:"text"`
 	Channel   string `json:"channel,omitempty"`
@@ -35,6 +36,7 @@ type Payload struct {
 	IconEmoji string `json:"icon_emoji,omitempty"`
 }
 
+// APIResponse is a Slack API response.
 type APIResponse struct {
 	OK    bool   `json:"ok"`
 	Error string `json:"error"`
@@ -83,7 +85,7 @@ func (c *Client) PostWebhook(ctx context.Context, msg Message) error {
 
 // PostMessage posts a message with the customer's bot token via chat.postMessage.
 func (c *Client) PostMessage(ctx context.Context, msg Message) error {
-	if msg.Channel == "" {
+	if lo.IsEmpty(msg.Channel) {
 		msg.Channel = c.config.Channel
 	}
 
@@ -116,11 +118,11 @@ func (c *Client) Post(ctx context.Context, endpoint, token string, msg Message, 
 			IconEmoji: msg.IconEmoji,
 		})
 
-	if token != "" {
+	if lo.IsNotEmpty(token) {
 		r.SetBearerAuthToken(token)
 	}
 
-	if dest != nil {
+	if !lo.IsNil(dest) {
 		r.SetSuccessResult(dest)
 	}
 

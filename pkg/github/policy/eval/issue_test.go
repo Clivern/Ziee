@@ -212,8 +212,8 @@ func TestUnitEvaluateIssueOpenedFirstContribution(t *testing.T) {
 	}
 
 	plan := EvaluateIssueOpened(conf, Event{
-		Issue: Issue{Author: "newcomer", Association: "FIRST_TIME_CONTRIBUTOR"},
-	}, &stubClient{})
+		Issue: Issue{Author: "newcomer"},
+	}, &stubClient{first: true})
 
 	assert.Equal(t, []action.Action{
 		{Kind: policy.AddLabels, Labels: []string{"first-contribution"}},
@@ -221,7 +221,7 @@ func TestUnitEvaluateIssueOpenedFirstContribution(t *testing.T) {
 	}, plan.Actions)
 
 	plan = EvaluateIssueOpened(conf, Event{
-		Issue: Issue{Author: "maya", Association: "MEMBER"},
+		Issue: Issue{Author: "maya"},
 	}, &stubClient{})
 
 	assert.Empty(t, plan.Actions)
@@ -232,6 +232,7 @@ type stubClient struct {
 	intentions []string
 	teams      []string
 	org        string
+	first      bool
 }
 
 func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) []string {
@@ -244,4 +245,8 @@ func (s *stubClient) GetTeams(org, _ string) []string {
 	s.org = org
 
 	return s.teams
+}
+
+func (s *stubClient) IsFirstContribution(Issue) bool {
+	return s.first
 }

@@ -6,13 +6,13 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
-	"github.com/clivern/ziee/pkg/github/policy/action"
 	"github.com/clivern/ziee/pkg/github/policy/eval"
 	"github.com/clivern/ziee/pkg/github/policy/spec"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
@@ -27,7 +27,9 @@ func (noopClient) GetTeams(string, string) []string { return nil }
 
 func (noopClient) EvaluateIssue(eval.Issue, []v1.Intention) []string { return nil }
 
-// HandleGitHubIssue evaluates an issue or issue comment webhook.
+func (noopClient) IsFirstContribution(eval.Issue) bool { return false }
+
+// HandleGitHubIssue evaluates an issue webhook.
 func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error {
 	var payload map[string]string
 	err := json.Unmarshal(msg.Data, &payload)
@@ -37,25 +39,6 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 
 	taskId := db.Id(payload["taskId"])
 	h.tasks.MarkRunning(taskId)
-
-	var plan action.Plan
-	if payload["event"] != "issues" {
-		result, err := json.Marshal(map[string]any{
-			"deliveryId": payload["deliveryId"],
-			"event":      payload["event"],
-			"action":     payload["action"],
-			"owner":      payload["owner"],
-			"repo":       payload["repo"],
-			"number":     payload["number"],
-			"actions":    plan.Actions,
-		})
-		if err != nil {
-			h.tasks.Fail(taskId, err.Error())
-			return err
-		}
-
-		return h.tasks.Complete(taskId, string(result))
-	}
 
 	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)
 	if err != nil {
@@ -103,8 +86,8 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 		assignees[i] = user.Login
 	}
 
-	plan = eval.Run(file, eval.Event{
-		Kind: "issue." + payload["action"],
+	plan := eval.Run(file, eval.Event{
+		Kind: fmt.Sprintf("issue.%s", payload["action"]),
 		Account: eval.Account{
 			Login: issue.Repository.Owner.Login,
 			Type:  issue.Repository.Owner.Type,

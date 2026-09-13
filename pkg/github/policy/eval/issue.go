@@ -65,8 +65,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			if len(when.AuthorNotInTeam) > 0 && lo.Some(event.Issue.Teams, when.AuthorNotInTeam) {
 				matched = false
 			}
-			// TODO: IsFirstContribution still not implemented
-			if when.FirstContribution != nil && *when.FirstContribution != IsFirstContribution(event.Issue.Association) {
+			if when.FirstContribution != nil && *when.FirstContribution != client.IsFirstContribution(event.Issue) {
 				matched = false
 			}
 		}

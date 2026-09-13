@@ -51,4 +51,6 @@ type Client interface {
 	// EvaluateIssue classifies issue intention from title and body.
 	// Intention descriptions are added to the classify prompt.
 	EvaluateIssue(issue Issue, intentions []v1.Intention) []string
+	// IsFirstContribution reports whether the issue author is a first-time contributor.
+	IsFirstContribution(issue Issue) bool
 }

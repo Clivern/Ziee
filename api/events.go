@@ -31,6 +31,7 @@ func init() {
 	Webhook.On(installationRepositories)
 	Webhook.On(issues)
 	Webhook.On(issueComment)
+	Webhook.On(pullRequests)
 	Webhook.On(detectConfChanges)
 }
 
@@ -342,6 +343,82 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		Str("repo", payload.Repository.Name).
 		Int("number", payload.Issue.Number).
 		Msg("GitHub issue comment webhook handled")
+}
+
+func pullRequests(_ context.Context, d webhook.Delivery) {
+	if d.Event != "pull_request" {
+		return
+	}
+
+	var payload webhook.PullRequestEvent
+	json.Unmarshal(d.Body, &payload)
+
+	switch payload.Action {
+	case "opened", "edited", "labeled", "unlabeled":
+	default:
+		return
+	}
+
+	i := module.NewInstallation(
+		db.NewGitHubInstallationRepository(db.GetDB()),
+		db.NewRepositoriesRepository(db.GetDB()),
+	)
+
+	installation, err := i.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub pull request webhook")
+		return
+	}
+	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
+		return
+	}
+
+	r := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	path, err := r.GetConfigPath(payload.Repository.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub pull request webhook")
+		return
+	}
+	if lo.IsEmpty(path) {
+		log.Info().
+			Str("deliveryId", d.ID).
+			Str("action", payload.Action).
+			Int64("githubId", payload.Installation.ID).
+			Str("owner", payload.Repository.Owner.Login).
+			Str("repo", payload.Repository.Name).
+			Int("number", payload.PullRequest.Number).
+			Msg("GitHub pull request webhook skipped, no config")
+		return
+	}
+
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubPullRequest, map[string]string{
+		"deliveryId":     d.ID,
+		"event":          d.Event,
+		"action":         payload.Action,
+		"body":           string(d.Body),
+		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
+		"owner":          payload.Repository.Owner.Login,
+		"repo":           payload.Repository.Name,
+		"number":         strconv.Itoa(payload.PullRequest.Number),
+	}, installation.WorkspaceId)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub pull request webhook")
+		return
+	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Str("action", payload.Action).
+		Int64("githubId", payload.Installation.ID).
+		Str("owner", payload.Repository.Owner.Login).
+		Str("repo", payload.Repository.Name).
+		Int("number", payload.PullRequest.Number).
+		Msg("GitHub pull request webhook handled")
 }
 
 func detectConfChanges(_ context.Context, d webhook.Delivery) {

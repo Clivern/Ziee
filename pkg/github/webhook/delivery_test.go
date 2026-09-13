@@ -118,6 +118,17 @@ func TestUnitIssueCommentEvent(t *testing.T) {
 	assert.NotNil(t, event.Issue.PullRequest)
 }
 
+func TestUnitPullRequestEvent(t *testing.T) {
+	var event PullRequestEvent
+	json.Unmarshal([]byte(`{"action":"opened","number":8,"pull_request":{"number":8,"title":"Feat","user":{"login":"maya"}},"repository":{"name":"ziee","owner":{"login":"acme","type":"Organization"}},"installation":{"id":9},"sender":{"login":"maya"}}`), &event)
+
+	assert.Equal(t, "opened", event.Action)
+	assert.Equal(t, 8, event.PullRequest.Number)
+	assert.Equal(t, "maya", event.PullRequest.User.Login)
+	assert.Equal(t, "acme", event.Repository.Owner.Login)
+	assert.Equal(t, int64(9), event.Installation.ID)
+}
+
 func TestUnitPushEventChangedPath(t *testing.T) {
 	var event PushEvent
 	json.Unmarshal([]byte(`{

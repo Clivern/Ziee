@@ -40,7 +40,6 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "state/dequeued", file.MergeQueue.Labels.Dequeued)
 
 	assert.True(t, file.MergeQueue.PRTriage.AI.Enabled)
-	assert.Equal(t, KnowledgeTag{"tag": "docs", "team": "sre"}, file.MergeQueue.PRTriage.AI.Knowledge[0])
 
 	area := file.MergeQueue.PRTriage.Rules[0]
 	assert.Equal(t, "area-api", area.Name)
@@ -104,7 +103,6 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.False(t, file.PRReviews.Enabled)
 	assert.True(t, file.IssueTriage.Enabled)
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
-	assert.Equal(t, KnowledgeTag{"tag": "docs", "team": "sre"}, file.IssueTriage.AI.Knowledge[0])
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
 	assert.Equal(t, []string{"sre", "core"}, file.IssueTriage.Commands["summarize"].Allow[0].Teams)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["summarize"].Allow[1].Users)

@@ -130,11 +130,6 @@ merge_queue:
     # enabled: false → skip classification; `intention:` matchers never match.
     ai:
       enabled: true
-      # Workspace knowledge labels used as classify context.
-      # Each item is a key-value set; all keys on that item must match.
-      knowledge:
-        - tag: docs
-          team: sre
     # `when` matchers (all must match):
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
@@ -306,6 +301,7 @@ merge_queue:
         - permission: write
         - teams: [sre, core]
         - users: [clivern]
+        # Only the PR author can queue the PR
         - self: true
     # `@ziee dequeue` — pull the PR out of the queue
     dequeue:
@@ -456,11 +452,6 @@ issue_triage:
   # enabled: false → skip classification; `intention:` matchers never match.
   ai:
     enabled: true
-    # Workspace knowledge labels used as classify context.
-    # Each item is a key-value set; all keys on that item must match.
-    knowledge:
-      - tag: docs
-        team: sre
   # Commands are typed on the issue. Ziee performs the action with the app token,
   # so the commenter does not need repo write (or any GitHub permission on this repo).
   # `allow` is who may run them (any matching entry is enough):

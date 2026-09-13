@@ -7,10 +7,10 @@ import "context"
 
 // Action is one GitHub change to apply.
 type Action struct {
-	Kind   string
-	Labels []string
-	Users  []string
-	Body   string
+	Kind   string   `json:"kind,omitempty"`
+	Labels []string `json:"labels,omitempty"`
+	Users  []string `json:"users,omitempty"`
+	Body   string   `json:"body,omitempty"`
 }
 
 // Plan is the ordered list of actions for one event.

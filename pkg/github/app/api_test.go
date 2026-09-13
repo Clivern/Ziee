@@ -224,9 +224,9 @@ func TestUnitAppHTTP(t *testing.T) {
 			_, _ = w.Write([]byte(`{"path":".ziee.yml"}`))
 		}))
 
-		exists, err := client.FileExists(ctx, 1, "acme", "ziee", ".ziee.yml")
+		path, err := client.FileExists(ctx, 1, "acme", "ziee", []string{".ziee.yml"})
 		assert.NoError(t, err)
-		assert.True(t, exists)
+		assert.Equal(t, ".ziee.yml", path)
 	})
 
 	t.Run("GetFile", func(t *testing.T) {
@@ -248,9 +248,9 @@ func TestUnitAppHTTP(t *testing.T) {
 			http.NotFound(w, r)
 		}))
 
-		exists, err := client.FileExists(ctx, 1, "acme", "ziee", ".ziee.yml")
+		path, err := client.FileExists(ctx, 1, "acme", "ziee", []string{".ziee.yml"})
 		assert.NoError(t, err)
-		assert.False(t, exists)
+		assert.Empty(t, path)
 	})
 
 	t.Run("FileExists either path", func(t *testing.T) {
@@ -263,9 +263,9 @@ func TestUnitAppHTTP(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}))
 
-		exists, err := client.FileExists(ctx, 1, "acme", "ziee", ".ziee.yaml", ".ziee.yml")
+		path, err := client.FileExists(ctx, 1, "acme", "ziee", []string{".ziee.yaml", ".ziee.yml"})
 		assert.NoError(t, err)
-		assert.True(t, exists)
+		assert.Equal(t, ".ziee.yml", path)
 	})
 
 	t.Run("CreatePullRequest", func(t *testing.T) {

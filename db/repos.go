@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	RepositoryMetaConfigPath = "_github_config_path"
 	RepositoryMetaSetupIssue = "_github_setup_issue"
 	RepositoryMetaSetupPR    = "_github_setup_pr"
 )
@@ -25,6 +24,7 @@ type Repository struct {
 	Name           string
 	FullName       string
 	Private        bool
+	ConfigPath     *string
 	Meta           *string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
@@ -64,8 +64,8 @@ func (r *RepositoriesRepositoryPostgres) Create(repo *Repository) error {
 
 	return r.db.QueryRow(
 		`INSERT INTO repositories
-		(id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		(id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, config_path, meta)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING created_at, updated_at`,
 		repo.Id.String(),
 		repo.WorkspaceId.String(),
@@ -76,6 +76,7 @@ func (r *RepositoriesRepositoryPostgres) Create(repo *Repository) error {
 		repo.Name,
 		repo.FullName,
 		repo.Private,
+		repo.ConfigPath,
 		repo.Meta,
 	).Scan(&repo.CreatedAt, &repo.UpdatedAt)
 }
@@ -89,8 +90,8 @@ func (r *RepositoriesRepositoryPostgres) Upsert(repo *Repository) error {
 
 	return r.db.QueryRow(
 		`INSERT INTO repositories
-		(id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		(id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, config_path, meta)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		ON CONFLICT (github_id) DO UPDATE SET
 			workspace_id = EXCLUDED.workspace_id,
 			installation_id = EXCLUDED.installation_id,
@@ -111,6 +112,7 @@ func (r *RepositoriesRepositoryPostgres) Upsert(repo *Repository) error {
 		repo.Name,
 		repo.FullName,
 		repo.Private,
+		repo.ConfigPath,
 		repo.Meta,
 	).Scan(&repo.Id, &repo.CreatedAt, &repo.UpdatedAt)
 }
@@ -119,7 +121,7 @@ func (r *RepositoriesRepositoryPostgres) Upsert(repo *Repository) error {
 func (r *RepositoriesRepositoryPostgres) GetById(id Id) (*Repository, error) {
 	item := &Repository{}
 	err := r.db.QueryRow(
-		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
+		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, config_path, meta, created_at, updated_at
 		FROM repositories
 		WHERE id = $1`,
 		id.String(),
@@ -133,6 +135,7 @@ func (r *RepositoriesRepositoryPostgres) GetById(id Id) (*Repository, error) {
 		&item.Name,
 		&item.FullName,
 		&item.Private,
+		&item.ConfigPath,
 		&item.Meta,
 		&item.CreatedAt,
 		&item.UpdatedAt,
@@ -147,7 +150,7 @@ func (r *RepositoriesRepositoryPostgres) GetById(id Id) (*Repository, error) {
 func (r *RepositoriesRepositoryPostgres) GetByGitHubId(githubId int64) (*Repository, error) {
 	item := &Repository{}
 	err := r.db.QueryRow(
-		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
+		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, config_path, meta, created_at, updated_at
 		FROM repositories
 		WHERE github_id = $1`,
 		githubId,
@@ -161,6 +164,7 @@ func (r *RepositoriesRepositoryPostgres) GetByGitHubId(githubId int64) (*Reposit
 		&item.Name,
 		&item.FullName,
 		&item.Private,
+		&item.ConfigPath,
 		&item.Meta,
 		&item.CreatedAt,
 		&item.UpdatedAt,
@@ -184,9 +188,10 @@ func (r *RepositoriesRepositoryPostgres) Update(repo *Repository) error {
 			name = $6,
 			full_name = $7,
 			private = $8,
-			meta = $9,
-			updated_at = $10
-		WHERE id = $11`,
+			config_path = $9,
+			meta = $10,
+			updated_at = $11
+		WHERE id = $12`,
 		repo.WorkspaceId.String(),
 		repo.InstallationId,
 		repo.GitHubId,
@@ -195,6 +200,7 @@ func (r *RepositoriesRepositoryPostgres) Update(repo *Repository) error {
 		repo.Name,
 		repo.FullName,
 		repo.Private,
+		repo.ConfigPath,
 		repo.Meta,
 		time.Now().UTC(),
 		repo.Id.String(),
@@ -223,7 +229,7 @@ func (r *RepositoriesRepositoryPostgres) DeleteByInstallationId(installationId i
 // ListByWorkspaceId lists GitHub repos by workspace id.
 func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offset int) ([]*Repository, error) {
 	rows, err := r.db.Query(
-		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
+		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, config_path, meta, created_at, updated_at
 		FROM repositories
 		WHERE workspace_id = $1
 		ORDER BY created_at DESC
@@ -250,6 +256,7 @@ func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit
 			&item.Name,
 			&item.FullName,
 			&item.Private,
+			&item.ConfigPath,
 			&item.Meta,
 			&item.CreatedAt,
 			&item.UpdatedAt,
@@ -264,7 +271,7 @@ func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit
 // ListByInstallationId lists GitHub repos by GitHub App installation id.
 func (r *RepositoriesRepositoryPostgres) ListByInstallationId(installationId int64) ([]*Repository, error) {
 	rows, err := r.db.Query(
-		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, meta, created_at, updated_at
+		`SELECT id, workspace_id, installation_id, github_id, node_id, owner, name, full_name, private, config_path, meta, created_at, updated_at
 		FROM repositories
 		WHERE installation_id = $1
 		ORDER BY created_at DESC`,
@@ -288,6 +295,7 @@ func (r *RepositoriesRepositoryPostgres) ListByInstallationId(installationId int
 			&item.Name,
 			&item.FullName,
 			&item.Private,
+			&item.ConfigPath,
 			&item.Meta,
 			&item.CreatedAt,
 			&item.UpdatedAt,

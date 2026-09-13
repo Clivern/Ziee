@@ -12,18 +12,18 @@ import (
 	"strings"
 )
 
-// FileExists reports whether any of the paths exist in the repository's default branch.
-func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo string, paths ...string) (bool, error) {
+// FileExists returns the first path that exists on the repository's default branch.
+func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo string, paths []string) (string, error) {
 	token, err := a.GetInstallationToken(ctx, installationID)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	for _, path := range paths {
 		url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", a.apiURL, owner, repo, path)
 		err = Call(ctx, http.MethodGet, url, token.Token, GetHeaders(), nil, nil)
 		if err == nil {
-			return true, nil
+			return path, nil
 		}
 
 		var status *StatusError
@@ -31,10 +31,10 @@ func (a *App) FileExists(ctx context.Context, installationID int64, owner, repo 
 			continue
 		}
 
-		return false, err
+		return "", err
 	}
 
-	return false, nil
+	return "", nil
 }
 
 // GetFile returns the decoded contents of a path on the default branch.

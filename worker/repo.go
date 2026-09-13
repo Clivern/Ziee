@@ -14,6 +14,8 @@ import (
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
+
+	"github.com/samber/lo"
 )
 
 // HandleRepositoryBootstrap creates a setup issue and .ziee.yml PR for a repository.
@@ -42,19 +44,29 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
 
-	exists, err := app.Get().FileExists(
+	repos := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	path, err := app.Get().FileExists(
 		ctx,
 		installationId,
 		owner,
 		repo,
-		".ziee.yaml",
-		".ziee.yml",
+		[]string{".ziee.yaml", ".ziee.yml"},
 	)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
-	if exists {
+	if lo.IsNotEmpty(path) {
+		err = repos.SetConfigPath(githubId, path)
+		if err != nil {
+			h.tasks.Fail(taskId, err.Error())
+			return err
+		}
+
 		return h.tasks.Complete(taskId, "")
 	}
 
@@ -79,11 +91,6 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
-
-	repos := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-	)
 
 	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
 	if err != nil {

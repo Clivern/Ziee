@@ -138,3 +138,29 @@ func (r *Repository) GetMeta(githubRepoId int64, key string) (string, error) {
 
 	return lo.FromPtr(meta).Value, nil
 }
+
+// SetConfigPath stores the `.ziee.yml` path by GitHub repository id.
+func (r *Repository) SetConfigPath(githubRepoId int64, path string) error {
+	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)
+	if err != nil {
+		return fmt.Errorf("get repo: %w", err)
+	}
+
+	repo.ConfigPath = &path
+	err = r.RepoRepository.Update(repo)
+	if err != nil {
+		return fmt.Errorf("set config path: %w", err)
+	}
+
+	return nil
+}
+
+// GetConfigPath returns the `.ziee.yml` path by GitHub repository id.
+func (r *Repository) GetConfigPath(githubRepoId int64) (string, error) {
+	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)
+	if err != nil {
+		return "", fmt.Errorf("get repo: %w", err)
+	}
+
+	return lo.FromPtr(repo.ConfigPath), nil
+}

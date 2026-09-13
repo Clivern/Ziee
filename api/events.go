@@ -218,6 +218,28 @@ func issues(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
+	r := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	path, err := r.GetConfigPath(payload.Repository.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub issue webhook")
+		return
+	}
+	if lo.IsEmpty(path) {
+		log.Info().
+			Str("deliveryId", d.ID).
+			Str("action", payload.Action).
+			Int64("githubId", payload.Installation.ID).
+			Str("owner", payload.Repository.Owner.Login).
+			Str("repo", payload.Repository.Name).
+			Int("number", payload.Issue.Number).
+			Msg("GitHub issue webhook skipped, no config")
+		return
+	}
+
 	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
@@ -332,11 +354,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		db.NewRepositoryMetaRepository(db.GetDB()),
 	)
 
-	err = r.UpsertMeta(
-		payload.Repository.ID,
-		db.RepositoryMetaConfigPath,
-		path,
-	)
+	err = r.SetConfigPath(payload.Repository.ID, path)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to store GitHub config path")
 		return

@@ -38,13 +38,19 @@ type RepositoryPayload struct {
 
 // IssuePayload is the issue object on a webhook.
 type IssuePayload struct {
-	Number            int           `json:"number"`
-	Title             string        `json:"title"`
-	Body              string        `json:"body"`
-	User              UserPayload   `json:"user"`
-	AuthorAssociation string        `json:"author_association"`
-	Labels            []NamePayload `json:"labels"`
-	Assignees         []UserPayload `json:"assignees"`
+	Number            int             `json:"number"`
+	Title             string          `json:"title"`
+	Body              string          `json:"body"`
+	User              UserPayload     `json:"user"`
+	AuthorAssociation string          `json:"author_association"`
+	Labels            []NamePayload   `json:"labels"`
+	Assignees         []UserPayload   `json:"assignees"`
+	PullRequest       *PullRequestRef `json:"pull_request"`
+}
+
+// PullRequestRef is present on issue payloads that are pull requests.
+type PullRequestRef struct {
+	URL string `json:"url"`
 }
 
 // CommentPayload is the comment object on an issue_comment webhook.

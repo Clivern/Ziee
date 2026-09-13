@@ -110,8 +110,12 @@ func TestUnitIssueCommentEvent(t *testing.T) {
 
 	assert.Equal(t, "created", event.Action)
 	assert.Equal(t, 3, event.Issue.Number)
+	assert.Nil(t, event.Issue.PullRequest)
 	assert.Equal(t, "@ziee label bug", event.Comment.Body)
 	assert.Equal(t, int64(9), event.Installation.ID)
+
+	json.Unmarshal([]byte(`{"action":"created","issue":{"number":4,"pull_request":{"url":"https://api.github.com/repos/acme/ziee/pulls/4"}},"comment":{"body":"lgtm"},"repository":{"name":"ziee","owner":{"login":"acme"}},"installation":{"id":9}}`), &event)
+	assert.NotNil(t, event.Issue.PullRequest)
 }
 
 func TestUnitPushEventChangedPath(t *testing.T) {

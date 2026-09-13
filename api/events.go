@@ -277,6 +277,10 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 	if payload.Action != "created" {
 		return
 	}
+	// Skip if the comment is on a pull request
+	if lo.IsNotEmpty(payload.Issue.PullRequest) {
+		return
+	}
 
 	i := module.NewInstallation(
 		db.NewGitHubInstallationRepository(db.GetDB()),
@@ -292,7 +296,29 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, map[string]string{
+	r := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	path, err := r.GetConfigPath(payload.Repository.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
+		return
+	}
+	if lo.IsEmpty(path) {
+		log.Info().
+			Str("deliveryId", d.ID).
+			Str("action", payload.Action).
+			Int64("githubId", payload.Installation.ID).
+			Str("owner", payload.Repository.Owner.Login).
+			Str("repo", payload.Repository.Name).
+			Int("number", payload.Issue.Number).
+			Msg("GitHub issue comment webhook skipped, no config")
+		return
+	}
+
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubComment, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -330,8 +356,8 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	path := payload.ChangedPath(".ziee.yml", ".ziee.yaml")
-	if path == "" {
+	path := payload.ChangedPath(".ziee.yaml", ".ziee.yml")
+	if lo.IsEmpty(path) {
 		return
 	}
 

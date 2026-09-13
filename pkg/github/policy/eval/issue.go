@@ -25,12 +25,14 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 		event.Org = event.Account.Login
 	}
 
+	// TODO: Github Org Teams Fetching
 	event.Issue.Teams = MergeTeams(
 		event.Issue.Teams,
 		GetTeamsFromFile(conf.Teams, event.Issue.Author),
 		client.GetTeams(event.Org, event.Issue.Author),
 	)
 
+	// TODO: AI Intention
 	intentions := GetIntentionsFromRules(conf.IssueTriage.Rules)
 	if conf.IssueTriage.AI.Enabled && len(intentions) > 0 {
 		event.Issue.Intentions = client.EvaluateIssue(event.Issue, intentions)
@@ -63,6 +65,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			if len(when.AuthorNotInTeam) > 0 && lo.Some(event.Issue.Teams, when.AuthorNotInTeam) {
 				matched = false
 			}
+			// TODO: IsFirstContribution still not implemented
 			if when.FirstContribution != nil && *when.FirstContribution != IsFirstContribution(event.Issue.Association) {
 				matched = false
 			}

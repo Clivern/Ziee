@@ -58,11 +58,6 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return h.tasks.Complete(taskId, "")
 	}
 
-	install := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
-
 	issue, err := app.Get().CreateIssue(
 		ctx,
 		installationId,
@@ -85,7 +80,12 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	err = install.UpsertRepositoryMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
+	repos := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
@@ -112,7 +112,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	err = install.UpsertRepositoryMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
+	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err

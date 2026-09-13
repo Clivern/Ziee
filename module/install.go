@@ -48,7 +48,7 @@ type Installation struct {
 	RepoRepository         db.RepositoriesRepository
 }
 
-// NewInstallation creates an installation module with the given repositories.
+// NewInstallation creates an installation module with the given stores.
 func NewInstallation(installations db.GitHubInstallationRepository, repos db.RepositoriesRepository) *Installation {
 	return &Installation{
 		InstallationRepository: installations,
@@ -102,100 +102,6 @@ func (i *Installation) Delete(githubId int64) error {
 	return nil
 }
 
-// UpdateRepositories adds and removes repos for an attached installation.
-func (i *Installation) UpdateRepositories(githubId int64, added []app.Repository, removed []int64) error {
-	item, err := i.InstallationRepository.GetByGitHubId(githubId)
-	if err != nil {
-		return fmt.Errorf("get installation: %w", err)
-	}
-	if item == nil || item.WorkspaceId == "" {
-		return nil
-	}
-
-	for _, repository := range added {
-		err = i.StoreRepository(item.WorkspaceId, githubId, repository)
-		if err != nil {
-			return err
-		}
-
-		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
-			"workspaceId":    item.WorkspaceId.String(),
-			"installationId": strconv.FormatInt(githubId, 10),
-			"githubId":       strconv.FormatInt(repository.ID, 10),
-			"fullName":       repository.FullName,
-			"name":           repository.Name,
-		}, item.WorkspaceId)
-
-		if err != nil {
-			log.Error().
-				Err(err).
-				Int64("installationId", githubId).
-				Str("repository", repository.FullName).
-				Msg("Failed to enqueue repository bootstrap task")
-		}
-	}
-
-	for _, repositoryId := range removed {
-		err = i.RepoRepository.DeleteByGitHubId(repositoryId)
-		if err != nil {
-			return fmt.Errorf("delete installation repo: %w", err)
-		}
-	}
-
-	log.Info().
-		Int64("githubId", githubId).
-		Str("workspaceId", item.WorkspaceId.String()).
-		Int("added", len(added)).
-		Int("removed", len(removed)).
-		Msg("GitHub installation repositories updated")
-
-	return nil
-}
-
-// StoreRepository stores a GitHub repository in the database.
-func (i *Installation) StoreRepository(workspaceId db.Id, installationId int64, repo app.Repository) error {
-	meta, err := json.Marshal(repo)
-	if err != nil {
-		return fmt.Errorf("encode repo meta: %w", err)
-	}
-	raw := string(meta)
-	owner, _, _ := strings.Cut(repo.FullName, "/")
-
-	err = i.RepoRepository.Upsert(&db.Repository{
-		WorkspaceId:    workspaceId,
-		InstallationId: installationId,
-		GitHubId:       repo.ID,
-		NodeId:         repo.NodeID,
-		Owner:          owner,
-		Name:           repo.Name,
-		FullName:       repo.FullName,
-		Private:        repo.Private,
-		Meta:           &raw,
-	})
-	if err != nil {
-		return fmt.Errorf("store installation repo: %w", err)
-	}
-
-	return nil
-}
-
-// UpsertRepositoryMeta stores a repositories_meta value by GitHub repository id.
-func (i *Installation) UpsertRepositoryMeta(githubRepoId int64, key, value string) error {
-	repo, err := i.RepoRepository.GetByGitHubId(githubRepoId)
-	if err != nil {
-		return fmt.Errorf("get repo: %w", err)
-	}
-
-	meta := db.NewRepositoryMetaRepository(db.GetDB())
-
-	err = meta.Upsert(repo.Id, key, value)
-	if err != nil {
-		return fmt.Errorf("upsert repo meta: %w", err)
-	}
-
-	return nil
-}
-
 // ListPending lists pending GitHub App installations for a GitHub user to attach to a workspace.
 func (i *Installation) ListPending(githubUserId string) ([]*InstallationResponse, error) {
 	list, err := i.InstallationRepository.ListPendingByGitHubUserId(githubUserId)
@@ -240,9 +146,26 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 	}
 
 	for _, repository := range repositories {
-		err = i.StoreRepository(workspaceId, item.GitHubId, repository)
+		meta, err := json.Marshal(repository)
 		if err != nil {
-			return err
+			return fmt.Errorf("encode repo meta: %w", err)
+		}
+		raw := string(meta)
+		owner, _, _ := strings.Cut(repository.FullName, "/")
+
+		err = i.RepoRepository.Upsert(&db.Repository{
+			WorkspaceId:    workspaceId,
+			InstallationId: item.GitHubId,
+			GitHubId:       repository.ID,
+			NodeId:         repository.NodeID,
+			Owner:          owner,
+			Name:           repository.Name,
+			FullName:       repository.FullName,
+			Private:        repository.Private,
+			Meta:           &raw,
+		})
+		if err != nil {
+			return fmt.Errorf("store installation repo: %w", err)
 		}
 
 		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{

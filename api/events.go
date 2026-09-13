@@ -140,6 +140,15 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 		db.NewRepositoriesRepository(db.GetDB()),
 	)
 
+	installation, err := i.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to persist GitHub installation repositories")
+		return
+	}
+	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
+		return
+	}
+
 	added := make([]app.Repository, len(payload.RepositoriesAdded))
 	for n, repo := range payload.RepositoriesAdded {
 		added[n] = app.Repository{
@@ -156,7 +165,17 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 		removed[n] = repo.ID
 	}
 
-	err := i.UpdateRepositories(payload.Installation.ID, added, removed)
+	r := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	err = r.Update(
+		installation.WorkspaceId,
+		payload.Installation.ID,
+		added,
+		removed,
+	)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to persist GitHub installation repositories")
 		return
@@ -308,7 +327,16 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = i.UpsertRepositoryMeta(payload.Repository.ID, db.RepositoryMetaConfigPath, path)
+	r := module.NewRepository(
+		db.NewRepositoriesRepository(db.GetDB()),
+		db.NewRepositoryMetaRepository(db.GetDB()),
+	)
+
+	err = r.UpsertMeta(
+		payload.Repository.ID,
+		db.RepositoryMetaConfigPath,
+		path,
+	)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to store GitHub config path")
 		return

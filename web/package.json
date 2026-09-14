@@ -1,7 +1,7 @@
 {
-  "name": "ziee",
+  "name": "Ziee",
   "version": "0.1.0",
-  "description": "Ziee - The Autonomous Merge Layer for Agent-Scale Delivery",
+  "description": "The Autonomous Merge Layer for Agent-Scale Delivery",
   "type": "module",
   "scripts": {
     "dev": "vite",

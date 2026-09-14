@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
@@ -6,7 +6,7 @@ package module
 import (
 	"context"
 
-	"github.com/actx0/ziee/db"
+	"github.com/clivern/ziee/db"
 )
 
 // AppCtx carries request-scoped metadata that can be passed through handlers and services.
@@ -55,7 +55,7 @@ func AppCtxFrom(ctx context.Context) (*AppCtx, bool) {
 // Principal is the authenticated actor for a request: a user or a workspace access key.
 type Principal struct {
 	User      *db.User
-	AccessKey *db.WorkspaceAccessKey
+	AccessKey *db.AccessKey
 }
 
 // IsUser reports whether the principal is an authenticated user.
@@ -91,7 +91,7 @@ func UserFrom(ctx context.Context) (*db.User, bool) {
 }
 
 // AccessKeyFrom retrieves the workspace access key from a context.
-func AccessKeyFrom(ctx context.Context) (*db.WorkspaceAccessKey, bool) {
+func AccessKeyFrom(ctx context.Context) (*db.AccessKey, bool) {
 	p, ok := PrincipalFrom(ctx)
 	if !ok || p == nil || p.AccessKey == nil {
 		return nil, false

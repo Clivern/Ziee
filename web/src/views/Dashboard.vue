@@ -19,10 +19,6 @@
       <section class="mb-8" aria-label="Key metrics">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="stat-card">
-            <p class="stat-label">{{ $t('dashboard.api_calls_month') }}</p>
-            <p class="stat-value mt-1">{{ loading ? '…' : stats.apiCallsMonth.toLocaleString() }}</p>
-          </div>
-          <div class="stat-card">
             <p class="stat-label">{{ $t('dashboard.documents_stored') }}</p>
             <p class="stat-value mt-1">{{ loading ? '…' : stats.documentsStored.toLocaleString() }}</p>
           </div>
@@ -200,9 +196,9 @@
                 <dt class="text-sm text-theme-textLight">{{ $t('dashboard.workspace_role') }}</dt>
                 <dd class="text-sm font-medium text-theme-text capitalize text-right">{{ roleLabel }}</dd>
               </div>
-              <div class="flex justify-between gap-4 py-3 border-b border-theme-border">
-                <dt class="text-sm text-theme-textLight">{{ $t('dashboard.workspace_plan') }}</dt>
-                <dd class="text-sm font-medium text-theme-text capitalize text-right">{{ planLabel }}</dd>
+              <div v-if="isSaaS()" class="flex justify-between gap-4 py-3 border-b border-theme-border">
+                <dt class="text-sm text-theme-textLight">{{ $t('dashboard.workspace_tokens') }}</dt>
+                <dd class="text-sm font-medium text-theme-text text-right">{{ tokenBalanceLabel }}</dd>
               </div>
               <div class="flex justify-between gap-4 py-3">
                 <dt class="text-sm text-theme-textLight">{{ $t('dashboard.workspace_members') }}</dt>
@@ -228,6 +224,7 @@ import AppNav from '@/components/AppNav.vue'
 import { user } from '@/lib/auth'
 import { saveWorkspaceToStorage } from '@/utils/storage'
 import { useWorkspaceContext } from '@/lib/permission'
+import { isSaaS } from '@/lib/edition'
 
 const { t } = useI18n()
 
@@ -237,7 +234,7 @@ const WHATS_NEW_KEY = 'dashboard_whats_new_v1'
 const { currentWorkspace, canManage } = useWorkspaceContext()
 const workspace = ref({ ...currentWorkspace })
 const loading = ref(true)
-const plan = ref('hobby')
+const tokenBalance = ref(null)
 const showWhatsNew = ref(localStorage.getItem(WHATS_NEW_KEY) !== '1')
 
 function dismissWhatsNew() {
@@ -246,18 +243,13 @@ function dismissWhatsNew() {
 }
 
 const stats = ref({
-  apiCallsMonth: 0,
   documentsStored: 0,
 })
 
-const PLAN_LABELS = {
-  hobby: 'Hobby',
-  starter: 'Starter',
-  growth: 'Growth',
-  pro: 'Pro',
-}
-
-const planLabel = computed(() => PLAN_LABELS[plan.value] || plan.value || 'Hobby')
+const tokenBalanceLabel = computed(() => {
+  if (tokenBalance.value == null) return loading.value ? '…' : '—'
+  return tokenBalance.value.toLocaleString()
+})
 
 const roleLabel = computed(() => workspace.value?.role || '—')
 
@@ -268,14 +260,6 @@ const memberCount = computed(() => {
 })
 
 const attentionItems = computed(() => [
-  {
-    id: 'quota',
-    level: 'warn',
-    title: t('dashboard.attention_quota_title'),
-    description: t('dashboard.attention_quota_desc'),
-    action: t('dashboard.attention_quota_action'),
-    to: '/billing',
-  },
   {
     id: 'doc',
     level: 'error',
@@ -323,6 +307,7 @@ const attentionItems = computed(() => [
     description: t('dashboard.attention_trial_desc'),
     action: t('dashboard.attention_trial_action'),
     to: '/billing',
+    requiresSaaS: true,
   },
   {
     id: 'stale_key',
@@ -348,7 +333,7 @@ const attentionItems = computed(() => [
     action: t('dashboard.attention_empty_kb_action'),
     to: '/knowledge',
   },
-])
+].filter((item) => !item.requiresSaaS || isSaaS()))
 
 function attentionDotClass(level) {
   return {
@@ -398,7 +383,6 @@ async function loadDashboard() {
     stats_api.get(currentWorkspace.id)
       .then((res) => {
         stats.value = {
-          apiCallsMonth: res.data.apiCallsMonth ?? 0,
           documentsStored: res.data.documentsStored ?? 0,
         }
       })
@@ -412,10 +396,10 @@ async function loadDashboard() {
       .catch(() => {}),
   ]
 
-  if (canManage.value) {
+  if (canManage.value && isSaaS()) {
     tasks.push(
       billing_api.status(currentWorkspace.id)
-        .then((res) => { plan.value = res.data.plan || 'hobby' })
+        .then((res) => { tokenBalance.value = res.data.aiTokensBalance || 0 })
         .catch(() => {}),
     )
   }

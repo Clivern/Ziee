@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package cli
@@ -6,7 +6,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/actx0/ziee/core"
+	"github.com/clivern/ziee/core"
 
 	"github.com/spf13/cobra"
 )

@@ -71,12 +71,6 @@ export const workspace_api = {
   delete: (id) => api.delete(`/workspaces/${id}`),
 }
 
-export const invite_api = {
-  getByToken: (token) => api.get(`/action/invite-by-token/${encodeURIComponent(token)}`),
-  acceptByToken: (token) => api.post(`/action/accept-invite/${encodeURIComponent(token)}`),
-  rejectByToken: (token) => api.post(`/action/reject-invite/${encodeURIComponent(token)}`),
-}
-
 export const workspace_member_api = {
   list: (workspaceId, params) => api.get(`/workspaces/${workspaceId}/members`, { params }),
   updateRole: (workspaceId, userId, data) => api.put(`/workspaces/${workspaceId}/members/${userId}`, data),
@@ -120,4 +114,9 @@ export const document_api = {
     timeout: 60000,
   }),
   delete: (workspaceId, documentId) => api.delete(`/workspaces/${workspaceId}/documents/${documentId}`),
+}
+
+export const github_api = {
+  listInstallations: () => api.get('/action/github/installations'),
+  attachInstallation: (id, data) => api.post(`/action/github/installations/${id}/attach`, data),
 }

@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package stripe
@@ -9,6 +9,6 @@ import (
 
 var (
 	ErrBillingDisabled      = errors.New("stripe billing is not configured")
-	ErrInvalidPlan          = errors.New("invalid billing plan")
+	ErrInvalidAmount        = errors.New("invalid billing amount")
 	ErrWebhookNotConfigured = errors.New("stripe webhook secret is not configured")
 )

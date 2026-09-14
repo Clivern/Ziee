@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package core
@@ -16,15 +16,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/actx0/ziee/api"
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/middleware"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/qdrant"
-	"github.com/actx0/ziee/pkg/storage"
-	"github.com/actx0/ziee/service/knowledge"
-	"github.com/actx0/ziee/task"
+	"github.com/clivern/ziee/api"
+	"github.com/clivern/ziee/conf"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/middleware"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/github/app"
 
 	"github.com/go-chi/chi/v5"
 	cmid "github.com/go-chi/chi/v5/middleware"
@@ -61,18 +58,18 @@ func SetupServer(Static embed.FS) http.Handler {
 		r.Post("/api/v1/public/action/logout", api.LogoutAction)                            // user logout
 		r.Get("/api/v1/public/action/oauth/github", api.GitHubOAuthStartAction)             // start GitHub OAuth
 		r.Get("/api/v1/public/action/oauth/github/callback", api.GitHubOAuthCallbackAction) // GitHub OAuth callback
-		r.Post("/api/v1/public/action/stripe/webhook", api.StripeWebhookAction)             // Stripe billing webhook
 		r.Post("/api/v1/public/action/github/webhook", api.GitHubWebhookAction)             // GitHub App webhook
+		if conf.IsSaaS() {
+			r.Post("/api/v1/public/action/stripe/webhook", api.StripeWebhookAction) // Stripe billing webhook
+		}
 	})
 	r.Get("/api/v1/me", api.GetMeAction) // current authenticated user
-	r.Group(func(r chi.Router) {         // user profile and workspace invites
+	r.Group(func(r chi.Router) {         // user profile and GitHub App installations
 		r.Use(middleware.Protect(middleware.Config{Roles: []string{db.UserRoleAdmin, db.UserRoleRegular}}))
-		r.Get("/api/v1/action/profile", api.GetProfileAction)                                        // get user profile
-		r.Put("/api/v1/action/profile", api.UpdateProfileAction)                                     // update user profile
-		r.Get("/api/v1/action/invites", api.ListUserInvitesAction)                                   // list pending workspace invites
-		r.Get("/api/v1/action/invite-by-token/{token}", api.GetAuthenticatedUserInviteByTokenAction) // get invite details by token
-		r.Post("/api/v1/action/accept-invite/{token}", api.AcceptUserInviteByTokenAction)            // accept workspace invite
-		r.Post("/api/v1/action/reject-invite/{token}", api.RejectUserInviteByTokenAction)            // reject workspace invite
+		r.Get("/api/v1/action/profile", api.GetProfileAction)                                                     // get user profile
+		r.Put("/api/v1/action/profile", api.UpdateProfileAction)                                                  // update user profile
+		r.Get("/api/v1/action/github/installations", api.ListGitHubInstallationsAction)                           // list pending GitHub App installations for the user
+		r.Post("/api/v1/action/github/installations/{installationId}/attach", api.AttachGitHubInstallationAction) // attach a GitHub App installation to a workspace
 	})
 	r.Group(func(r chi.Router) { // app settings — admin only
 		r.Use(middleware.Protect(middleware.Config{Roles: []string{db.UserRoleAdmin}}))
@@ -94,7 +91,6 @@ func SetupServer(Static embed.FS) http.Handler {
 
 	r.Route("/api/v1/workspaces/{workspaceId}", func(r chi.Router) { // workspace-scoped resources
 		r.Use(middleware.Protect(middleware.Config{Workspace: true}))
-		r.Use(middleware.TrackWorkspaceAPICall())
 
 		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetWorkspace})).Get("/", api.GetWorkspaceAction)          // get workspace
 		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspace})).Put("/", api.UpdateWorkspaceAction)    // update workspace
@@ -114,16 +110,18 @@ func SetupServer(Static embed.FS) http.Handler {
 		})
 
 		r.Route("/keys", func(r chi.Router) {
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreateWorkspaceAccessKey})).Post("/", api.CreateWorkspaceAccessKeyAction)          // create workspace access key
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanListWorkspaceAccessKeys})).Get("/", api.ListWorkspaceAccessKeysAction)             // list workspace access keys
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetWorkspaceAccessKey})).Get("/{keyId}", api.GetWorkspaceAccessKeyAction)          // get workspace access key
-			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeleteWorkspaceAccessKey})).Delete("/{keyId}", api.DeleteWorkspaceAccessKeyAction) // delete workspace access key
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanCreateAccessKey})).Post("/", api.CreateAccessKeyAction)          // create workspace access key
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanListAccessKeys})).Get("/", api.ListAccessKeysAction)             // list workspace access keys
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanGetAccessKey})).Get("/{keyId}", api.GetAccessKeyAction)          // get workspace access key
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanDeleteAccessKey})).Delete("/{keyId}", api.DeleteAccessKeyAction) // delete workspace access key
 		})
 
-		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing", api.GetBillingStatusAction)                               // get billing status
-		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing/usage", api.GetBillingUsageAction)                          // get billing usage
-		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/checkout", api.CreateBillingCheckoutAction) // start Stripe checkout
-		r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/portal", api.CreateBillingPortalAction)     // open Stripe customer portal
+		if conf.IsSaaS() {
+			r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing", api.GetBillingStatusAction)                               // get billing status
+			r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspaceBilling})).Get("/billing/usage", api.GetBillingUsageAction)                          // get billing usage
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/checkout", api.CreateBillingCheckoutAction) // start Stripe checkout
+			r.With(middleware.Protect(middleware.Config{User: true, Perm: module.CanUpdateWorkspaceBilling})).Post("/billing/portal", api.CreateBillingPortalAction)     // open Stripe customer portal
+		}
 
 		r.With(middleware.Protect(middleware.Config{Perm: module.CanGetWorkspace})).Get("/stats", api.GetWorkspaceStatsAction) // get workspace stats
 
@@ -140,12 +138,7 @@ func SetupServer(Static embed.FS) http.Handler {
 		})
 	})
 
-	r.With(middleware.BasicAuth(
-		viper.GetString("app.metrics.username"),
-		viper.GetString("app.metrics.secret"),
-	)).Get(
-		"/api/v1/public/_metrics", promhttp.Handler().ServeHTTP, // Prometheus metrics
-	)
+	r.With(middleware.BasicAuth(viper.GetString("app.metrics.username"), viper.GetString("app.metrics.secret"))).Get("/api/v1/public/_metrics", promhttp.Handler().ServeHTTP) // Prometheus metrics
 
 	dist, err := fs.Sub(Static, "web/dist")
 	if err != nil {
@@ -184,46 +177,15 @@ func RunServer(handler http.Handler) error {
 		return fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	module.RegisterEventListeners()
-
-	asyr, err := module.Start(db.NewAsyncTaskRepository(db.GetDB(true)))
+	err = app.Init(module.NewCache(db.NewKVRepository(db.GetDB())))
 	if err != nil {
-		return fmt.Errorf("failed to start async worker pool: %w", err)
+		return fmt.Errorf("failed to initialize github app: %w", err)
 	}
 
-	store, err := storage.New()
+	err = module.StartBus()
 	if err != nil {
-		return fmt.Errorf("failed to initialize document storage: %w", err)
+		return fmt.Errorf("failed to start nats bus: %w", err)
 	}
-
-	vdb, err := qdrant.New()
-	if err != nil {
-		return fmt.Errorf("failed to initialize qdrant: %w", err)
-	}
-
-	defer func() {
-		err := vdb.Close()
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Error closing qdrant client")
-		}
-	}()
-
-	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents: db.NewWorkspaceDocumentRepository(
-			db.GetDB(true),
-		),
-		Embed:         ai.NewEmbedClient(),
-		Vectors:       vdb,
-		Store:         store,
-		Usage:         db.NewUsageRepository(db.GetDB(false)),
-		Subscriptions: db.NewSubscriptionRepository(db.GetDB(false)),
-	})
-
-	task.Register(asyr, task.Dependencies{
-		Knowledge: ksvc,
-	})
 
 	defer func() {
 		err := db.CloseDB()
@@ -234,14 +196,7 @@ func RunServer(handler http.Handler) error {
 		}
 	}()
 
-	defer func() {
-		err := asyr.Stop(30 * time.Second)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Error stopping async worker pool")
-		}
-	}()
+	defer module.StopBus()
 
 	timeout := time.Duration(viper.GetInt("app.timeout")) * time.Second
 
@@ -260,6 +215,7 @@ func RunServer(handler http.Handler) error {
 	go func() {
 		log.Info().
 			Int("port", viper.GetInt("app.port")).
+			Str("edition", conf.Edition()).
 			Msg("Starting HTTP server")
 
 		err := srv.ListenAndServe()

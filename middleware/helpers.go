@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package middleware
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/module"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 )
 
 const (
@@ -32,7 +32,7 @@ func ShouldSkipAuth(path string) bool {
 }
 
 // GetPrincipal returns the authenticated user or workspace access key from context.
-func GetPrincipal(r *http.Request) (*db.User, *db.WorkspaceAccessKey, bool) {
+func GetPrincipal(r *http.Request) (*db.User, *db.AccessKey, bool) {
 	p, ok := module.PrincipalFrom(r.Context())
 	if !ok || p == nil {
 		return nil, nil, false
@@ -46,7 +46,7 @@ func GetUserFromContext(ctx context.Context) (*db.User, bool) {
 }
 
 // GetAccessKeyFromContext retrieves the workspace access key from the request context
-func GetAccessKeyFromContext(ctx context.Context) (*db.WorkspaceAccessKey, bool) {
+func GetAccessKeyFromContext(ctx context.Context) (*db.AccessKey, bool) {
 	return module.AccessKeyFrom(ctx)
 }
 
@@ -63,7 +63,7 @@ func WithUserContext(ctx context.Context, user *db.User) context.Context {
 }
 
 // WithAccessKeyContext sets the workspace access key in the request context
-func WithAccessKeyContext(ctx context.Context, key *db.WorkspaceAccessKey) context.Context {
+func WithAccessKeyContext(ctx context.Context, key *db.AccessKey) context.Context {
 	ctx = module.WithPrincipal(ctx, &module.Principal{AccessKey: key})
 	return context.WithValue(ctx, ContextKeyAccessKey, key)
 }

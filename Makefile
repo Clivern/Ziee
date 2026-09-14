@@ -104,21 +104,6 @@ vet:
 	$(go) vet $(pkgs)
 
 
-
-
-## docs: Clone the documentation site into docs/.
-.PHONY: docs
-docs:
-	@if [ -d docs/.git ]; then \
-		echo "docs/ already cloned"; \
-	elif [ -e docs ]; then \
-		echo "docs/ exists but is not a git repository; remove it and run make docs again"; \
-		exit 1; \
-	else \
-		git clone git@github.com:ziee/adoc.git docs; \
-	fi
-
-
 ## coverage: Create HTML coverage report
 .PHONY: coverage
 coverage:
@@ -127,6 +112,17 @@ coverage:
 	$(go) test -mod=readonly -coverprofile=cover.out $(pkgs)
 	go tool cover -html=cover.out -o coverage.html
 
+
+## deps: Start local Postgres, Qdrant, and NATS
+.PHONY: deps
+deps:
+	@echo ">> ============= Start Local Dependencies ============= <<"
+	container system start
+	./bin/pgsql start
+	./bin/qdrant start --api-key 871c1580-9f7a-4f89-bd24-536a4b570c2b
+	./bin/nats start
+
+
 ## run: Run the Server
 .PHONY: run
 run:
@@ -134,6 +130,12 @@ run:
 	$(go) run ziee.go migrate up -c config.test.yml
 	$(go) run ziee.go server -c config.test.yml
 
+
+## consumer: Run the NATS consumer
+.PHONY: consumer
+consumer:
+	@echo ">> ============= Run NATS Consumer ============= <<"
+	$(go) run ziee.go worker -c config.test.yml
 
 
 ## ci: Run all CI tests.

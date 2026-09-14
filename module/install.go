@@ -1,0 +1,200 @@
+// Copyright 2026 Ziee. All rights reserved.
+// License can be found in the LICENSE file.
+
+package module
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/github/app"
+
+	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
+)
+
+var ErrInstallationNotFound = errors.New("installation not found")
+
+// InstallationResponse is a GitHub App installation shaped for API responses.
+type InstallationResponse struct {
+	Id                  db.Id  `json:"id"`
+	GitHubId            int64  `json:"githubId"`
+	GitHubUserId        string `json:"githubUserId"`
+	AccountId           int64  `json:"accountId"`
+	AccountLogin        string `json:"accountLogin"`
+	AccountType         string `json:"accountType"`
+	WorkspaceId         db.Id  `json:"workspaceId"`
+	Status              string `json:"status"`
+	RepositorySelection string `json:"repositorySelection"`
+	HTMLURL             string `json:"htmlUrl"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
+}
+
+// AttachInstallationRequest is the body for attaching an installation to a workspace.
+type AttachInstallationRequest struct {
+	WorkspaceId string `json:"workspaceId" validate:"required" label:"Workspace"`
+}
+
+// Installation is the module for GitHub App installations.
+type Installation struct {
+	InstallationRepository db.GitHubInstallationRepository
+	RepoRepository         db.RepositoriesRepository
+}
+
+// NewInstallation creates an installation module with the given stores.
+func NewInstallation(installations db.GitHubInstallationRepository, repos db.RepositoriesRepository) *Installation {
+	return &Installation{
+		InstallationRepository: installations,
+		RepoRepository:         repos,
+	}
+}
+
+// GetByGitHubId returns a GitHub App installation by GitHub installation id.
+func (i *Installation) GetByGitHubId(githubId int64) (*db.GitHubInstallation, error) {
+	item, err := i.InstallationRepository.GetByGitHubId(githubId)
+	if err != nil {
+		return nil, fmt.Errorf("get installation: %w", err)
+	}
+
+	return item, nil
+}
+
+// Upsert stores a GitHub App installation.
+func (i *Installation) Upsert(installation *db.GitHubInstallation) error {
+	err := i.InstallationRepository.Upsert(installation)
+	if err != nil {
+		return fmt.Errorf("upsert installation: %w", err)
+	}
+
+	log.Info().
+		Str("id", installation.Id.String()).
+		Int64("githubId", installation.GitHubId).
+		Str("githubUserId", installation.GitHubUserId).
+		Str("status", installation.Status).
+		Msg("GitHub installation upserted")
+
+	return nil
+}
+
+// Delete removes an installation and its repositories.
+func (i *Installation) Delete(githubId int64) error {
+	err := i.RepoRepository.DeleteByInstallationId(githubId)
+	if err != nil {
+		return fmt.Errorf("delete installation repos: %w", err)
+	}
+
+	err = i.InstallationRepository.DeleteByGitHubId(githubId)
+	if err != nil {
+		return fmt.Errorf("delete installation: %w", err)
+	}
+
+	log.Info().
+		Int64("githubId", githubId).
+		Msg("GitHub installation deleted")
+
+	return nil
+}
+
+// ListPending lists pending GitHub App installations for a GitHub user to attach to a workspace.
+func (i *Installation) ListPending(githubUserId string) ([]*InstallationResponse, error) {
+	list, err := i.InstallationRepository.ListPendingByGitHubUserId(githubUserId)
+	if err != nil {
+		return nil, fmt.Errorf("list pending installations: %w", err)
+	}
+
+	installations := make([]*InstallationResponse, 0, len(list))
+	for _, item := range list {
+		installations = append(installations, &InstallationResponse{
+			Id:                  item.Id,
+			GitHubId:            item.GitHubId,
+			GitHubUserId:        item.GitHubUserId,
+			AccountId:           item.AccountId,
+			AccountLogin:        item.AccountLogin,
+			AccountType:         item.AccountType,
+			WorkspaceId:         item.WorkspaceId,
+			Status:              item.Status,
+			RepositorySelection: item.RepositorySelection,
+			HTMLURL:             item.HTMLURL,
+			CreatedAt:           item.CreatedAt.UTC().Format(time.RFC3339),
+			UpdatedAt:           item.UpdatedAt.UTC().Format(time.RFC3339),
+		})
+	}
+
+	return installations, nil
+}
+
+// Attach links a GitHub App installation to a workspace and stores its repos.
+func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, githubUserId string) error {
+	item, err := i.InstallationRepository.GetById(id)
+	if err != nil {
+		return fmt.Errorf("get installation: %w", err)
+	}
+	if lo.FromPtr(item).GitHubUserId != githubUserId {
+		return ErrInstallationNotFound
+	}
+
+	repositories, err := app.Get().ListRepositories(ctx, item.GitHubId)
+	if err != nil {
+		return fmt.Errorf("list installation repos: %w", err)
+	}
+
+	for _, repository := range repositories {
+		meta, err := json.Marshal(repository)
+		if err != nil {
+			return fmt.Errorf("encode repo meta: %w", err)
+		}
+		raw := string(meta)
+		owner, _, _ := strings.Cut(repository.FullName, "/")
+
+		err = i.RepoRepository.Upsert(&db.Repository{
+			WorkspaceId:    workspaceId,
+			InstallationId: item.GitHubId,
+			GitHubId:       repository.ID,
+			NodeId:         repository.NodeID,
+			Owner:          owner,
+			Name:           repository.Name,
+			FullName:       repository.FullName,
+			Private:        repository.Private,
+			Meta:           &raw,
+		})
+		if err != nil {
+			return fmt.Errorf("store installation repo: %w", err)
+		}
+
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
+			"workspaceId":    workspaceId.String(),
+			"installationId": strconv.FormatInt(item.GitHubId, 10),
+			"githubId":       strconv.FormatInt(repository.ID, 10),
+			"fullName":       repository.FullName,
+			"name":           repository.Name,
+		}, workspaceId)
+
+		if err != nil {
+			log.Error().
+				Err(err).
+				Int64("installationId", item.GitHubId).
+				Str("repository", repository.FullName).
+				Msg("Failed to enqueue repository bootstrap task")
+		}
+	}
+
+	err = i.InstallationRepository.Attach(id, workspaceId)
+	if err != nil {
+		return fmt.Errorf("attach installation: %w", err)
+	}
+
+	log.Info().
+		Str("id", id.String()).
+		Str("workspaceId", workspaceId.String()).
+		Int("repositories", len(repositories)).
+		Msg("GitHub installation attached")
+
+	return nil
+}

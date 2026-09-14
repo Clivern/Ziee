@@ -4,8 +4,8 @@
       <div class="flex justify-between h-14">
         <div class="flex items-center">
           <div class="flex-shrink-0 flex items-center">
-            <router-link to="/">
-              <img src="/logo.png" alt="Ctx Logo" class="h-8 w-auto">
+            <router-link to="/" class="text-theme-text">
+              <AppLogo :alt="$t('common.logo_alt')" class="h-8 w-auto" />
             </router-link>
           </div>
           <div class="hidden md:ml-8 md:flex md:space-x-1">
@@ -123,6 +123,8 @@ import { removeWorkspaceFromStorage, loadWorkspaceFromStorage } from '@/utils/st
 import { user, clearUser } from '@/lib/auth'
 import { applyLocale, applyTheme, applyUserPreferences, readStoredLocale, readStoredTheme } from '@/lib/preferences'
 import { canManageWorkspace } from '@/lib/permission'
+import { isSaaS } from '@/lib/edition'
+import AppLogo from '@/components/AppLogo.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -151,14 +153,15 @@ const canManageWorkspaceNav = computed(() => {
 const navItems = computed(() => {
   return [
     { to: '/dashboard', label: t('nav.dashboard') },
+    { to: '/repositories', label: t('nav.repositories') },
     { to: '/knowledge', label: 'Knowledge' },
     { to: '/integrations', label: 'Integrations', requiresManage: true },
     { to: '/audits', label: t('nav.audits'), requiresManage: true },
-    { to: '/billing', label: t('nav.billing'), requiresManage: true },
+    { to: '/billing', label: t('nav.billing'), requiresManage: true, requiresSaaS: true },
     { to: '/members', label: 'Members', requiresManage: true },
     { to: '/settings', label: t('nav.settings'), requiresManage: true },
     { to: '/workspaces', label: 'Workspaces' }
-  ].filter((item) => !item.requiresManage || canManageWorkspaceNav.value)
+  ].filter((item) => (!item.requiresManage || canManageWorkspaceNav.value) && (!item.requiresSaaS || isSaaS()))
 })
 
 function isActive(path) {

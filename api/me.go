@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package api
@@ -7,10 +7,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/locale"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -31,7 +31,7 @@ func GetMeAction(w http.ResponseWriter, r *http.Request) {
 	mm := module.NewMe(
 		db.NewAPIKeyRepository(db.GetDB()),
 		db.NewUserRepository(db.GetDB()),
-		db.NewWorkspaceAccessKeyRepository(db.GetDB()),
+		db.NewAccessKeyRepository(db.GetDB()),
 	)
 
 	// Check if the request is for an API key

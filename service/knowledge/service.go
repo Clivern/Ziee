@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 //
 // Knowledge service: document indexing and retrieval.
@@ -12,17 +12,17 @@ package knowledge
 import (
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/qdrant"
-	"github.com/actx0/ziee/pkg/storage"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/qdrant"
+	"github.com/clivern/ziee/pkg/storage"
 )
 
 // Dependencies are the collaborators required by the knowledge service.
 type Dependencies struct {
 	Embed         *ai.EmbedClient
 	Vectors       *qdrant.Client
-	Documents     db.WorkspaceDocumentRepository
+	Documents     db.DocumentRepository
 	Store         storage.Store
 	Usage         db.UsageRepository
 	Subscriptions db.SubscriptionRepository
@@ -32,7 +32,7 @@ type Dependencies struct {
 type Service struct {
 	embed         *ai.EmbedClient
 	vectors       *qdrant.Client
-	documents     db.WorkspaceDocumentRepository
+	documents     db.DocumentRepository
 	store         storage.Store
 	usage         db.UsageRepository
 	subscriptions db.SubscriptionRepository
@@ -51,8 +51,8 @@ func New(deps Dependencies) *Service {
 }
 
 // MarkAsFailed marks a workspace document as failed
-func (s *Service) MarkAsFailed(document *db.WorkspaceDocument) {
-	document.Status = db.WorkspaceDocumentStatusFailed
+func (s *Service) MarkAsFailed(document *db.Document) {
+	document.Status = db.DocumentStatusFailed
 	now := time.Now().UTC()
 	document.ProcessedAt = &now
 

@@ -34,7 +34,6 @@ coverage.html
 ziee
 
 # Documentation (clone from git@github.com:ziee/adoc.git)
-docs/
 .ruff_cache/
 
 # Local commit helper
@@ -43,3 +42,10 @@ commit
 # Local tunnel config (contains authtoken)
 ngrok.yml
 ngrok
+
+# GitHub App private key
+*.pem
+
+# Local GitHub webhook dumps
+events/*
+!events/.gitkeep

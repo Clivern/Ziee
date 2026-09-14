@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package api
@@ -7,15 +7,15 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/actx0/ziee/conf"
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/locale"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/qdrant"
-	"github.com/actx0/ziee/pkg/storage"
-	"github.com/actx0/ziee/pkg/util"
-	"github.com/actx0/ziee/service/knowledge"
+	"github.com/clivern/ziee/conf"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/qdrant"
+	"github.com/clivern/ziee/pkg/storage"
+	"github.com/clivern/ziee/pkg/util"
+	"github.com/clivern/ziee/service/knowledge"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
@@ -50,7 +50,7 @@ func UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		store,
 	)
@@ -100,7 +100,7 @@ func ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		store,
 	)
@@ -163,7 +163,7 @@ func DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		store,
 	)
@@ -237,7 +237,7 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents:     db.NewWorkspaceDocumentRepository(db.GetDB()),
+		Documents:     db.NewDocumentRepository(db.GetDB()),
 		Embed:         ai.NewEmbedClient(),
 		Vectors:       vdb,
 		Store:         store,
@@ -246,7 +246,7 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	})
 
 	dm := module.NewDocument(
-		db.NewWorkspaceDocumentRepository(db.GetDB()),
+		db.NewDocumentRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 		nil,
 	)

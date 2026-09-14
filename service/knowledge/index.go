@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package knowledge
@@ -9,12 +9,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/migration"
-	"github.com/actx0/ziee/pkg/ai"
-	"github.com/actx0/ziee/pkg/chunk"
-	"github.com/actx0/ziee/pkg/qdrant"
-	"github.com/actx0/ziee/pkg/storage"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/migration"
+	"github.com/clivern/ziee/pkg/ai"
+	"github.com/clivern/ziee/pkg/chunk"
+	"github.com/clivern/ziee/pkg/qdrant"
+	"github.com/clivern/ziee/pkg/storage"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -100,26 +101,28 @@ func (s *Service) Index(ctx context.Context, documentId db.Id) error {
 			Msg("Failed to record AI usage")
 	}
 
-	if sub != nil && sub.CurrentPeriodStart != nil && sub.CurrentPeriodEnd != nil {
-		// Increment AI tokens usage
+	if sub != nil {
+		start, end := util.CurrentMonthPeriod()
+
 		s.usage.IncrementByPeriod(
 			document.WorkspaceId,
 			db.UsageTypeAITokens,
-			sub.CurrentPeriodStart.UTC(),
-			sub.CurrentPeriodEnd.UTC(),
+			start,
+			end,
 			totalTokens,
 			db.UsageUnitTokens,
 		)
 
-		// Increment AI cost usage
 		s.usage.IncrementByPeriod(
 			document.WorkspaceId,
 			db.UsageTypeAICost,
-			sub.CurrentPeriodStart.UTC(),
-			sub.CurrentPeriodEnd.UTC(),
+			start,
+			end,
 			totalCost,
 			db.UsageUnitNanoUSD,
 		)
+
+		s.subscriptions.ConsumeTokens(document.WorkspaceId, totalTokens)
 	}
 
 	log.Info().
@@ -149,7 +152,7 @@ func (s *Service) Index(ctx context.Context, documentId db.Id) error {
 		return fmt.Errorf("%w: upsert vectors: %v", ErrIndexFailed, err)
 	}
 
-	document.Status = db.WorkspaceDocumentStatusIndexed
+	document.Status = db.DocumentStatusIndexed
 	document.ProcessedAt = new(time.Now().UTC())
 
 	return s.documents.Update(document)

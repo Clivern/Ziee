@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package resend
@@ -6,6 +6,8 @@ package resend
 import (
 	"fmt"
 	"strings"
+
+	"github.com/clivern/ziee/conf"
 
 	resendgo "github.com/resend/resend-go/v2"
 	"github.com/rs/zerolog/log"
@@ -26,9 +28,9 @@ func NewMailer() *Mailer {
 	}
 }
 
-// SendInviteEmail sends the user invite email with the sign-up link.
+// SendInviteEmail sends the user invite email with the sign-in link.
 func (m *Mailer) SendInviteEmail(to, inviteLink, platformName string) error {
-	return m.sendTemplate(to, fmt.Sprintf("You're invited to %s", platformName), "invite.html", map[string]string{
+	return m.SendTemplate(to, fmt.Sprintf("You're invited to %s", platformName), conf.InviteEmail, map[string]string{
 		"PlatformName": platformName,
 		"InviteLink":   inviteLink,
 	})
@@ -36,7 +38,7 @@ func (m *Mailer) SendInviteEmail(to, inviteLink, platformName string) error {
 
 // SendPasswordResetEmail sends the password reset email with the reset link.
 func (m *Mailer) SendPasswordResetEmail(to, resetLink, platformName string) error {
-	return m.sendTemplate(to, fmt.Sprintf("Reset your password - %s", platformName), "rpwd.html", map[string]string{
+	return m.SendTemplate(to, fmt.Sprintf("Reset your password - %s", platformName), conf.ResetPwdEmail, map[string]string{
 		"PlatformName": platformName,
 		"ResetLink":    resetLink,
 	})
@@ -44,7 +46,7 @@ func (m *Mailer) SendPasswordResetEmail(to, resetLink, platformName string) erro
 
 // SendWelcomeEmail sends a welcome email after account registration.
 func (m *Mailer) SendWelcomeEmail(to, name, loginLink, platformName string) error {
-	return m.sendTemplate(to, fmt.Sprintf("Welcome to %s", platformName), "welcome.html", map[string]string{
+	return m.SendTemplate(to, fmt.Sprintf("Welcome to %s", platformName), conf.WelcomeEmail, map[string]string{
 		"PlatformName": platformName,
 		"UserName":     name,
 		"LoginLink":    loginLink,
@@ -53,16 +55,16 @@ func (m *Mailer) SendWelcomeEmail(to, name, loginLink, platformName string) erro
 
 // SendVerifyEmail sends an email verification message after account registration.
 func (m *Mailer) SendVerifyEmail(to, name, verifyLink, platformName string) error {
-	return m.sendTemplate(to, fmt.Sprintf("Verify your email - %s", platformName), "vemail.html", map[string]string{
+	return m.SendTemplate(to, fmt.Sprintf("Verify your email - %s", platformName), conf.VerifyEmail, map[string]string{
 		"PlatformName": platformName,
 		"UserName":     name,
 		"VerifyLink":   verifyLink,
 	})
 }
 
-// sendTemplate sends an email using a named template.
-func (m *Mailer) sendTemplate(to, subject, templateName string, data any) error {
-	htmlBody, err := renderTemplate(templateName, data)
+// SendTemplate sends an email using a template body.
+func (m *Mailer) SendTemplate(to, subject, body string, data any) error {
+	html, err := RenderTemplate(body, data)
 	if err != nil {
 		return err
 	}
@@ -72,7 +74,7 @@ func (m *Mailer) sendTemplate(to, subject, templateName string, data any) error 
 			From:    m.from,
 			To:      []string{to},
 			Subject: subject,
-			Html:    htmlBody,
+			Html:    html,
 		},
 	)
 	if err != nil {

@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
@@ -7,9 +7,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/pkg/stripe"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/pkg/util"
 )
 
 var (
@@ -101,14 +100,8 @@ func (w *Workspace) CreateWorkspace(req *CreateWorkspaceRequest, user *db.User) 
 		return nil, err
 	}
 
-	pst := time.Now().UTC()
-	pen := pst.AddDate(0, 1, 0)
 	err = w.SubscriptionRepository.Create(&db.Subscription{
-		WorkspaceId:        workspace.Id,
-		Plan:               stripe.PlanHobby,
-		Status:             BillingStatusActive,
-		CurrentPeriodStart: &pst,
-		CurrentPeriodEnd:   &pen,
+		WorkspaceId: workspace.Id,
 	})
 	if err != nil {
 		return nil, err

@@ -21,44 +21,56 @@
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <section class="overflow-hidden rounded-xl border border-theme-border bg-white shadow-sm xl:col-span-2">
             <div class="border-b border-theme-border bg-primary-50/40 px-6 py-4">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p class="text-xs font-medium uppercase tracking-wider text-theme-textLight">{{ $t('billing_page.your_plan') }}</p>
-                  <h2 class="mt-1 text-2xl font-semibold text-theme-text">{{ currentPlan.name }}</h2>
-                </div>
-                <span
-                  class="rounded-full px-3 py-1 text-xs font-medium"
-                  :class="isPaidPlan ? 'bg-primary-100 text-theme-text' : 'bg-theme-hover text-theme-textLight'"
-                >
-                  {{ isPaidPlan ? $t('billing_page.paid_plan') : $t('billing_page.free_plan') }}
-                </span>
-              </div>
+              <p class="text-xs font-medium uppercase tracking-wider text-theme-textLight">{{ $t('billing_page.credits_label') }}</p>
+              <h2 class="mt-1 text-2xl font-semibold text-theme-text">{{ formatCompact(tokenBalance) }}</h2>
+              <p class="mt-1 text-sm text-theme-textLight">{{ $t('billing_page.credits_available') }}</p>
             </div>
 
             <div class="p-6">
-              <p class="text-3xl font-semibold text-theme-text">
-                {{ currentPlan.price }}
-                <span class="text-base font-normal text-theme-textLight">{{ currentPlan.unit }}</span>
+              <p class="text-sm leading-6 text-theme-textLight">
+                {{ $t('billing_page.credits_description', { rate: formatNumber(tokensPerUsd) }) }}
               </p>
-              <p class="mt-3 text-sm leading-6 text-theme-textLight">{{ currentPlan.description }}</p>
 
-              <h3 class="mt-6 text-sm font-semibold text-theme-text">{{ $t('billing_page.included_in_plan') }}</h3>
-              <ul class="mt-3 space-y-2.5">
-                <li
-                  v-for="feature in currentPlan.features"
-                  :key="feature"
-                  class="flex items-start gap-2.5 text-sm text-theme-textLight"
+              <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <button
+                  v-for="preset in amountPresets"
+                  :key="preset"
+                  type="button"
+                  class="rounded-lg border px-4 py-3 text-sm font-medium transition-colors"
+                  :class="amountCents === preset * 100
+                    ? 'border-primary-800 bg-primary-50 text-theme-text'
+                    : 'border-theme-border bg-white text-theme-text hover:bg-theme-hover'"
+                  @click="selectPreset(preset)"
                 >
-                  <svg class="mt-0.5 h-4 w-4 shrink-0 text-theme-text" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>{{ feature }}</span>
-                </li>
-              </ul>
+                  ${{ preset }}
+                </button>
+              </div>
+
+              <label class="mt-5 block">
+                <span class="form-label">{{ $t('billing_page.custom_amount') }}</span>
+                <input
+                  v-model="customAmount"
+                  type="number"
+                  min="1"
+                  step="1"
+                  class="input-field mt-1"
+                  :placeholder="$t('billing_page.custom_amount_placeholder')"
+                  @input="onCustomAmount"
+                />
+              </label>
+
+              <p class="mt-3 text-sm text-theme-textLight">
+                {{ $t('billing_page.tokens_you_get', { tokens: formatCompact(tokensForSelection) }) }}
+              </p>
 
               <div class="mt-8 flex flex-wrap gap-3">
-                <button type="button" class="btn-primary" @click="planModalOpen = true">
-                  {{ isPaidPlan ? $t('billing_page.change_plan') : $t('billing_page.upgrade_plan') }}
+                <button
+                  type="button"
+                  class="btn-primary"
+                  :disabled="checkoutLoading || tokensForSelection <= 0"
+                  @click="buyCredits"
+                >
+                  {{ checkoutLoading ? $t('billing_page.opening') : $t('billing_page.buy_tokens') }}
                 </button>
                 <button
                   v-if="canManageStripe"
@@ -75,34 +87,13 @@
 
           <aside class="space-y-6">
             <section class="rounded-xl border border-theme-border bg-white p-6 shadow-sm">
-              <h2 class="text-lg font-semibold text-theme-text mb-4">{{ $t('billing_page.subscription') }}</h2>
-              <dl class="space-y-0">
-                <div class="flex justify-between gap-4 border-b border-theme-border py-3">
-                  <dt class="text-sm text-theme-textLight">{{ $t('billing_page.plan_label') }}</dt>
-                  <dd class="text-sm font-medium text-theme-text">{{ currentPlan.name }}</dd>
-                </div>
-                <div class="flex justify-between gap-4 border-b border-theme-border py-3">
-                  <dt class="text-sm text-theme-textLight">{{ $t('billing_page.status_label') }}</dt>
-                  <dd class="text-sm font-medium text-theme-text">{{ statusLabel }}</dd>
-                </div>
-                <div v-if="billingStatus.updatedAt" class="flex justify-between gap-4 py-3">
-                  <dt class="text-sm text-theme-textLight">{{ $t('billing_page.last_updated') }}</dt>
-                  <dd class="text-sm font-medium text-theme-text">{{ formatDate(billingStatus.updatedAt) }}</dd>
-                </div>
-              </dl>
-            </section>
-
-            <section class="rounded-xl border border-theme-border bg-white p-6 shadow-sm">
-              <h2 class="text-lg font-semibold text-theme-text mb-4">{{ $t('billing_page.payment_cancellation') }}</h2>
+              <h2 class="text-lg font-semibold text-theme-text mb-4">{{ $t('billing_page.payment') }}</h2>
               <p class="text-sm leading-6 text-theme-textLight">
                 <template v-if="canManageStripe">
                   {{ $t('billing_page.payment_manage_desc') }}
                 </template>
-                <template v-else-if="isPaidPlan">
-                  {{ $t('billing_page.payment_syncing_desc') }}
-                </template>
                 <template v-else>
-                  {{ $t('billing_page.payment_upgrade_desc') }}
+                  {{ $t('billing_page.payment_buy_desc') }}
                 </template>
               </p>
               <button
@@ -112,17 +103,7 @@
                 :disabled="!canManageStripe || portalLoading"
                 @click="openPortal"
               >
-                {{ canManageStripe ? (portalLoading ? $t('billing_page.opening') : $t('billing_page.open_billing_portal')) : $t('billing_page.available_after_upgrade') }}
-              </button>
-            </section>
-
-            <section v-if="!isPaidPlan" class="rounded-lg border border-theme-border bg-primary-50/50 p-5">
-              <h2 class="text-sm font-semibold text-theme-text">{{ $t('billing_page.ready_for_more') }}</h2>
-              <p class="mt-2 text-sm leading-6 text-theme-textLight">
-                {{ $t('billing_page.starter_pitch') }}
-              </p>
-              <button type="button" class="btn-primary mt-4 w-full" @click="planModalOpen = true">
-                {{ $t('billing_page.view_plans') }}
+                {{ canManageStripe ? (portalLoading ? $t('billing_page.opening') : $t('billing_page.open_billing_portal')) : $t('billing_page.available_after_purchase') }}
               </button>
             </section>
           </aside>
@@ -134,11 +115,11 @@
               <div>
                 <h2 class="text-lg font-semibold text-theme-text">{{ $t('billing_page.usage') }}</h2>
                 <p class="mt-1 text-sm text-theme-textLight">
-                  {{ $t('billing_page.usage_subtitle', { plan: currentPlan.name }) }}
+                  {{ $t('billing_page.usage_subtitle') }}
                 </p>
               </div>
               <span class="rounded-full bg-theme-hover px-3 py-1 text-xs font-medium text-theme-textLight">
-                {{ $t('billing_page.plan_limits', { plan: currentPlan.name }) }}
+                {{ $t('billing_page.token_balance_label') }}
               </span>
             </div>
           </div>
@@ -194,82 +175,11 @@
         </section>
       </template>
     </main>
-
-    <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="planModalOpen" class="fixed inset-0 z-50 overflow-y-auto">
-          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="planModalOpen = false"></div>
-          <div class="relative flex min-h-full items-center justify-center p-4">
-            <section class="relative w-full max-w-6xl rounded-xl border border-theme-border bg-white shadow-xl">
-              <button
-                type="button"
-                class="absolute right-5 top-5 text-theme-textLight hover:text-theme-text"
-                :aria-label="$t('billing_page.close_plan_dialog')"
-                @click="planModalOpen = false"
-              >
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              <div class="px-6 pb-6 pt-8 sm:px-10">
-                <div class="text-center">
-                  <h2 class="text-3xl font-semibold text-theme-text">{{ $t('billing_page.adjust_plan') }}</h2>
-                  <p class="mt-3 text-sm text-theme-textLight">{{ $t('billing_page.billed_monthly') }}</p>
-                </div>
-
-                <div class="mt-8 grid gap-4 lg:grid-cols-4">
-                  <article
-                    v-for="plan in plans"
-                    :key="plan.id"
-                    class="flex min-h-[28rem] flex-col rounded-xl border border-theme-border bg-white p-5 shadow-sm"
-                    :class="{ 'bg-theme-hover ring-1 ring-theme-border': isCurrentPlan(plan) }"
-                  >
-                    <div class="flex items-center justify-between gap-3">
-                      <h3 class="text-lg font-semibold text-theme-text">{{ plan.name }}</h3>
-                      <span v-if="isCurrentPlan(plan)" class="rounded-md bg-primary-100 px-2 py-1 text-xs font-medium text-theme-textLight">
-                        {{ $t('billing_page.current_plan') }}
-                      </span>
-                    </div>
-                    <p class="mt-4">
-                      <span class="text-3xl font-semibold text-theme-text">{{ plan.price }}</span>
-                      <span class="text-sm text-theme-textLight">{{ plan.unit }}</span>
-                    </p>
-                    <p class="mt-4 text-sm leading-5 text-theme-textLight">{{ plan.description }}</p>
-                    <ul class="mt-5 space-y-3">
-                      <li v-for="feature in plan.features" :key="feature" class="flex gap-2 text-sm leading-5 text-theme-textLight">
-                        <span class="text-theme-textLight">&check;</span>
-                        <span>{{ feature }}</span>
-                      </li>
-                    </ul>
-                    <button
-                      v-if="plan.id !== 'hobby'"
-                      type="button"
-                      class="mt-auto w-full"
-                      :class="isCurrentPlan(plan) ? 'rounded-md border border-theme-border px-4 py-2 text-sm font-medium text-theme-textLight cursor-default' : 'btn-primary'"
-                      :disabled="isCurrentPlan(plan) || checkoutPlan === plan.id"
-                      @click="choosePlan(plan)"
-                    >
-                      {{ isCurrentPlan(plan) ? $t('billing_page.your_current_plan') : (checkoutPlan === plan.id ? $t('billing_page.opening') : plan.cta) }}
-                    </button>
-                  </article>
-                </div>
-              </div>
-
-              <div class="border-t border-theme-border px-6 py-5 text-center text-sm text-theme-textLight">
-                {{ $t('billing_page.enterprise_cta') }}
-                <button type="button" class="text-theme-text underline underline-offset-2">{{ $t('billing_page.enterprise_link') }}</button>
-              </div>
-            </section>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppNav from '@/components/AppNav.vue'
 import { billing_api } from '@/api'
@@ -278,21 +188,22 @@ import { useWorkspaceContext } from '@/lib/permission'
 const { t, locale } = useI18n()
 const { currentWorkspace } = useWorkspaceContext()
 
-const planModalOpen = ref(false)
 const billingLoading = ref(false)
 const portalLoading = ref(false)
-const checkoutPlan = ref('')
+const checkoutLoading = ref(false)
 const errorMessage = ref('')
+const amountCents = ref(1000)
+const customAmount = ref('')
+const amountPresets = [10, 25, 50, 100]
 const billingStatus = ref({
-  plan: 'hobby',
-  status: 'active',
-  providerCustomerID: '',
+  providerCustomerId: '',
+  aiTokensBalance: 0,
+  tokensPerUsd: 20000,
   updatedAt: ''
 })
 
 const usageData = ref({
   used: {
-    apiCalls: 0,
     workspaceMembers: 0,
     documentsCount: 0,
     storageGB: 0,
@@ -300,7 +211,6 @@ const usageData = ref({
     aiCost: 0
   },
   limits: {
-    apiCalls: 10_000,
     workspaceMembers: 3,
     documentsCount: 100,
     storageGB: 5,
@@ -309,83 +219,21 @@ const usageData = ref({
   periodReset: ''
 })
 
-const plans = computed(() => [
-  {
-    id: 'hobby',
-    name: t('billing_page.plans.hobby.name'),
-    price: '$0',
-    unit: t('billing_page.unit_per_month'),
-    description: t('billing_page.plans.hobby.description'),
-    cta: t('billing_page.choose_plan'),
-    features: [
-      t('billing_page.plans.hobby.feature_core_access'),
-      t('billing_page.plans.hobby.feature_basic_limits'),
-      t('billing_page.plans.hobby.feature_community_support'),
-      t('billing_page.plans.hobby.feature_upgrade_anytime')
-    ]
-  },
-  {
-    id: 'starter',
-    name: t('billing_page.plans.starter.name'),
-    price: '$19',
-    unit: t('billing_page.unit_per_month'),
-    description: t('billing_page.plans.starter.description'),
-    cta: t('billing_page.choose_plan'),
-    features: [
-      t('billing_page.plans.starter.feature_everything_hobby'),
-      t('billing_page.plans.starter.feature_higher_limits'),
-      t('billing_page.plans.starter.feature_monthly_billing'),
-      t('billing_page.plans.starter.feature_email_support')
-    ]
-  },
-  {
-    id: 'growth',
-    name: t('billing_page.plans.growth.name'),
-    price: '$69',
-    unit: t('billing_page.unit_per_month'),
-    description: t('billing_page.plans.growth.description'),
-    cta: t('billing_page.choose_plan'),
-    features: [
-      t('billing_page.plans.growth.feature_everything_starter'),
-      t('billing_page.plans.growth.feature_expanded_limits'),
-      t('billing_page.plans.growth.feature_priority_capacity'),
-      t('billing_page.plans.growth.feature_faster_support')
-    ]
-  },
-  {
-    id: 'pro',
-    name: t('billing_page.plans.pro.name'),
-    price: '€219',
-    unit: t('billing_page.unit_per_month'),
-    description: t('billing_page.plans.pro.description'),
-    cta: t('billing_page.choose_plan'),
-    features: [
-      t('billing_page.plans.pro.feature_everything_growth'),
-      t('billing_page.plans.pro.feature_highest_limits'),
-      t('billing_page.plans.pro.feature_premium_capacity'),
-      t('billing_page.plans.pro.feature_priority_support')
-    ]
-  }
-])
+const tokenBalance = computed(() => billingStatus.value.aiTokensBalance || 0)
+const tokensPerUsd = computed(() => billingStatus.value.tokensPerUsd || 20000)
+const tokensForSelection = computed(() => Math.floor((amountCents.value * tokensPerUsd.value) / 100))
 
-const currentPlan = computed(() => {
-  return plans.value.find((plan) => plan.id === billingStatus.value.plan) || plans.value[0]
-})
+const canManageStripe = computed(() => !!billingStatus.value.providerCustomerId)
 
-const statusLabel = computed(() => {
-  const status = billingStatus.value.status || 'active'
-  const key = `billing_page.status_${status}`
-  const translated = t(key)
-  return translated === key ? status : translated
-})
+function selectPreset(dollars) {
+  amountCents.value = dollars * 100
+  customAmount.value = ''
+}
 
-const isPaidPlan = computed(() => billingStatus.value.plan !== 'hobby')
-
-const canManageStripe = computed(() => {
-  return billingStatus.value.providerCustomerID !== '' && billingStatus.value.plan !== 'hobby'
-})
-
-const isCurrentPlan = (plan) => plan.id === billingStatus.value.plan
+function onCustomAmount() {
+  const dollars = Number(customAmount.value)
+  amountCents.value = dollars >= 1 ? Math.round(dollars * 100) : 0
+}
 
 const usagePeriodReset = computed(() => {
   if (usageData.value.periodReset) {
@@ -415,7 +263,10 @@ const formatUsd = (value) => {
   }).format(value)
 }
 
-const usagePercent = (used, limit) => Math.min(100, Math.round((used / limit) * 100))
+const usagePercent = (used, limit) => {
+  if (!limit) return 0
+  return Math.min(100, Math.round((used / limit) * 100))
+}
 
 const usageBarColor = (percent) => {
   const p = Math.min(100, Math.max(0, percent)) / 100
@@ -429,16 +280,6 @@ const usageBarStyle = (percent) => ({
 
 const buildUsageMetrics = (limits, used) => {
   const definitions = [
-    {
-      id: 'apiCalls',
-      resetPolicy: 'monthly',
-      label: t('billing_page.metrics.api_calls_label'),
-      hint: t('billing_page.metrics.api_calls_hint'),
-      used: used.apiCalls,
-      limit: limits.apiCalls,
-      displayUsed: formatNumber(used.apiCalls),
-      displayLimit: formatNumber(limits.apiCalls)
-    },
     {
       id: 'aiTokens',
       resetPolicy: 'monthly',
@@ -549,18 +390,16 @@ const loadBilling = async () => {
   }
 }
 
-const choosePlan = async (plan) => {
-  if (isCurrentPlan(plan) || plan.id === 'hobby') return
-
-  checkoutPlan.value = plan.id
+const buyCredits = async () => {
+  checkoutLoading.value = true
   errorMessage.value = ''
   try {
-    const res = await billing_api.checkout(currentWorkspace.id, { plan: plan.id })
+    const res = await billing_api.checkout(currentWorkspace.id, { amountCents: amountCents.value })
     window.location.href = res.data.url
   } catch (err) {
     errorMessage.value = err.response?.data?.errorMessage || t('billing_page.failed_checkout')
   } finally {
-    checkoutPlan.value = ''
+    checkoutLoading.value = false
   }
 }
 
@@ -580,22 +419,4 @@ const openPortal = async () => {
 }
 
 onMounted(loadBilling)
-
-watchEffect(() => {
-  if (!planModalOpen.value) {
-    document.body.style.overflow = ''
-    return
-  }
-
-  document.body.style.overflow = 'hidden'
-  const onEsc = (event) => {
-    if (event.key === 'Escape') planModalOpen.value = false
-  }
-  document.addEventListener('keydown', onEsc)
-
-  return () => {
-    document.body.style.overflow = ''
-    document.removeEventListener('keydown', onEsc)
-  }
-})
 </script>

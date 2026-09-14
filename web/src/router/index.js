@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { loadUserFromStorage, loadWorkspaceFromStorage } from '@/utils/storage'
 import { canManageWorkspace } from '@/lib/permission'
+import { loadEdition, isSaaS } from '@/lib/edition'
 
 const routes = [
   {
@@ -20,6 +21,12 @@ const routes = [
     meta: { requiresGuest: true, title: 'Setup', description: 'Setup platform' }
   },
   {
+    path: '/getting-started',
+    name: 'GettingStarted',
+    component: () => import('@/views/GettingStarted.vue'),
+    meta: { title: 'Getting started', description: 'Welcome after installing the GitHub App' }
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
@@ -30,12 +37,6 @@ const routes = [
     name: 'SwitchWorkspaces',
     component: () => import('@/views/SelectWorkspace.vue'),
     meta: { requiresAuth: true, title: 'Switch Workspaces', description: 'Choose or create a workspace' }
-  },
-  {
-    path: '/invite/:token',
-    name: 'Invite',
-    component: () => import('@/views/Invite.vue'),
-    meta: { requiresAuth: true, title: 'Workspace Invite', description: 'Accept or reject a workspace invite' }
   },
   {
     path: '/workspaces',
@@ -65,7 +66,7 @@ const routes = [
     path: '/billing',
     name: 'Billing',
     component: () => import('@/views/Billing.vue'),
-    meta: { requiresAuth: true, requiresWorkspace: true, requiresWorkspaceAdmin: true, title: 'Billing', description: 'Billing' }
+    meta: { requiresAuth: true, requiresWorkspace: true, requiresWorkspaceAdmin: true, requiresSaaS: true, title: 'Billing', description: 'Billing' }
   },
   {
     path: '/integrations',
@@ -84,6 +85,18 @@ const routes = [
     name: 'Knowledge',
     component: () => import('@/views/Knowledge.vue'),
     meta: { requiresAuth: true, requiresWorkspace: true, title: 'Knowledge', description: 'Knowledge' }
+  },
+  {
+    path: '/repositories',
+    name: 'Repositories',
+    component: () => import('@/views/Repositories.vue'),
+    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Repositories', description: 'GitHub repositories' }
+  },
+  {
+    path: '/repositories/:repoId',
+    name: 'Repository',
+    component: () => import('@/views/Repository.vue'),
+    meta: { requiresAuth: true, requiresWorkspace: true, title: 'Repository', description: 'Issue triage and merge queue' }
   },
   {
     path: '/404',
@@ -124,12 +137,16 @@ function isSafeRedirect(redirect) {
 }
 
 // Navigation guard - reads auth state directly from storage
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  await loadEdition()
+
   const currentUser = loadUserFromStorage()
   const currentWorkspace = loadWorkspaceFromStorage()
   const isAuthenticated = !!currentUser
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (to.meta.requiresSaaS && !isSaaS()) {
+    next('/404')
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
     next({ path: '/login', query: { redirect: to.fullPath } })
   } else if (to.meta.requiresGuest && isAuthenticated) {
     const redirect = to.query.redirect

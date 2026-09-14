@@ -4,7 +4,7 @@ version: 1.0.0
 labels:
   - name: "state/queued"
     color: "0E8A16"
-    description: "PR is currently waiting in the merge queue line"
+    description: "PR is currently waiting in the merge queue line."
   - name: "state/checking"
     color: "FBCA04"
     description: "Speculative CI checks are running on this PR."
@@ -13,7 +13,7 @@ labels:
     description: "PR was kicked out or removed from the merge queue."
   - name: "area/api"
     color: "1D76DB"
-    description: "Changes made inside the API or core paths."
+    description: "Changes made inside the API or core PKG paths."
   - name: "area/web"
     color: "C2E0C6"
     description: "Changes related to frontend web paths."
@@ -67,6 +67,13 @@ teams:
     members:
       - tj
       - kiran
+
+# Repository knowledge base for AI contexts
+knowledge:
+  - path: docs/
+    tags:
+      tag: docs
+      team: sre
 
 merge_queue:
   # Whether to enable the merge queue
@@ -123,10 +130,6 @@ merge_queue:
     # enabled: false → skip classification; `intention:` matchers never match.
     ai:
       enabled: true
-      # Workspace knowledge `tag=` values used as classify context.
-      kb_tags:
-        # Few-shot examples to better label PRs
-        - tag: platform_monorepo
     # `when` matchers (all must match):
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
@@ -298,6 +301,7 @@ merge_queue:
         - permission: write
         - teams: [sre, core]
         - users: [clivern]
+        # Only the PR author can queue the PR
         - self: true
     # `@ziee dequeue` — pull the PR out of the queue
     dequeue:
@@ -429,10 +433,6 @@ merge_queue:
       checks_timeout: auto
       max_checks_retries: 2
 
-pr_reviews:
-  # Whether to enable AI-assisted PR reviews
-  enabled: false
-
 
 issue_triage:
   # GitHub issues only (not PRs). Re-run on issue open and edit.
@@ -452,10 +452,6 @@ issue_triage:
   # enabled: false → skip classification; `intention:` matchers never match.
   ai:
     enabled: true
-    # Workspace knowledge `tag=` values used as classify context.
-    kb_tags:
-      # Few-shot examples to better label issues
-      - tag: platform_monorepo
   # Commands are typed on the issue. Ziee performs the action with the app token,
   # so the commenter does not need repo write (or any GitHub permission on this repo).
   # `allow` is who may run them (any matching entry is enough):
@@ -597,3 +593,8 @@ issue_triage:
       when:
         - author_not_in_team: [sre]
       comment: "Thanks for opening this. Someone from the team will take a look."
+
+
+pr_reviews:
+  # Whether to enable AI-assisted PR reviews
+  enabled: false

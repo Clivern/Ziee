@@ -23,6 +23,7 @@ builds:
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
       - -X main.builtBy=goreleaser
+      - -X main.edition=oss
     flags:
       - -trimpath
 

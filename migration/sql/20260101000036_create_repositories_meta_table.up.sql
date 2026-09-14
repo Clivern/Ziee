@@ -1,0 +1,9 @@
+CREATE TABLE repositories_meta (
+	id UUID PRIMARY KEY,
+	repository_id UUID NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
+	key VARCHAR(60) NOT NULL,
+	value JSONB,
+	created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+	UNIQUE (repository_id, key)
+);

@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package cli
@@ -19,6 +19,8 @@ var (
 	Date = "unknown"
 	// BuiltBy buildinfo item
 	BuiltBy = "unknown"
+	// Edition buildinfo item
+	Edition = "oss"
 	// Static embedded files
 	Static embed.FS
 )
@@ -28,11 +30,12 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number",
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf(
-			"Current Ziee version %v commit %v, built @%v by %v.\n",
+			"Current Ziee version %v commit %v, built @%v by %v, edition %v.\n",
 			Version,
 			Commit,
 			Date,
 			BuiltBy,
+			Edition,
 		)
 	},
 }

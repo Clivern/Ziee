@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package api
@@ -9,12 +9,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/locale"
-	"github.com/actx0/ziee/middleware"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/stripe"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/middleware"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/stripe"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
@@ -32,6 +32,7 @@ func GetBillingStatusAction(w http.ResponseWriter, r *http.Request) {
 	bm := module.NewBilling(
 		db.NewWorkspaceRepository(db.GetDB()),
 		db.NewSubscriptionRepository(db.GetDB()),
+		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
 
@@ -68,14 +69,14 @@ func GetBillingUsageAction(w http.ResponseWriter, r *http.Request) {
 	bm := module.NewBilling(
 		db.NewWorkspaceRepository(db.GetDB()),
 		db.NewSubscriptionRepository(db.GetDB()),
+		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
 
 	usage, err := bm.GetBillingUsage(db.Id(workspaceId), module.UsageSnapshotDeps{
-		WorkspaceUserRepository:     db.NewWorkspaceUserRepository(db.GetDB()),
-		WorkspaceDocumentRepository: db.NewWorkspaceDocumentRepository(db.GetDB()),
-		UsageRepository:             db.NewUsageRepository(db.GetDB()),
-		SubscriptionRepository:      db.NewSubscriptionRepository(db.GetDB()),
+		WorkspaceUserRepository: db.NewWorkspaceUserRepository(db.GetDB()),
+		DocumentRepository:      db.NewDocumentRepository(db.GetDB()),
+		UsageRepository:         db.NewUsageRepository(db.GetDB()),
 	})
 	if err != nil {
 		switch {
@@ -99,7 +100,7 @@ func GetBillingUsageAction(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSON(w, http.StatusOK, usage)
 }
 
-// CreateBillingCheckoutAction creates a Stripe Checkout session for a paid plan.
+// CreateBillingCheckoutAction creates a Stripe Checkout session for AI tokens.
 func CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request) {
 	var req module.BillingCheckoutRequest
 	err := util.DecodeAndValidate(r, &req)
@@ -120,12 +121,13 @@ func CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request) {
 	log.Info().
 		Str("workspaceId", workspaceId).
 		Str("userId", user.Id.String()).
-		Str("plan", req.Plan).
+		Int64("amountCents", req.AmountCents).
 		Msg("New billing checkout request")
 
 	bm := module.NewBilling(
 		db.NewWorkspaceRepository(db.GetDB()),
 		db.NewSubscriptionRepository(db.GetDB()),
+		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
 	session, err := bm.CreateCheckoutSession(
@@ -143,17 +145,13 @@ func CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request) {
 			util.WriteJSON(w, http.StatusNotFound, map[string]any{
 				"errorMessage": locale.TR(r, "workspace_not_found"),
 			})
-		case errors.Is(err, module.ErrBillingFreePlan):
-			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
-				"errorMessage": locale.TR(r, "billing_free_plan_default"),
-			})
 		case errors.Is(err, module.ErrBillingSubscriptionNotFound):
 			util.WriteJSON(w, http.StatusNotFound, map[string]any{
 				"errorMessage": locale.TR(r, "workspace_subscription_not_found"),
 			})
-		case errors.Is(err, stripe.ErrInvalidPlan):
+		case errors.Is(err, stripe.ErrInvalidAmount):
 			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
-				"errorMessage": locale.TR(r, "invalid_billing_plan"),
+				"errorMessage": locale.TR(r, "invalid_billing_amount"),
 			})
 		case errors.Is(err, stripe.ErrBillingDisabled):
 			util.WriteJSON(w, http.StatusServiceUnavailable, map[string]any{
@@ -181,6 +179,7 @@ func CreateBillingPortalAction(w http.ResponseWriter, r *http.Request) {
 	bm := module.NewBilling(
 		db.NewWorkspaceRepository(db.GetDB()),
 		db.NewSubscriptionRepository(db.GetDB()),
+		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
 	session, err := bm.CreatePortalSession(
@@ -197,7 +196,7 @@ func CreateBillingPortalAction(w http.ResponseWriter, r *http.Request) {
 			})
 		case errors.Is(err, module.ErrBillingPortalUnavailable):
 			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
-				"errorMessage": locale.TR(r, "stripe_billing_available_after_upgrade"),
+				"errorMessage": locale.TR(r, "stripe_billing_available_after_purchase"),
 			})
 		case errors.Is(err, module.ErrBillingSubscriptionNotFound):
 			util.WriteJSON(w, http.StatusNotFound, map[string]any{
@@ -239,6 +238,7 @@ func StripeWebhookAction(w http.ResponseWriter, r *http.Request) {
 	bm := module.NewBilling(
 		db.NewWorkspaceRepository(db.GetDB()),
 		db.NewSubscriptionRepository(db.GetDB()),
+		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
 

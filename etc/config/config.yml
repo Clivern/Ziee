@@ -4,8 +4,6 @@ app:
   port: ${ZIEE_SERVER_PORT:-8000}
   url: ${ZIEE_SERVER_URL:-http://localhost}
   timeout: ${ZIEE_SERVER_TIMEOUT:-50}
-  worker_pool: ${ZIEE_SERVER_WORKER_POOL:-50}
-
 
   metrics:
     username: ${ZIEE_SERVER_PROM_METRICS_USERNAME:-admin}
@@ -28,6 +26,8 @@ app:
       client_secret: ${ZIEE_GITHUB_OAUTH_CLIENT_SECRET:-}
       redirect_url: ${ZIEE_GITHUB_OAUTH_REDIRECT_URL:-}
       webhook_secret: ${ZIEE_GITHUB_WEBHOOK_SECRET:-}
+      private_key_path: ${ZIEE_GITHUB_APP_PRIVATE_KEY_PATH:-priv_key.pem}
+      encryption_key: ${ZIEE_GITHUB_ENCRYPTION_KEY:-}
 
   database:
     rw:
@@ -55,12 +55,7 @@ app:
     provider: ${ZIEE_BILLING_PROVIDER:-stripe}
     secret_key: ${ZIEE_STRIPE_SECRET_KEY:-}
     webhook_secret: ${ZIEE_STRIPE_WEBHOOK_SECRET:-}
-    product_id: ${ZIEE_STRIPE_PRODUCT_ID:-}
-    prices:
-      hobby: ${ZIEE_STRIPE_PRICE_HOBBY:-}
-      growth: ${ZIEE_STRIPE_PRICE_GROWTH:-}
-      starter: ${ZIEE_STRIPE_PRICE_STARTER:-}
-      pro: ${ZIEE_STRIPE_PRICE_PRO:-}
+    tokens_per_usd: ${ZIEE_TOKENS_PER_USD:-20000}
     urls:
       checkout_success: ${ZIEE_STRIPE_CHECKOUT_SUCCESS_URL:-/billing/success}
       checkout_cancel: ${ZIEE_STRIPE_CHECKOUT_CANCEL_URL:-/billing/cancel}
@@ -104,3 +99,10 @@ app:
       db: ${ZIEE_REDIS_DB:-0}
       pool_size: ${ZIEE_REDIS_POOL_SIZE:-10}
       min_idle_conns: ${ZIEE_REDIS_MIN_IDLE_CONNS:-5}
+
+  broker:
+    provider: ${ZIEE_BROKER_PROVIDER:-nats}
+    nats:
+      url: ${ZIEE_BROKER_URL:-nats://127.0.0.1:4222}
+      name: ${ZIEE_BROKER_NAME:-ziee}
+      queue: ${ZIEE_BROKER_QUEUE:-ziee}

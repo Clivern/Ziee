@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package api
@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/github"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/github/oauth"
+	"github.com/clivern/ziee/pkg/resend"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -25,7 +26,7 @@ const OauthStateCookie = "_ziee_oauth_state"
 func GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
 	errorURL := util.AppURL("/login?oauth_error=github")
 
-	oauth := github.NewOAuth(github.OAuthConfig{
+	client := oauth.NewOAuth(oauth.OAuthConfig{
 		ClientID:     viper.GetString("app.oauth.github.client_id"),
 		ClientSecret: viper.GetString("app.oauth.github.client_secret"),
 		RedirectURL:  viper.GetString("app.oauth.github.redirect_url"),
@@ -40,7 +41,7 @@ func GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorizeURL := oauth.AuthorizeURL(state)
+	authorizeURL := client.AuthorizeURL(state)
 
 	opts := lo.Ternary(
 		strings.HasPrefix(util.AppURL(""), "https://"),
@@ -64,7 +65,7 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 
 	util.DeleteCookie(w, OauthStateCookie)
 
-	oauth := github.NewOAuth(github.OAuthConfig{
+	client := oauth.NewOAuth(oauth.OAuthConfig{
 		ClientID:     viper.GetString("app.oauth.github.client_id"),
 		ClientSecret: viper.GetString("app.oauth.github.client_secret"),
 		RedirectURL:  viper.GetString("app.oauth.github.redirect_url"),
@@ -72,28 +73,28 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 		AllowSignup:  true,
 	})
 
-	token, err := oauth.Exchange(r.Context(), code, state, expectedState)
+	token, err := client.Exchange(r.Context(), code, state, expectedState)
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth exchange failed")
 		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
-	user, err := oauth.User(r.Context(), token.AccessToken)
+	user, err := client.User(r.Context(), token.AccessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth user fetch failed")
 		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
-	emails, err := oauth.Emails(r.Context(), token.AccessToken)
+	emails, err := client.Emails(r.Context(), token.AccessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("GitHub oauth emails fetch failed")
 		http.Redirect(w, r, errorURL, http.StatusFound)
 		return
 	}
 
-	email := github.PrimaryEmail(emails, user.Email)
+	email := oauth.PrimaryEmail(emails, user.Email)
 	name := lo.Ternary(
 		lo.IsNotEmpty(user.Name),
 		user.Name,
@@ -119,5 +120,22 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.SetCookie(w, "_ziee_session", result.Session.Token, result.CookieOptions)
+
+	im := module.NewInvite(
+		db.NewUserInviteRepository(db.GetDB()),
+		db.NewUserRepository(db.GetDB()),
+		db.NewConfigRepository(db.GetDB()),
+		db.NewWorkspaceRepository(db.GetDB()),
+		db.NewWorkspaceUserRepository(db.GetDB()),
+		resend.NewMailer(),
+	)
+	err = im.AttachPending(result.User)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("userId", result.User.Id.String()).
+			Msg("Failed to attach pending workspace invites")
+	}
+
 	http.Redirect(w, r, util.AppURL("/login?oauth=github"), http.StatusFound)
 }

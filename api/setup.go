@@ -1,4 +1,4 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package api
@@ -7,10 +7,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/actx0/ziee/db"
-	"github.com/actx0/ziee/locale"
-	"github.com/actx0/ziee/module"
-	"github.com/actx0/ziee/pkg/util"
+	"github.com/clivern/ziee/conf"
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/locale"
+	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 )
@@ -25,7 +26,7 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().
-		Str("adminEmail", req.AdminEmail).
+		Str("platformEmail", req.PlatformEmail).
 		Msg("New setup request")
 
 	sm := module.NewSetup(
@@ -40,18 +41,10 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 			util.WriteJSON(w, http.StatusBadRequest, map[string]any{
 				"errorMessage": locale.TR(r, "platform_already_installed"),
 			})
-		case errors.Is(err, module.ErrFailedCompleteSetup):
-			log.Error().
-				Err(err).
-				Str("adminEmail", req.AdminEmail).
-				Msg("Failed to complete setup")
-			util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-				"errorMessage": locale.TR(r, "failed_complete_setup"),
-			})
 		default:
 			log.Error().
 				Err(err).
-				Str("adminEmail", req.AdminEmail).
+				Str("platformEmail", req.PlatformEmail).
 				Msg("Setup failed")
 			util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
 				"errorMessage": locale.TR(r, "failed_complete_setup"),
@@ -62,7 +55,6 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().
 		Str("platformEmail", req.PlatformEmail).
-		Str("adminEmail", req.AdminEmail).
 		Msg("Platform setup completed")
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{
@@ -81,5 +73,6 @@ func SetupStatusAction(w http.ResponseWriter, _ *http.Request) {
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{
 		"installed": sm.IsInstalled(),
+		"edition":   conf.Edition(),
 	})
 }

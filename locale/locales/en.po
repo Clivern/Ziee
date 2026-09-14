@@ -168,6 +168,15 @@ msgstr "Failed to list users."
 msgid "failed_list_workspaces"
 msgstr "Failed to list workspaces."
 
+msgid "failed_list_github_installations"
+msgstr "Failed to list GitHub installations."
+
+msgid "failed_attach_github_installation"
+msgstr "Failed to attach GitHub installation."
+
+msgid "github_installation_not_found"
+msgstr "GitHub installation not found."
+
 msgid "failed_process_request"
 msgstr "Failed to process request."
 
@@ -324,6 +333,9 @@ msgstr "Setup completed successfully."
 msgid "tool_not_found"
 msgstr "Tool not found."
 
+msgid "user_already_workspace_member"
+msgstr "This user is already a member of the workspace."
+
 msgid "user_not_found"
 msgstr "User not found."
 
@@ -350,6 +362,12 @@ msgstr "Failed to get billing status."
 
 msgid "failed_get_billing_usage"
 msgstr "Failed to get billing usage."
+
+msgid "invalid_billing_amount"
+msgstr "Enter an amount of at least $1."
+
+msgid "stripe_billing_available_after_purchase"
+msgstr "Stripe billing is available after your first purchase."
 
 msgid "invalid_billing_plan"
 msgstr "Invalid billing plan."

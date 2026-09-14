@@ -1,10 +1,10 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package module
 
 import (
-	"github.com/actx0/ziee/db"
+	"github.com/clivern/ziee/db"
 )
 
 // Stats is the module for workspace dashboard metrics.
@@ -23,7 +23,6 @@ func NewStats(workspaces db.WorkspaceRepository, stats db.WorkspaceStatsReposito
 
 // WorkspaceStatsResponse is workspace metrics shaped for API responses.
 type WorkspaceStatsResponse struct {
-	APICallsMonth   int64 `json:"apiCallsMonth"`
 	DocumentsStored int64 `json:"documentsStored"`
 }
 
@@ -43,7 +42,6 @@ func (s *Stats) GetWorkspaceStats(workspaceId db.Id) (*WorkspaceStatsResponse, e
 	}
 
 	return &WorkspaceStatsResponse{
-		APICallsMonth:   stats.APICallsMonth,
 		DocumentsStored: stats.DocumentsStored,
 	}, nil
 }

@@ -1,9 +1,11 @@
-// Copyright 2026 Actx0. All rights reserved.
+// Copyright 2026 Ziee. All rights reserved.
 // License can be found in the LICENSE file.
 
 package conf
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	// SlowRequestThreshold is the latency at or above which a request is counted as slow.
@@ -18,19 +20,18 @@ const (
 	// InviteExpiry is how long a workspace invite stays valid.
 	InviteExpiry = 7 * 24 * time.Hour
 
-	// AsyncClaimInterval is how often the async manager polls for due tasks.
-	AsyncClaimInterval = 10 * time.Second
-
-	// AsyncTaskMaxRetries is how many times a failed task is retried.
-	AsyncTaskMaxRetries = 5
-
-	// AsyncCompletedTasksRetention is how far back completed tasks are kept before cleanup.
-	// Negative duration: cutoff = now + retention.
-	AsyncCompletedTasksRetention = -7 * 24 * time.Hour
-
 	// MaxUploadBytes is the maximum multipart upload size.
 	MaxUploadBytes = 2 * 1024 * 1024
 
 	// DefaultSearchLimit is used when a knowledge search request omits limit.
 	DefaultSearchLimit = 10
+
+	// ConfigSyncCheckName is the GitHub check run created when syncing `.ziee.yml`.
+	ConfigSyncCheckName = "Ziee configurations sync"
+
+	// SetupIssueTitle is the GitHub issue opened when Ziee is installed on a repository.
+	SetupIssueTitle = "Set up Ziee for this repository"
+
+	// SetupPullRequestTitle is the pull request that adds a starter `.ziee.yml`.
+	SetupPullRequestTitle = "Add .ziee.yml"
 )

@@ -137,7 +137,7 @@ function isSafeRedirect(redirect) {
 }
 
 // Navigation guard - reads auth state directly from storage
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to) => {
   await loadEdition()
 
   const currentUser = loadUserFromStorage()
@@ -145,18 +145,20 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = !!currentUser
 
   if (to.meta.requiresSaaS && !isSaaS()) {
-    next('/404')
-  } else if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ path: '/login', query: { redirect: to.fullPath } })
-  } else if (to.meta.requiresGuest && isAuthenticated) {
+    return '/404'
+  }
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.requiresGuest && isAuthenticated) {
     const redirect = to.query.redirect
-    next(isSafeRedirect(redirect) ? redirect : '/select-workspace')
-  } else if (to.meta.requiresWorkspace && !currentWorkspace) {
-    next('/select-workspace')
-  } else if (to.meta.requiresWorkspaceAdmin && !canManageWorkspace(currentUser, currentWorkspace)) {
-    next('/404')
-  } else {
-    next()
+    return isSafeRedirect(redirect) ? redirect : '/select-workspace'
+  }
+  if (to.meta.requiresWorkspace && !currentWorkspace) {
+    return '/select-workspace'
+  }
+  if (to.meta.requiresWorkspaceAdmin && !canManageWorkspace(currentUser, currentWorkspace)) {
+    return '/404'
   }
 })
 

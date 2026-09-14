@@ -3,7 +3,7 @@
     <div class="w-full px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-14">
         <div class="flex items-center">
-          <div class="flex-shrink-0 flex items-center">
+          <div class="shrink-0 flex items-center">
             <router-link to="/" class="text-theme-text">
               <AppLogo :alt="$t('common.logo_alt')" class="h-8 w-auto" />
             </router-link>
@@ -29,7 +29,7 @@
             :aria-label="isMobile ? $t('nav.menu') : $t('nav.user_menu')"
           >
             <span
-              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-200 text-sm font-medium text-theme-text"
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-200 text-sm font-medium text-theme-text"
               aria-hidden="true"
             >
               <img :src="user?.avatar ?? ''" :alt="user?.email ?? ''" class="h-8 w-8 rounded-full">

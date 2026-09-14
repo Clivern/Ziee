@@ -20,7 +20,7 @@
           </div>
           <div class="p-6 space-y-6">
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              <div class="flex-shrink-0">
+              <div class="shrink-0">
                 <img
                   :src="user?.avatar ?? ''"
                   :alt="user?.email ?? 'Avatar'"

@@ -299,6 +299,17 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.Equal(t, 8, pr.Number)
 	})
 
+	t.Run("ListUserTeams", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/orgs/acme/members/maya/teams", r.URL.Path)
+			_ = json.NewEncoder(w).Encode([]Team{{Name: "Core", Slug: "core"}})
+		}))
+
+		teams, err := client.ListUserTeams(ctx, 1, "acme", "maya")
+		assert.NoError(t, err)
+		assert.Equal(t, "core", teams[0].Slug)
+	})
+
 	t.Run("Labels", func(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			switch {

@@ -3,7 +3,7 @@ module github.com/clivern/ziee
 go 1.26.6
 
 require (
-	github.com/OpenRouterTeam/go-sdk v0.7.119
+	github.com/OpenRouterTeam/go-sdk v0.7.131
 	github.com/aws/aws-sdk-go-v2 v1.46.0
 	github.com/aws/aws-sdk-go-v2/config v1.33.3
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.3

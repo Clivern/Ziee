@@ -32,10 +32,9 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 		client.GetTeams(event.Org, event.Issue.Author),
 	)
 
-	// TODO: AI Intention
 	intentions := GetIntentionsFromRules(conf.IssueTriage.Rules)
 	if conf.IssueTriage.AI.Enabled && len(intentions) > 0 {
-		event.Issue.Intentions = client.EvaluateIssue(event.Issue, intentions)
+		event.Issue.Intention = client.EvaluateIssue(event.Issue, intentions)
 	}
 
 	for _, rule := range conf.IssueTriage.Rules {
@@ -53,7 +52,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			if lo.Contains(when.AuthorNotIn, event.Issue.Author) {
 				matched = false
 			}
-			if !lo.IsEmpty(when.Intention.Name) && !lo.Contains(event.Issue.Intentions, when.Intention.Name) {
+			if !lo.IsEmpty(when.Intention.Name) && event.Issue.Intention.Name != when.Intention.Name {
 				matched = false
 			}
 			if !lo.IsEmpty(when.Label) && !lo.Contains(event.Issue.Labels, when.Label) {

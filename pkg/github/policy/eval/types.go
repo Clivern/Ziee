@@ -34,7 +34,7 @@ type Issue struct {
 	Assignees   []string
 	Teams       []string
 	Files       []string
-	Intentions  []string
+	Intention   v1.Intention
 }
 
 // Actor is who opened the issue or typed the comment.
@@ -50,7 +50,7 @@ type Client interface {
 	GetTeams(org, login string) []string
 	// EvaluateIssue classifies issue intention from title and body.
 	// Intention descriptions are added to the classify prompt.
-	EvaluateIssue(issue Issue, intentions []v1.Intention) []string
+	EvaluateIssue(issue Issue, intentions []v1.Intention) v1.Intention
 	// IsFirstContribution reports whether the issue author is a first-time contributor.
 	IsFirstContribution(issue Issue) bool
 }

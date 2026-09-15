@@ -68,7 +68,7 @@ func TestUnitEvaluateIssueOpenedIntentions(t *testing.T) {
 		},
 	}
 
-	client := &stubClient{intentions: []string{"bug"}}
+	client := &stubClient{intention: v1.Intention{Name: "bug"}}
 
 	plan := EvaluateIssueOpened(conf, Event{
 		Issue: Issue{Title: "crash on save"},
@@ -228,17 +228,17 @@ func TestUnitEvaluateIssueOpenedFirstContribution(t *testing.T) {
 }
 
 type stubClient struct {
-	got        []v1.Intention
-	intentions []string
-	teams      []string
-	org        string
-	first      bool
+	got       []v1.Intention
+	intention v1.Intention
+	teams     []string
+	org       string
+	first     bool
 }
 
-func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) []string {
+func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) v1.Intention {
 	s.got = intentions
 
-	return s.intentions
+	return s.intention
 }
 
 func (s *stubClient) GetTeams(org, _ string) []string {

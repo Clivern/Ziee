@@ -56,6 +56,16 @@ type IssueClient struct {
 	repo           string
 }
 
+// NewIssueClient returns a GitHub client for issue events.
+func NewIssueClient(ctx context.Context, installationId int64, owner, repo string) IssueClient {
+	return IssueClient{
+		ctx:            ctx,
+		installationId: installationId,
+		owner:          owner,
+		repo:           repo,
+	}
+}
+
 // GetTeams returns GitHub team slugs in org that include login.
 func (c IssueClient) GetTeams(org, login string) []string {
 	if org == "" || login == "" {

@@ -63,6 +63,16 @@ type IssueClient struct {
 	repos          *module.Repository
 }
 
+// PullRequestClient is a GitHub client for pull request events.
+type PullRequestClient struct {
+	ctx            context.Context
+	installationId int64
+	githubRepoId   int64
+	owner          string
+	repo           string
+	repos          *module.Repository
+}
+
 // NewIssueClient returns a GitHub client for issue events.
 func NewIssueClient(ctx context.Context, installationId, githubRepoId int64, owner, repo string) IssueClient {
 	return IssueClient{
@@ -136,6 +146,11 @@ func (c IssueClient) IssuesOpenedExceeds(issue eval.Issue, count int, within str
 	return opened > count
 }
 
+// PrsOpenedExceeds is unused for issue events.
+func (c IssueClient) PrsOpenedExceeds(eval.Issue, int, string) bool {
+	return false
+}
+
 // IsAuthorBlocked reports whether the author is on the repository spam blocklist.
 func (c IssueClient) IsAuthorBlocked(issue eval.Issue) bool {
 	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.Author)
@@ -143,6 +158,94 @@ func (c IssueClient) IsAuthorBlocked(issue eval.Issue) bool {
 
 // BlockAuthor adds the login to the repository spam blocklist.
 func (c IssueClient) BlockAuthor(login string) {
+	c.repos.BlockAuthor(c.githubRepoId, login)
+}
+
+// NewPullRequestClient returns a GitHub client for pull request events.
+func NewPullRequestClient(ctx context.Context, installationId, githubRepoId int64, owner, repo string) PullRequestClient {
+	return PullRequestClient{
+		ctx:            ctx,
+		installationId: installationId,
+		githubRepoId:   githubRepoId,
+		owner:          owner,
+		repo:           repo,
+		repos: module.NewRepository(
+			db.NewRepositoriesRepository(db.GetDB()),
+			db.NewRepositoryMetaRepository(db.GetDB()),
+		),
+	}
+}
+
+// GetTeams returns GitHub team slugs in org that include login.
+func (c PullRequestClient) GetTeams(org, login string) []string {
+	if org == "" || login == "" {
+		return []string{}
+	}
+
+	teams, _ := app.Get().ListUserTeams(
+		c.ctx,
+		c.installationId,
+		org,
+		login,
+	)
+
+	slugs := make([]string, len(teams))
+	for i, team := range teams {
+		slugs[i] = team.Slug
+	}
+
+	return slugs
+}
+
+// EvaluateIssue classifies pull request intention from title and body.
+func (c PullRequestClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) v1.Intention {
+	reply, _, _ := ai.NewLiteClient().Complete(c.ctx, []ai.Message{
+		{Role: "system", Content: GetClassifyPrompt(intentions, issue.Title, issue.Body)},
+	})
+
+	return ParseClassifyReply(reply, intentions)
+}
+
+// IsFirstContribution reports whether the author is opening their first pull request.
+func (c PullRequestClient) IsFirstContribution(issue eval.Issue) bool {
+	first, _ := app.Get().IsFirstPullRequest(
+		c.ctx,
+		c.installationId,
+		c.owner,
+		c.repo,
+		issue.Author,
+	)
+
+	return first
+}
+
+// IssuesOpenedExceeds is unused for pull request events.
+func (c PullRequestClient) IssuesOpenedExceeds(eval.Issue, int, string) bool {
+	return false
+}
+
+// PrsOpenedExceeds reports whether the author opened more than count pull requests within the duration.
+func (c PullRequestClient) PrsOpenedExceeds(issue eval.Issue, count int, within string) bool {
+	window, _ := time.ParseDuration(within)
+	opened, _ := app.Get().CountPullRequestsOpened(
+		c.ctx,
+		c.installationId,
+		c.owner,
+		c.repo,
+		issue.Author,
+		time.Now().UTC().Add(-window),
+	)
+
+	return opened > count
+}
+
+// IsAuthorBlocked reports whether the author is on the repository spam blocklist.
+func (c PullRequestClient) IsAuthorBlocked(issue eval.Issue) bool {
+	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.Author)
+}
+
+// BlockAuthor adds the login to the repository spam blocklist.
+func (c PullRequestClient) BlockAuthor(login string) {
 	c.repos.BlockAuthor(c.githubRepoId, login)
 }
 

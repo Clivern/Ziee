@@ -139,8 +139,58 @@ merge_queue:
     #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
     #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
     #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
-    # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams).
+    # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams),
+    #   comment, close, block_author.
+    # Spam matchers: max_prs_opened, author_blocked, intention spam (same blocklist as issues).
     rules:
+      # Flood / velocity
+      - name: rate-limit
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - author_not_in_team: [sre, core]
+          - max_prs_opened: { count: 3, within: 24h }
+        labels:
+          add: [spam]
+        close: true
+        block_author: true
+        comment: "Too many pull requests in a short time. Please wait before opening another."
+
+      # Known offenders (static list you maintain)
+      - name: blocked-authors
+        when:
+          - author_in: [known-spammer1, known-spammer2]
+        labels:
+          add: [spam]
+        close: true
+        block_author: true
+        comment: "This account is blocked from opening pull requests here."
+
+      # Authors on the spam blocklist (shared with issues)
+      - name: spam-blocklist
+        when:
+          - author_blocked: true
+        labels:
+          add: [spam]
+        close: true
+        comment: "This account is blocked from opening pull requests here."
+
+      # AI intention: spam (one hit blocks forever; later opens skip AI)
+      - name: spam
+        when:
+          - author_not_in: [dependabot, ziee-bot]
+          - author_not_in_team: [sre, core]
+          - intention:
+              name: spam
+              description: >-
+                Unsolicited promo, phishing, crypto/SEO spam, nonsense,
+                or content unrelated to this repository. Not a real bug,
+                feature, or docs change.
+        labels:
+          add: [spam]
+        close: true
+        block_author: true
+        comment: "Closed as spam. If this was a mistake, contact a maintainer."
+
       # Paths under api/ or pkg/
       - name: area-api
         when:
@@ -360,6 +410,11 @@ merge_queue:
         - users: [clivern]
     # `@ziee reopen` — reopen the PR
     reopen:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@ziee spam` — label spam, close, and block the author (not implemented yet)
+    spam:
       allow:
         - teams: [sre]
         - users: [clivern]

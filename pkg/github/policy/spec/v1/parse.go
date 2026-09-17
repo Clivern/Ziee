@@ -71,6 +71,10 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			var m MaxIssuesOpened
 			err = node.Decode(&m)
 			c.MaxIssuesOpened = &m
+		case "max_prs_opened":
+			var m MaxIssuesOpened
+			err = node.Decode(&m)
+			c.MaxPrsOpened = &m
 		case "author_blocked":
 			var v bool
 			err = node.Decode(&v)

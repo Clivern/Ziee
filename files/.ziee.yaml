@@ -73,6 +73,33 @@ merge_queue:
     ai:
       enabled: false
     rules:
+      - name: rate-limit
+        when:
+          - max_prs_opened: { count: 3, within: 24h }
+        labels:
+          add: [spam]
+        close: true
+        block_author: true
+        comment: "Too many pull requests in a short time. Please wait before opening another."
+      - name: spam-blocklist
+        when:
+          - author_blocked: true
+        labels:
+          add: [spam]
+        close: true
+        comment: "This account is blocked from opening pull requests here."
+      - name: spam
+        when:
+          - intention:
+              name: spam
+              description: >-
+                Unsolicited promo, phishing, crypto/SEO spam, nonsense,
+                or content unrelated to this repository.
+        labels:
+          add: [spam]
+        close: true
+        block_author: true
+        comment: "Closed as spam. If this was a mistake, contact a maintainer."
       - name: size-s
         when:
           - max_files_changed: 20

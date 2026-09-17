@@ -133,6 +133,13 @@ func SkipAI(rules []v1.Rule, issue Issue, client Client) bool {
 			) {
 				return true
 			}
+			if when.MaxPrsOpened != nil && client.PrsOpenedExceeds(
+				issue,
+				when.MaxPrsOpened.Count,
+				when.MaxPrsOpened.Within,
+			) {
+				return true
+			}
 		}
 	}
 

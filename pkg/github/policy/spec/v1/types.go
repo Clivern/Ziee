@@ -151,6 +151,7 @@ type Clause struct {
 	Check             string           `json:"check,omitempty" yaml:"check,omitempty"`
 	Approvals         *Approvals       `json:"approvals,omitempty" yaml:"approvals,omitempty"`
 	MaxIssuesOpened   *MaxIssuesOpened `json:"max_issues_opened,omitempty" yaml:"max_issues_opened,omitempty"`
+	MaxPrsOpened      *MaxIssuesOpened `json:"max_prs_opened,omitempty" yaml:"max_prs_opened,omitempty"`
 	AuthorBlocked     *bool            `json:"author_blocked,omitempty" yaml:"author_blocked,omitempty"`
 }
 

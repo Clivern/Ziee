@@ -55,6 +55,8 @@ type Client interface {
 	IsFirstContribution(issue Issue) bool
 	// IssuesOpenedExceeds reports whether the author opened more than count issues within the duration.
 	IssuesOpenedExceeds(issue Issue, count int, within string) bool
+	// PrsOpenedExceeds reports whether the author opened more than count pull requests within the duration.
+	PrsOpenedExceeds(issue Issue, count int, within string) bool
 	// IsAuthorBlocked reports whether the author is on the repository spam blocklist.
 	IsAuthorBlocked(issue Issue) bool
 	// BlockAuthor adds the login to the repository spam blocklist.

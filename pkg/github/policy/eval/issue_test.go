@@ -392,6 +392,7 @@ type stubClient struct {
 	org          string
 	first        bool
 	exceeds      bool
+	prsExceeds   bool
 	blocked      bool
 	blockedLogin string
 }
@@ -414,6 +415,10 @@ func (s *stubClient) IsFirstContribution(Issue) bool {
 
 func (s *stubClient) IssuesOpenedExceeds(Issue, int, string) bool {
 	return s.exceeds
+}
+
+func (s *stubClient) PrsOpenedExceeds(Issue, int, string) bool {
+	return s.prsExceeds
 }
 
 func (s *stubClient) IsAuthorBlocked(Issue) bool {

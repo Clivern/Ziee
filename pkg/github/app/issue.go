@@ -115,6 +115,27 @@ func (a *App) CountIssuesOpened(ctx context.Context, installationID int64, owner
 	return result.TotalCount, nil
 }
 
+// CountPullRequestsOpened returns how many pull requests login opened in the repository since the given time.
+func (a *App) CountPullRequestsOpened(ctx context.Context, installationID int64, owner, repo, login string, since time.Time) (int, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return 0, err
+	}
+
+	var result struct {
+		TotalCount int `json:"total_count"`
+	}
+	path := fmt.Sprintf("%s/search/issues?per_page=1&q=%s", a.apiURL, url.QueryEscape(
+		fmt.Sprintf("repo:%s/%s author:%s type:pr created:>=%s", owner, repo, login, since.UTC().Format("2006-01-02")),
+	))
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &result)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.TotalCount, nil
+}
+
 // CreateIssue opens an issue in a repository.
 func (a *App) CreateIssue(ctx context.Context, installationID int64, owner, repo, title, body string) (*Issue, error) {
 	token, err := a.GetInstallationToken(ctx, installationID)

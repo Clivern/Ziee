@@ -56,6 +56,9 @@ labels:
   - name: "security"
     color: "E99695"
     description: "Vulnerability remediation or security improvement."
+  - name: "spam"
+    color: "B60205"
+    description: "Spam or abuse."
 
 # Teams definitions (union with GitHub org teams for author_in_team)
 teams:
@@ -491,6 +494,12 @@ issue_triage:
         - teams: [sre]
         - users: [clivern]
 
+    # `@ziee spam` — label spam, close, and block the author from further issues
+    spam:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+
     # `@ziee summarize` — summarize the issue
     summarize:
       allow:
@@ -501,9 +510,59 @@ issue_triage:
   #   author_in / author_not_in (user logins),
   #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
   #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
+  #   max_issues_opened ({count, within}) — author opened more than count issues in the window,
+  #   author_blocked — author is on the repo spam blocklist (from `@ziee spam`),
   #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
-  # Actions: labels.add / labels.remove, assign (users), comment (body).
+  # Actions: labels.add / labels.remove, assign (users), comment (body), close, block_author.
   rules:
+    # Flood / velocity: close burst openers before AI triage
+    - name: rate-limit
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - author_not_in_team: [sre, core]
+        - max_issues_opened: { count: 3, within: 24h }
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "Too many issues in a short time. Please wait before opening another."
+
+    # Known offenders (static list you maintain)
+    - name: blocked-authors
+      when:
+        - author_in: [known-spammer1, known-spammer2]
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "This account is blocked from opening issues here."
+
+    # Authors marked via `@ziee spam` or prior spam/rate-limit hits
+    - name: spam-blocklist
+      when:
+        - author_blocked: true
+      labels:
+        add: [spam]
+      close: true
+      comment: "This account is blocked from opening issues here."
+
+    # AI intention: spam (one hit blocks forever; later opens skip AI)
+    - name: spam
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - author_not_in_team: [sre, core]
+        - intention:
+            name: spam
+            description: >-
+              Unsolicited promo, phishing, crypto/SEO spam, nonsense,
+              or content unrelated to this repository. Not a real bug,
+              feature, or docs request.
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "Closed as spam. If this was a mistake, contact a maintainer."
+
     # Bot authors (user logins)
     - name: bot
       when:

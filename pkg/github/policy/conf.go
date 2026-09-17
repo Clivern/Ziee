@@ -24,4 +24,5 @@ const (
 	Comment      = "comment"
 	Close        = "close"
 	Reopen       = "reopen"
+	BlockAuthor  = "block_author"
 )

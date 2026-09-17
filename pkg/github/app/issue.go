@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 // GetIssue fetches an issue by number.
@@ -91,6 +92,27 @@ func (a *App) IsFirstPullRequest(ctx context.Context, installationID int64, owne
 	}
 
 	return result.TotalCount <= 1, nil
+}
+
+// CountIssuesOpened returns how many issues login opened in the repository since the given time.
+func (a *App) CountIssuesOpened(ctx context.Context, installationID int64, owner, repo, login string, since time.Time) (int, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return 0, err
+	}
+
+	var result struct {
+		TotalCount int `json:"total_count"`
+	}
+	path := fmt.Sprintf("%s/search/issues?per_page=1&q=%s", a.apiURL, url.QueryEscape(
+		fmt.Sprintf("repo:%s/%s author:%s type:issue created:>=%s", owner, repo, login, since.UTC().Format("2006-01-02")),
+	))
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &result)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.TotalCount, nil
 }
 
 // CreateIssue opens an issue in a repository.

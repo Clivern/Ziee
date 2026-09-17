@@ -227,12 +227,173 @@ func TestUnitEvaluateIssueOpenedFirstContribution(t *testing.T) {
 	assert.Empty(t, plan.Actions)
 }
 
+func TestUnitEvaluateIssueOpenedClose(t *testing.T) {
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name:    "spam",
+					When:    v1.Clauses{{AuthorIn: []string{"spammer"}}},
+					Labels:  v1.Labels{Add: []string{"spam"}},
+					Close:   true,
+					Comment: "Closed as spam.",
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "spammer"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Comment, Body: "Closed as spam."},
+		{Kind: policy.Close},
+	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedBlockAuthor(t *testing.T) {
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			AI:      v1.AI{Enabled: true},
+			Rules: []v1.Rule{
+				{
+					Name: "spam",
+					When: v1.Clauses{{
+						Intention: v1.Intention{Name: "spam"},
+					}},
+					Labels:      v1.Labels{Add: []string{"spam"}},
+					Close:       true,
+					BlockAuthor: true,
+				},
+			},
+		},
+	}
+
+	client := &stubClient{intention: v1.Intention{Name: "spam"}}
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "spammer", Title: "buy crypto"},
+	}, client)
+
+	assert.Equal(t, "spammer", client.blockedLogin)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+		{Kind: policy.BlockAuthor, Users: []string{"spammer"}},
+	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedSkipAI(t *testing.T) {
+	blocked := true
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			AI:      v1.AI{Enabled: true},
+			Rules: []v1.Rule{
+				{
+					Name:   "spam-blocklist",
+					When:   v1.Clauses{{AuthorBlocked: &blocked}},
+					Labels: v1.Labels{Add: []string{"spam"}},
+					Close:  true,
+				},
+				{
+					Name:   "spam",
+					When:   v1.Clauses{{Intention: v1.Intention{Name: "spam"}}},
+					Labels: v1.Labels{Add: []string{"spam"}},
+				},
+			},
+		},
+	}
+
+	client := &stubClient{blocked: true, intention: v1.Intention{Name: "spam"}}
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "spammer", Title: "again"},
+	}, client)
+
+	assert.Nil(t, client.got)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+	}, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedRateLimit(t *testing.T) {
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name: "rate-limit",
+					When: v1.Clauses{{
+						MaxIssuesOpened: &v1.MaxIssuesOpened{Count: 3, Within: "24h"},
+					}},
+					Labels: v1.Labels{Add: []string{"spam"}},
+					Close:  true,
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "flooder"},
+	}, &stubClient{exceeds: true})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+	}, plan.Actions)
+
+	plan = EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedAuthorBlocked(t *testing.T) {
+	blocked := true
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name:   "spam-blocklist",
+					When:   v1.Clauses{{AuthorBlocked: &blocked}},
+					Labels: v1.Labels{Add: []string{"spam"}},
+					Close:  true,
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "blocked-user"},
+	}, &stubClient{blocked: true})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+	}, plan.Actions)
+
+	plan = EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
 type stubClient struct {
-	got       []v1.Intention
-	intention v1.Intention
-	teams     []string
-	org       string
-	first     bool
+	got          []v1.Intention
+	intention    v1.Intention
+	teams        []string
+	org          string
+	first        bool
+	exceeds      bool
+	blocked      bool
+	blockedLogin string
 }
 
 func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) v1.Intention {
@@ -249,4 +410,17 @@ func (s *stubClient) GetTeams(org, _ string) []string {
 
 func (s *stubClient) IsFirstContribution(Issue) bool {
 	return s.first
+}
+
+func (s *stubClient) IssuesOpenedExceeds(Issue, int, string) bool {
+	return s.exceeds
+}
+
+func (s *stubClient) IsAuthorBlocked(Issue) bool {
+	return s.blocked
+}
+
+func (s *stubClient) BlockAuthor(login string) {
+	s.blockedLogin = login
+	s.blocked = true
 }

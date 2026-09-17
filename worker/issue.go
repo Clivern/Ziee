@@ -95,7 +95,7 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 		Actor: eval.Actor{
 			Login: issue.Sender.Login,
 		},
-	}, NewIssueClient(ctx, installationId, payload["owner"], payload["repo"]))
+	}, NewIssueClient(ctx, installationId, issue.Repository.ID, payload["owner"], payload["repo"]))
 
 	log.Info().
 		Str("deliveryId", payload["deliveryId"]).

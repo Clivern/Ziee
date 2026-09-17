@@ -96,7 +96,7 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 		Actor: eval.Actor{
 			Login: comment.Sender.Login,
 		},
-	}, NewIssueClient(ctx, installationId, payload["owner"], payload["repo"]))
+	}, NewIssueClient(ctx, installationId, comment.Repository.ID, payload["owner"], payload["repo"]))
 
 	log.Info().
 		Str("deliveryId", payload["deliveryId"]).

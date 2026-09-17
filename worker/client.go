@@ -7,7 +7,10 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 
+	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy/eval"
@@ -54,17 +57,24 @@ type ClassifyReply struct {
 type IssueClient struct {
 	ctx            context.Context
 	installationId int64
+	githubRepoId   int64
 	owner          string
 	repo           string
+	repos          *module.Repository
 }
 
 // NewIssueClient returns a GitHub client for issue events.
-func NewIssueClient(ctx context.Context, installationId int64, owner, repo string) IssueClient {
+func NewIssueClient(ctx context.Context, installationId, githubRepoId int64, owner, repo string) IssueClient {
 	return IssueClient{
 		ctx:            ctx,
 		installationId: installationId,
+		githubRepoId:   githubRepoId,
 		owner:          owner,
 		repo:           repo,
+		repos: module.NewRepository(
+			db.NewRepositoriesRepository(db.GetDB()),
+			db.NewRepositoryMetaRepository(db.GetDB()),
+		),
 	}
 }
 
@@ -109,6 +119,31 @@ func (c IssueClient) IsFirstContribution(issue eval.Issue) bool {
 	)
 
 	return first
+}
+
+// IssuesOpenedExceeds reports whether the author opened more than count issues within the duration.
+func (c IssueClient) IssuesOpenedExceeds(issue eval.Issue, count int, within string) bool {
+	window, _ := time.ParseDuration(within)
+	opened, _ := app.Get().CountIssuesOpened(
+		c.ctx,
+		c.installationId,
+		c.owner,
+		c.repo,
+		issue.Author,
+		time.Now().UTC().Add(-window),
+	)
+
+	return opened > count
+}
+
+// IsAuthorBlocked reports whether the author is on the repository spam blocklist.
+func (c IssueClient) IsAuthorBlocked(issue eval.Issue) bool {
+	return c.repos.IsSpamBlocked(c.githubRepoId, issue.Author)
+}
+
+// BlockAuthor adds the login to the repository spam blocklist.
+func (c IssueClient) BlockAuthor(login string) {
+	c.repos.BlockSpamAuthor(c.githubRepoId, login)
 }
 
 // GetClassifyPrompt fills the classify chat prompt.

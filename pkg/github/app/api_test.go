@@ -196,6 +196,18 @@ func TestUnitAppHTTP(t *testing.T) {
 		assert.False(t, firstPR)
 	})
 
+	t.Run("CountIssuesOpened", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/search/issues", r.URL.Path)
+			assert.Contains(t, r.URL.RawQuery, "created")
+			_ = json.NewEncoder(w).Encode(map[string]int{"total_count": 4})
+		}))
+
+		count, err := client.CountIssuesOpened(ctx, 1, "acme", "ziee", "maya", time.Now().UTC().Add(-24*time.Hour))
+		assert.NoError(t, err)
+		assert.Equal(t, 4, count)
+	})
+
 	t.Run("PullRequests", func(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			switch {

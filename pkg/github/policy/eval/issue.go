@@ -33,7 +33,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 	)
 
 	intentions := GetIntentionsFromRules(conf.IssueTriage.Rules)
-	if conf.IssueTriage.AI.Enabled && len(intentions) > 0 {
+	if conf.IssueTriage.AI.Enabled && len(intentions) > 0 && !SkipAI(conf.IssueTriage.Rules, event.Issue, client) {
 		event.Issue.Intention = client.EvaluateIssue(event.Issue, intentions)
 	}
 
@@ -67,6 +67,16 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			if when.FirstContribution != nil && *when.FirstContribution != client.IsFirstContribution(event.Issue) {
 				matched = false
 			}
+			if when.MaxIssuesOpened != nil && !client.IssuesOpenedExceeds(
+				event.Issue,
+				when.MaxIssuesOpened.Count,
+				when.MaxIssuesOpened.Within,
+			) {
+				matched = false
+			}
+			if when.AuthorBlocked != nil && *when.AuthorBlocked != client.IsAuthorBlocked(event.Issue) {
+				matched = false
+			}
 		}
 		if !matched {
 			continue
@@ -93,6 +103,18 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind: policy.Comment,
 				Body: rule.Comment,
+			})
+		}
+		if rule.Close {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind: policy.Close,
+			})
+		}
+		if rule.BlockAuthor {
+			client.BlockAuthor(event.Issue.Author)
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.BlockAuthor,
+				Users: []string{event.Issue.Author},
 			})
 		}
 	}
@@ -138,10 +160,11 @@ func EvaluateIssueComment(conf *v1.File, event Event, client Client) action.Plan
 	// 1. Ignore the event when event.Actor is the Ziee GitHub App.
 	// 2. Ignore comments that do not start with `@ziee`.
 	// 3. Parse the command verb and arguments from event.Comment.
-	// 4. Find the verb in conf.IssueTriage.Commands.
+	// 4. Find the verb in conf.IssueTriage.Commands (label, unlabel, assign, unassign, close, reopen, spam, summarize).
 	// 5. Use client to load the actor's repository permission and teams.
 	// 6. Allow the command when any permission, team, or user entry matches.
 	// 7. Convert the command and arguments into label, assignment, or state actions.
+	//    For `spam`: add spam label, close, block the issue author (BlockAuthor), and comment.
 	// 8. Add an outcome comment action when the configured comment mode requires it.
 	// 9. Return the complete ordered action plan.
 

@@ -104,14 +104,26 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.True(t, file.IssueTriage.Enabled)
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["close"].Allow[1].Users)
+	assert.Equal(t, []string{"sre"}, file.IssueTriage.Commands["spam"].Allow[0].Teams)
+	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["spam"].Allow[1].Users)
 	assert.Equal(t, []string{"sre", "core"}, file.IssueTriage.Commands["summarize"].Allow[0].Teams)
 	assert.Equal(t, []string{"clivern"}, file.IssueTriage.Commands["summarize"].Allow[1].Users)
-	assert.Equal(t, "bug", file.IssueTriage.Rules[5].When[1].Intention.Name)
-	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", file.IssueTriage.Rules[5].When[1].Intention.Description)
-	assert.Equal(t, "Thanks for the report. We'll investigate this bug.", file.IssueTriage.Rules[5].Comment)
-	assert.Equal(t, "first-contribution", file.IssueTriage.Rules[1].Name)
-	assert.True(t, *file.IssueTriage.Rules[1].When[1].FirstContribution)
-	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[9].When[0].AuthorNotInTeam)
+	assert.Equal(t, "rate-limit", file.IssueTriage.Rules[0].Name)
+	assert.Equal(t, 3, file.IssueTriage.Rules[0].When[2].MaxIssuesOpened.Count)
+	assert.Equal(t, "24h", file.IssueTriage.Rules[0].When[2].MaxIssuesOpened.Within)
+	assert.True(t, file.IssueTriage.Rules[0].Close)
+	assert.True(t, file.IssueTriage.Rules[0].BlockAuthor)
+	assert.Equal(t, "blocked-authors", file.IssueTriage.Rules[1].Name)
+	assert.True(t, file.IssueTriage.Rules[1].BlockAuthor)
+	assert.True(t, *file.IssueTriage.Rules[2].When[0].AuthorBlocked)
+	assert.Equal(t, "spam", file.IssueTriage.Rules[3].When[2].Intention.Name)
+	assert.True(t, file.IssueTriage.Rules[3].BlockAuthor)
+	assert.Equal(t, "bug", file.IssueTriage.Rules[9].When[1].Intention.Name)
+	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", file.IssueTriage.Rules[9].When[1].Intention.Description)
+	assert.Equal(t, "Thanks for the report. We'll investigate this bug.", file.IssueTriage.Rules[9].Comment)
+	assert.Equal(t, "first-contribution", file.IssueTriage.Rules[5].Name)
+	assert.True(t, *file.IssueTriage.Rules[5].When[1].FirstContribution)
+	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[13].When[0].AuthorNotInTeam)
 	assert.Equal(t, "first-contribution", file.MergeQueue.PRTriage.Rules[8].Name)
 	assert.True(t, *file.MergeQueue.PRTriage.Rules[8].When[1].FirstContribution)
 	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[16].When[0].AuthorNotInTeam)
@@ -144,6 +156,10 @@ merge_queue:
           - intention:
               name: bug
               description: "A defect that needs a fix."
+          - max_issues_opened:
+              count: 3
+              within: 24h
+          - author_blocked: true
         labels:
           add: [size/s]
   queue_rules:
@@ -173,6 +189,9 @@ issue_triage:
 	assert.Equal(t, "docs", when[4].Intention.Name)
 	assert.Equal(t, "bug", when[5].Intention.Name)
 	assert.Equal(t, "A defect that needs a fix.", when[5].Intention.Description)
+	assert.Equal(t, 3, when[6].MaxIssuesOpened.Count)
+	assert.Equal(t, "24h", when[6].MaxIssuesOpened.Within)
+	assert.True(t, *when[7].AuthorBlocked)
 	assert.Equal(t, 2, file.MergeQueue.QueueRules[0].BatchSize.Min)
 	assert.Equal(t, 4, file.MergeQueue.QueueRules[0].BatchSize.Max)
 	assert.Equal(t, []string{"maya"}, file.IssueTriage.Commands["label"].Allow[0].Users)

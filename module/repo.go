@@ -164,3 +164,35 @@ func (r *Repository) GetConfigPath(githubRepoId int64) (string, error) {
 
 	return lo.FromPtr(repo.ConfigPath), nil
 }
+
+// IsSpamBlocked reports whether login is on the repository spam blocklist.
+func (r *Repository) IsSpamBlocked(githubRepoId int64, login string) bool {
+	raw, err := r.GetMeta(githubRepoId, db.RepositoryMetaSpamBlocklist)
+	if err != nil {
+		return false
+	}
+
+	var logins []string
+	_ = json.Unmarshal([]byte(raw), &logins)
+
+	return lo.ContainsBy(logins, func(user string) bool {
+		return strings.EqualFold(user, login)
+	})
+}
+
+// BlockSpamAuthor adds login to the repository spam blocklist.
+func (r *Repository) BlockSpamAuthor(githubRepoId int64, login string) {
+	raw, _ := r.GetMeta(githubRepoId, db.RepositoryMetaSpamBlocklist)
+
+	var logins []string
+	_ = json.Unmarshal([]byte(raw), &logins)
+
+	if lo.ContainsBy(logins, func(user string) bool {
+		return strings.EqualFold(user, login)
+	}) {
+		return
+	}
+
+	payload, _ := json.Marshal(append(logins, login))
+	_ = r.UpsertMeta(githubRepoId, db.RepositoryMetaSpamBlocklist, string(payload))
+}

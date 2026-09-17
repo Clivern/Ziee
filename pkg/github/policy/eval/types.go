@@ -53,4 +53,10 @@ type Client interface {
 	EvaluateIssue(issue Issue, intentions []v1.Intention) v1.Intention
 	// IsFirstContribution reports whether the issue author is a first-time contributor.
 	IsFirstContribution(issue Issue) bool
+	// IssuesOpenedExceeds reports whether the author opened more than count issues within the duration.
+	IssuesOpenedExceeds(issue Issue, count int, within string) bool
+	// IsAuthorBlocked reports whether the author is on the repository spam blocklist.
+	IsAuthorBlocked(issue Issue) bool
+	// BlockAuthor adds the login to the repository spam blocklist.
+	BlockAuthor(login string)
 }

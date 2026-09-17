@@ -4,6 +4,8 @@ github.com/OpenRouterTeam/go-sdk v0.7.135 h1:0RjfTut1BpaOC/r4FKZ8vjQOKbG3X6a4Qxk
 github.com/OpenRouterTeam/go-sdk v0.7.135/go.mod h1:8vFtUZ9I2YiDntYbck42wQhrx9DsJN5PHbViaHwTkXc=
 github.com/OpenRouterTeam/go-sdk v0.7.136 h1:St2WFeZTj/GJXWn1alDvUKs/Z+R8ggRjdXXkS8flbHM=
 github.com/OpenRouterTeam/go-sdk v0.7.136/go.mod h1:8vFtUZ9I2YiDntYbck42wQhrx9DsJN5PHbViaHwTkXc=
+github.com/OpenRouterTeam/go-sdk v0.7.148 h1:y+mUr88vHL5LllNYiPeMBWH6qUc6d8Gf2npsJXol6V8=
+github.com/OpenRouterTeam/go-sdk v0.7.148/go.mod h1:8vFtUZ9I2YiDntYbck42wQhrx9DsJN5PHbViaHwTkXc=
 github.com/andybalholm/brotli v1.2.2 h1:HzTuoo2ErYQqf5qvcJInB8uvqSVxRttzkFexPWtnceM=
 github.com/andybalholm/brotli v1.2.2/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/aws/aws-sdk-go-v2 v1.47.0 h1:0jsHallhJCeaU0Ko48c/3FK1ctOQ7NpzggxriJOQ8MQ=

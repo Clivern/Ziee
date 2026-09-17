@@ -29,3 +29,10 @@ type Comment struct {
 	HTMLURL string `json:"html_url"`
 	User    User   `json:"user"`
 }
+
+// Team is a GitHub organization team.
+type Team struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}

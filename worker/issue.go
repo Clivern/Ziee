@@ -15,19 +15,10 @@ import (
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy/eval"
 	"github.com/clivern/ziee/pkg/github/policy/spec"
-	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 	"github.com/clivern/ziee/pkg/github/webhook"
 
 	"github.com/rs/zerolog/log"
 )
-
-type noopClient struct{}
-
-func (noopClient) GetTeams(string, string) []string { return nil }
-
-func (noopClient) EvaluateIssue(eval.Issue, []v1.Intention) []string { return nil }
-
-func (noopClient) IsFirstContribution(eval.Issue) bool { return false }
 
 // HandleGitHubIssue evaluates an issue webhook.
 func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error {
@@ -104,7 +95,7 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 		Actor: eval.Actor{
 			Login: issue.Sender.Login,
 		},
-	}, noopClient{})
+	}, NewIssueClient(ctx, installationId, issue.Repository.ID, payload["owner"], payload["repo"]))
 
 	log.Info().
 		Str("deliveryId", payload["deliveryId"]).

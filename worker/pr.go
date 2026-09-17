@@ -23,6 +23,7 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 	h.tasks.MarkRunning(taskId)
 
 	// TODO: load .ziee.yml and evaluate the pull request with eval.Run
+	// (spam / pr_triage via EvaluatePROpened when wired)
 
 	return h.tasks.Complete(taskId, "")
 }

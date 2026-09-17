@@ -117,3 +117,31 @@ func JoinClause(verb, left, right string, items []string) string {
 		return left + item + right
 	}), ", ")
 }
+
+// SkipAI reports whether cheap spam guards already apply, so classification is skipped.
+func SkipAI(rules []v1.Rule, issue Issue, client Client) bool {
+	if client.IsAuthorBlocked(issue) {
+		return true
+	}
+
+	for _, rule := range rules {
+		for _, when := range rule.When {
+			if when.MaxIssuesOpened != nil && client.IssuesOpenedExceeds(
+				issue,
+				when.MaxIssuesOpened.Count,
+				when.MaxIssuesOpened.Within,
+			) {
+				return true
+			}
+			if when.MaxPrsOpened != nil && client.PrsOpenedExceeds(
+				issue,
+				when.MaxPrsOpened.Count,
+				when.MaxPrsOpened.Within,
+			) {
+				return true
+			}
+		}
+	}
+
+	return false
+}

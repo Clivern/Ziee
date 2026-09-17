@@ -78,6 +78,33 @@ func (a *App) ListPullRequests(ctx context.Context, installationID int64, owner,
 	}
 }
 
+// ListPullRequestFiles lists changed file paths on a pull request.
+func (a *App) ListPullRequestFiles(ctx context.Context, installationID int64, owner, repo string, number int) ([]string, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var all []string
+	for page := 1; ; page++ {
+		var files []struct {
+			Filename string `json:"filename"`
+		}
+		path := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files?per_page=%d&page=%d", a.apiURL, owner, repo, number, AppPerPage, page)
+		err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &files)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, file := range files {
+			all = append(all, file.Filename)
+		}
+		if len(files) < AppPerPage {
+			return all, nil
+		}
+	}
+}
+
 // CreatePullRequest creates a branch, adds a file, and opens a pull request.
 func (a *App) CreatePullRequest(ctx context.Context, installationID int64, owner, repo string, in NewPullRequest) (*PullRequest, error) {
 	repository, err := a.GetRepository(ctx, installationID, owner, repo)

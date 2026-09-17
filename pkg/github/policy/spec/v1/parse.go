@@ -67,6 +67,18 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			var a Approvals
 			err = node.Decode(&a)
 			c.Approvals = &a
+		case "max_issues_opened":
+			var m MaxIssuesOpened
+			err = node.Decode(&m)
+			c.MaxIssuesOpened = &m
+		case "max_prs_opened":
+			var m MaxIssuesOpened
+			err = node.Decode(&m)
+			c.MaxPrsOpened = &m
+		case "author_blocked":
+			var v bool
+			err = node.Decode(&v)
+			c.AuthorBlocked = &v
 		default:
 			return fmt.Errorf("spec: unknown when key %q", key)
 		}

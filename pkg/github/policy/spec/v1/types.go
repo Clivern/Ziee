@@ -92,6 +92,8 @@ type Rule struct {
 	Reviewers   []string `yaml:"reviewers,omitempty"`
 	ReviewTeams []string `yaml:"review_teams,omitempty"`
 	Comment     string   `yaml:"comment,omitempty"`
+	Close       bool     `yaml:"close,omitempty"`
+	BlockAuthor bool     `yaml:"block_author,omitempty"`
 }
 
 // Labels are GitHub labels to add or remove.
@@ -134,20 +136,29 @@ type Clauses []Clause
 
 // Clause is one matcher in a `when` list.
 type Clause struct {
-	Files             []string   `json:"files,omitempty" yaml:"files,omitempty"`
-	MaxFilesChanged   *int       `json:"max_files_changed,omitempty" yaml:"max_files_changed,omitempty"`
-	MinFilesChanged   *int       `json:"min_files_changed,omitempty" yaml:"min_files_changed,omitempty"`
-	Title             string     `json:"title,omitempty" yaml:"title,omitempty"`
-	Body              string     `json:"body,omitempty" yaml:"body,omitempty"`
-	AuthorIn          []string   `json:"author_in,omitempty" yaml:"author_in,omitempty"`
-	AuthorNotIn       []string   `json:"author_not_in,omitempty" yaml:"author_not_in,omitempty"`
-	AuthorInTeam      []string   `json:"author_in_team,omitempty" yaml:"author_in_team,omitempty"`
-	AuthorNotInTeam   []string   `json:"author_not_in_team,omitempty" yaml:"author_not_in_team,omitempty"`
-	FirstContribution *bool      `json:"first_contribution,omitempty" yaml:"first_contribution,omitempty"`
-	Intention         Intention  `json:"intention,omitempty" yaml:"intention,omitempty"`
-	Label             string     `json:"label,omitempty" yaml:"label,omitempty"`
-	Check             string     `json:"check,omitempty" yaml:"check,omitempty"`
-	Approvals         *Approvals `json:"approvals,omitempty" yaml:"approvals,omitempty"`
+	Files             []string         `json:"files,omitempty" yaml:"files,omitempty"`
+	MaxFilesChanged   *int             `json:"max_files_changed,omitempty" yaml:"max_files_changed,omitempty"`
+	MinFilesChanged   *int             `json:"min_files_changed,omitempty" yaml:"min_files_changed,omitempty"`
+	Title             string           `json:"title,omitempty" yaml:"title,omitempty"`
+	Body              string           `json:"body,omitempty" yaml:"body,omitempty"`
+	AuthorIn          []string         `json:"author_in,omitempty" yaml:"author_in,omitempty"`
+	AuthorNotIn       []string         `json:"author_not_in,omitempty" yaml:"author_not_in,omitempty"`
+	AuthorInTeam      []string         `json:"author_in_team,omitempty" yaml:"author_in_team,omitempty"`
+	AuthorNotInTeam   []string         `json:"author_not_in_team,omitempty" yaml:"author_not_in_team,omitempty"`
+	FirstContribution *bool            `json:"first_contribution,omitempty" yaml:"first_contribution,omitempty"`
+	Intention         Intention        `json:"intention,omitempty" yaml:"intention,omitempty"`
+	Label             string           `json:"label,omitempty" yaml:"label,omitempty"`
+	Check             string           `json:"check,omitempty" yaml:"check,omitempty"`
+	Approvals         *Approvals       `json:"approvals,omitempty" yaml:"approvals,omitempty"`
+	MaxIssuesOpened   *MaxIssuesOpened `json:"max_issues_opened,omitempty" yaml:"max_issues_opened,omitempty"`
+	MaxPrsOpened      *MaxIssuesOpened `json:"max_prs_opened,omitempty" yaml:"max_prs_opened,omitempty"`
+	AuthorBlocked     *bool            `json:"author_blocked,omitempty" yaml:"author_blocked,omitempty"`
+}
+
+// MaxIssuesOpened matches when the author opened more than Count issues within the duration.
+type MaxIssuesOpened struct {
+	Count  int    `json:"count" yaml:"count"`
+	Within string `json:"within" yaml:"within"`
 }
 
 // Intention is an AI classify label. A string is the name only.

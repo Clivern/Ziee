@@ -138,12 +138,12 @@ func (c IssueClient) IssuesOpenedExceeds(issue eval.Issue, count int, within str
 
 // IsAuthorBlocked reports whether the author is on the repository spam blocklist.
 func (c IssueClient) IsAuthorBlocked(issue eval.Issue) bool {
-	return c.repos.IsSpamBlocked(c.githubRepoId, issue.Author)
+	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.Author)
 }
 
 // BlockAuthor adds the login to the repository spam blocklist.
 func (c IssueClient) BlockAuthor(login string) {
-	c.repos.BlockSpamAuthor(c.githubRepoId, login)
+	c.repos.BlockAuthor(c.githubRepoId, login)
 }
 
 // GetClassifyPrompt fills the classify chat prompt.

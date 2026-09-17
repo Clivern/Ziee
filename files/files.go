@@ -3,7 +3,7 @@
 
 package files
 
-import _ "embed"
+import "embed"
 
 //go:embed .ziee.yaml
 var DefaultZieeYML string
@@ -13,3 +13,6 @@ var SetupIssueBody string
 
 //go:embed setup_pr.md
 var SetupPullRequestBody string
+
+//go:embed rules/*
+var Rules embed.FS

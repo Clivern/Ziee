@@ -1,7 +1,7 @@
 #### Go Review Principles
 > Favor precision over recall: report only defects that are likely real in the changed code and its reachable context. A false positive costs reviewer trust. Treat correctness and security findings as blocking; style-only suggestions are non-blocking. Focus on language-specific risks that ordinary formatting and deterministic tooling do not already cover.
 
-Before reporting a non-local claim, use `file_read` and `code_search` to establish the relevant call sites, ownership, synchronization, and input boundaries. Do not infer concurrent invocation, attacker control, resource ownership, or an error contract solely from a function name or package import. Do not duplicate findings that `go vet`, Staticcheck, `go test -race`, the compiler, or `gofmt` can determine reliably unless the diff shows a concrete user-visible consequence those tools will not express.
+Before reporting a non-local claim, the current diff must establish the relevant call sites, ownership, synchronization, and input boundaries. Do not infer concurrent invocation, attacker control, resource ownership, or an error contract solely from a function name or package import. Do not duplicate findings that `go vet`, Staticcheck, `go test -race`, the compiler, or `gofmt` can determine reliably unless the diff shows a concrete user-visible consequence those tools will not express.
 
 #### Errors, Panics, and API Contracts
 - Errors returned from calls that are ignored, overwritten, or converted into success/default values that hide a failed operation. A deliberately best-effort operation is acceptable only when the ignored failure is safe and documented or evident from the context.

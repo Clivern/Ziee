@@ -1,7 +1,7 @@
 #### Swift Review Principles
 > Favor precision over recall: report only defects likely real in changed code and reachable execution paths. Prioritize crashes, data corruption, security issues, privacy issues, and concurrency bugs. Do not report style preferences.
 
-Before reporting non-local behavior, use `file_read` and `code_search` to verify ownership, callers, synchronization, lifecycle, and input sources. Do not infer threading, retain cycles, or error contracts only from names or types. Do not duplicate compiler, SwiftLint, or Xcode analyzer findings unless the diff creates concrete correctness impact.
+Before reporting non-local behavior, the current diff must establish ownership, callers, synchronization, lifecycle, and input sources. Do not infer threading, retain cycles, or error contracts only from names or types. Do not duplicate compiler, SwiftLint, or Xcode analyzer findings unless the diff creates concrete correctness impact.
 
 #### Optionals and Runtime Failures
 - Force unwrap, force cast, or `try!` on runtime-derived values (user input, network responses, persistence, decoding, external state) where failure is reachable and not handled.

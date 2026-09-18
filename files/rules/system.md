@@ -21,9 +21,14 @@ Please keep your responses concise and objective.
 
 ## Reply
 - Do not call tools. Use only the current file diff and the review checklist in <user_task>.
-- JSON only, no markdown: {"findings":[{"path":"<file>","line":<int>,"body":"<comment>"}]}
+- JSON only, no markdown fences around the JSON: {"findings":[{"path":"<file>","severity":"P1","title":"<headline>","start_line":<int>,"line":<int>,"body":"<markdown>","evidence":"<error>","fix":"<code>","why":"<markdown>"}]}
 - path must be the file under review, copied exactly.
-- line is a line number on the RIGHT (new) side of the diff that your comment refers to.
-- body is a short, precise review comment. Report only defects likely real.
-- If nothing is worth flagging: {"findings":[]}
+- severity is P0 (crash/data-loss), P1 (blocking correctness/security), P2 (likely defect), or P3 (non-blocking).
+- title is a short headline, no trailing period. Use `backticks` around identifiers in the title.
+- start_line and line are RIGHT-side line numbers of the hunk this comment covers. line is the last line. start_line is the first line; set them equal when the issue is one line.
+- body is GitHub markdown prose only: use `backticks` for identifiers. No heading, no code fence, no "why" section.
+- evidence is optional: exact error/output text, no fences. Omit the key when there is none.
+- fix is optional: suggested replacement code, no fences. Omit the key when there is none.
+- why is optional: one or two sentences on why tests/CI missed this. Omit the key when unknown.
+- Report only defects likely real. If nothing is worth flagging: {"findings":[]}
 - Never invent files. Never add fields.

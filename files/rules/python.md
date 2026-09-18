@@ -20,7 +20,7 @@
 #### Boundary and Edge-Case Handling
 - Empty inputs assumed to be non-empty: indexing `xs[0]`, `max()`/`min()`, or slicing without first handling the empty `list`, `str`, `dict`, or iterator
 - Off-by-one and out-of-range access on indices, ranges, or slices, especially at the first/last element
-- `None` reaching code that assumes a value, when an upstream call or default can legitimately return `None` (confirm the data source with `file_read` before flagging)
+- `None` reaching code that assumes a value, when an upstream call or default can legitimately return `None` (confirm the data source from the diff before flagging)
 - Comparing floats for exact equality with `==`; use `math.isclose` or an explicit tolerance, since floating-point results are not exact
 - Integer/float and division assumptions: unintended truncation with `//`, or `ZeroDivisionError` when a divisor can be zero
 - Heterogeneous or unexpected element types in a collection that the code assumes are uniform (e.g., mixing `None`, numbers, and strings)
@@ -46,7 +46,7 @@
 - Context managers available but bypassed in favor of manual `open()`/`close()` pairs
 - Resources acquired in a `try` whose `finally` cleanup is missing or incomplete on the error path
 - Iterators or generators holding resources open longer than necessary
-- Do not report short-lived scripts, or handles already managed by an enclosing `with` or framework-managed lifecycle (confirm the surrounding scope with `file_read` before flagging)
+- Do not report short-lived scripts, or handles already managed by an enclosing `with` or framework-managed lifecycle (confirm the surrounding scope from the diff before flagging)
 
 #### Performance
 Confirm data scale and that the code is on a hot path before flagging:

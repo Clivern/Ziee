@@ -15,6 +15,78 @@ import certifi
 
 READ_MAX_LINES = 500
 SEARCH_MAX = 100
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "file_read",
+            "description": "Read file content when you need context for a git diff. The hunk header @@ -x,y +m,n @@ means the new file has n lines starting at line m; set start_line/end_line around that range. Returns at most 500 lines.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {"type": "string", "description": "Repository-relative path."},
+                    "start_line": {"type": "integer", "description": "First line to return. Defaults to 1."},
+                    "end_line": {"type": "integer", "description": "Last line to return. Defaults to end of file."},
+                },
+                "required": ["file_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "code_search",
+            "description": "Search for specific text in files, directories, or the whole codebase. Literal match by default; set use_perl_regexp for a regex.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "search_text": {"type": "string", "description": "Literal text or regular expression."},
+                    "file_patterns": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Git pathspecs to include or exclude, e.g. ['*.go'] or [':(exclude)*_test.go'].",
+                    },
+                    "case_sensitive": {"type": "boolean", "description": "Defaults to false."},
+                    "use_perl_regexp": {"type": "boolean", "description": "Treat search_text as a regex. Defaults to false."},
+                },
+                "required": ["search_text"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "file_find",
+            "description": "Find files by name keyword when they are not in the current change list. A query with '/' also matches the repository-relative path.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query_name": {"type": "string", "description": "Filename keyword or path fragment."},
+                    "case_sensitive": {"type": "boolean", "description": "Defaults to false."},
+                },
+                "required": ["query_name"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "file_read_diff",
+            "description": "View diffs of other changed files when you need them to confirm a suspected issue. Context only — do not comment on those files.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path_array": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "File paths whose diffs to return.",
+                    },
+                },
+                "required": ["path_array"],
+            },
+        },
+    },
+]
 
 
 def _match(path, pattern):

@@ -1,5 +1,5 @@
 #### Obvious Typos or Spelling Errors
-- Spelling errors in variable names, method names, or class names at their declaration sites (confirm by searching for naming conventions of similar identifiers using `code_search`)
+- Spelling errors in variable names, method names, or class names at their declaration sites (confirm against naming conventions of similar identifiers in the diff)
 - Strings in log messages or exception messages containing spelling errors that affect readability
 - Do not report spelling errors at reference sites, as these are typically determined by the declaration
 
@@ -9,20 +9,20 @@
 - Large blocks of commented-out code (with no apparent intent to preserve)
 
 #### Logic Error Detection
-- Incorrect if-condition logic (use `file_read` to examine surrounding context and confirm expected logic)
+- Incorrect if-condition logic (examine surrounding context in the diff and confirm expected logic)
 - Boundary condition handling errors (pay special attention to index and array length checks)
 - Misuse of boolean logic operators (precedence and short-circuit evaluation issues)
 - Obvious infinite loops or recursion without termination conditions
 - Use of return/break/continue where exiting is not intended
 - Missing break statements in switch cases causing unintended fall-through
 - Intentional fall-through lacking explanatory comments
-- Code patterns that may cause NPE (confirm risk by inspecting the data source call chain using `file_read` and `code_search`)
+- Code patterns that may cause NPE (confirm risk from the data source call chain in the diff)
 - Missing parentheses in logical expressions that may cause execution order to differ from intent
 
 #### Severe Performance Issues
-- Database queries executed inside loops (use `code_search` to confirm whether the method call involves database operations)
+- Database queries executed inside loops (confirm from the diff whether the method call involves database operations)
 - N+1 query problems (suggest batch query optimizations)
-- Processing large datasets without pagination (use `file_read` to understand data scale and processing context)
+- Processing large datasets without pagination (confirm data scale and processing context from the diff)
 - Inefficient algorithm implementations in nested loops (O(n^2) or higher complexity where a more optimal solution exists)
 
 #### Thread Safety Issue Detection
@@ -34,7 +34,7 @@ Only flag thread safety issues in the following cases:
 
 Do not report in the following cases:
 - **Local variables within methods**: These are inherently thread-safe, as each thread has its own copy
-- **Single-threaded context usage**: No evidence of multi-threaded invocation (confirm by searching for relevant call contexts using `code_search`)
+- **Single-threaded context usage**: No evidence of multi-threaded invocation in the diff
 - **Read-only operations**: Even with non-thread-safe data structures, if only read operations are performed
 - **Immutable objects**: References to final fields pointing to immutable objects
 - **Proper synchronization already in place**: Code already uses synchronized, Lock, atomic classes, or other correct synchronization mechanisms

@@ -1,7 +1,7 @@
 #### Prisma Schema Review Principles
 > Favor precision over recall: report only defects likely real in the changed schema and its reachable application, migration, and datasource context. Treat data-loss, integrity, security, and compatibility findings as blocking; style-only suggestions are non-blocking. Do not duplicate errors that `prisma validate`, `prisma format`, migration tooling, or the database determine mechanically unless the diff reveals a concrete production consequence.
 
-Before reporting a non-local claim, use `file_read` and `code_search` to inspect the datasource provider, Prisma version, migration history, generated-client call sites, queries, and existing schema conventions. Do not assume a relation action, index, native type, field, or generator setting is unsafe without evidence of the database provider, deployed data, or application behavior it affects.
+Before reporting a non-local claim, the current diff must establish the datasource provider, Prisma version, migration history, generated-client call sites, queries, and existing schema conventions. Do not assume a relation action, index, native type, field, or generator setting is unsafe without evidence of the database provider, deployed data, or application behavior it affects.
 
 #### Relations and Referential Integrity
 - Relation fields whose optionality, scalar foreign-key field, `fields`, or `references` declarations disagree, allowing an invalid or unrepresentable relationship. Confirm whether the relation is relational or MongoDB and whether the affected fields are actually changed.

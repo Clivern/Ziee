@@ -49,3 +49,4 @@ ngrok
 # Local GitHub webhook dumps
 events/*
 !events/.gitkeep
+.secrets

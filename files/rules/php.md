@@ -1,7 +1,7 @@
 #### PHP Review Principles
 > Favor precision over recall: report only defects that are likely real in the changed code and its reachable context. Treat correctness and security findings as blocking; style-only suggestions are non-blocking. Account for the project's PHP version and framework conventions before reporting version- or lifecycle-dependent behavior.
 
-Before making a non-local claim, use `file_read` and `code_search` to verify callers, input sources, framework configuration, template context, and resource ownership. Do not duplicate findings reliably enforced by PHPStan, Psalm, PHP_CodeSniffer, the formatter, or the PHP compiler unless the diff demonstrates a concrete consequence those tools do not express.
+Before making a non-local claim, the current diff must establish callers, input sources, framework configuration, template context, and resource ownership. Do not duplicate findings reliably enforced by PHPStan, Psalm, PHP_CodeSniffer, the formatter, or the PHP compiler unless the diff demonstrates a concrete consequence those tools do not express.
 
 #### Type Juggling, Equality, and Null Semantics
 - Loose comparison (`==` or `!=`) whose coercion can make distinct security- or domain-sensitive values compare equal. Prefer strict comparison when operands are expected to have the same type; do not flag deliberate, validated normalization.

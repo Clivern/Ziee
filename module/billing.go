@@ -16,7 +16,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
-	stripesdk "github.com/stripe/stripe-go/v82"
+	stripesdk "github.com/stripe/stripe-go/v86"
 )
 
 var (

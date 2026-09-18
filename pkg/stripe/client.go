@@ -6,7 +6,7 @@ package stripe
 import (
 	"github.com/clivern/ziee/conf"
 	"github.com/spf13/viper"
-	stripesdk "github.com/stripe/stripe-go/v82"
+	stripesdk "github.com/stripe/stripe-go/v86"
 )
 
 // Client wraps the Stripe SDK using ziee billing configuration.

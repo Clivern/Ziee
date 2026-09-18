@@ -20,14 +20,12 @@ require (
 	github.com/prometheus/client_golang v1.24.1
 	github.com/qdrant/go-client v1.19.2
 	github.com/redis/go-redis/v9 v9.22.0
-	github.com/resend/resend-go/v2 v2.28.0
 	github.com/resend/resend-go/v4 v4.6.0
 	github.com/rs/zerolog v1.35.1
 	github.com/samber/lo v1.53.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
-	github.com/stripe/stripe-go/v82 v82.5.1
 	github.com/stripe/stripe-go/v86 v86.4.2
 	github.com/tmc/langchaingo v0.1.14
 	golang.org/x/crypto v0.57.0

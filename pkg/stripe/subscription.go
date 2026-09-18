@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	stripesdk "github.com/stripe/stripe-go/v82"
+	stripesdk "github.com/stripe/stripe-go/v86"
 )
 
 // GetSubscription loads a Stripe subscription by Id.

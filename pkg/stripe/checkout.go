@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/samber/lo"
-	stripesdk "github.com/stripe/stripe-go/v82"
+	stripesdk "github.com/stripe/stripe-go/v86"
 )
 
 // CheckoutOptions is input for creating a token purchase Checkout Session.

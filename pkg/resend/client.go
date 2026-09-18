@@ -9,7 +9,7 @@ import (
 
 	"github.com/clivern/ziee/conf"
 
-	resendgo "github.com/resend/resend-go/v2"
+	resendgo "github.com/resend/resend-go/v4"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )

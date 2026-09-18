@@ -1,4 +1,3 @@
-open-code-review
 Copyright 2026 Alibaba
 Copyright 2026 alibaba/open-code-review Contributors
 
@@ -13,5 +12,4 @@ Specifically:
 Those files are licensed under the Apache License, Version 2.0.
 A copy of that license is in LICENSE in this directory.
 
-Ziee's own source (outside this directory) is separately licensed MIT.
 This notice does not grant permission to use Alibaba trademarks.

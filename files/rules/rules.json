@@ -1,5 +1,6 @@
 {
   "default_rule": "default.md",
+  "system_prompt": "system.md",
   "path_rule_map": {
     "**/*.properties": "properties.md",
     "**/*{mapper,dao}*.xml": "mapper_dao_xml.md",

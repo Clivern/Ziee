@@ -29,6 +29,7 @@ type Issue struct {
 	Title       string
 	Body        string
 	Author      string
+	AuthorId    int64
 	Association string
 	Labels      []string
 	Assignees   []string
@@ -59,6 +60,6 @@ type Client interface {
 	PrsOpenedExceeds(issue Issue, count int, within string) bool
 	// IsAuthorBlocked reports whether the author is on the repository spam blocklist.
 	IsAuthorBlocked(issue Issue) bool
-	// BlockAuthor adds the login to the repository spam blocklist.
-	BlockAuthor(login string)
+	// BlockAuthor adds the author to the repository spam blocklist.
+	BlockAuthor(issue Issue)
 }

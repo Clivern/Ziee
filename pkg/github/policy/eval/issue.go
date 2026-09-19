@@ -111,7 +111,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			})
 		}
 		if rule.BlockAuthor {
-			client.BlockAuthor(event.Issue.Author)
+			client.BlockAuthor(event.Issue)
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind:  policy.BlockAuthor,
 				Users: []string{event.Issue.Author},

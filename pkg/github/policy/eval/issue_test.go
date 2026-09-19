@@ -425,7 +425,7 @@ func (s *stubClient) IsAuthorBlocked(Issue) bool {
 	return s.blocked
 }
 
-func (s *stubClient) BlockAuthor(login string) {
-	s.blockedLogin = login
+func (s *stubClient) BlockAuthor(issue Issue) {
+	s.blockedLogin = issue.Author
 	s.blocked = true
 }

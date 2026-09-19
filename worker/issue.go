@@ -47,6 +47,7 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 	repos := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	path, err := repos.GetConfigPath(issue.Repository.ID)
@@ -88,6 +89,7 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 			Title:       issue.Issue.Title,
 			Body:        issue.Issue.Body,
 			Author:      issue.Issue.User.Login,
+			AuthorId:    issue.Issue.User.ID,
 			Association: issue.Issue.AuthorAssociation,
 			Labels:      labels,
 			Assignees:   assignees,

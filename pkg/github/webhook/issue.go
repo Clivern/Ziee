@@ -59,8 +59,9 @@ type CommentPayload struct {
 	User UserPayload `json:"user"`
 }
 
-// UserPayload is a GitHub login and optional account type.
+// UserPayload is a GitHub user on a webhook.
 type UserPayload struct {
+	ID    int64  `json:"id"`
 	Login string `json:"login"`
 	Type  string `json:"type"`
 }

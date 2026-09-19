@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	RepositoryMetaSetupIssue    = "_github_setup_issue"
-	RepositoryMetaSetupPR       = "_github_setup_pr"
-	RepositoryMetaSpamBlocklist = "_spam_blocklist"
+	RepositoryMetaSetupIssue = "_github_setup_issue"
+	RepositoryMetaSetupPR    = "_github_setup_pr"
 )
 
 // Repository is a GitHub repository that installed the Ziee GitHub App.

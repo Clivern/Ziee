@@ -84,6 +84,7 @@ func NewIssueClient(ctx context.Context, installationId, githubRepoId int64, own
 		repos: module.NewRepository(
 			db.NewRepositoriesRepository(db.GetDB()),
 			db.NewRepositoryMetaRepository(db.GetDB()),
+			db.NewRepositorySpamUserRepository(db.GetDB()),
 		),
 	}
 }
@@ -153,12 +154,12 @@ func (c IssueClient) PrsOpenedExceeds(eval.Issue, int, string) bool {
 
 // IsAuthorBlocked reports whether the author is on the repository spam blocklist.
 func (c IssueClient) IsAuthorBlocked(issue eval.Issue) bool {
-	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.Author)
+	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.AuthorId)
 }
 
-// BlockAuthor adds the login to the repository spam blocklist.
-func (c IssueClient) BlockAuthor(login string) {
-	c.repos.BlockAuthor(c.githubRepoId, login)
+// BlockAuthor adds the author to the repository spam blocklist.
+func (c IssueClient) BlockAuthor(issue eval.Issue) {
+	c.repos.BlockAuthor(c.githubRepoId, issue.Author, issue.AuthorId)
 }
 
 // NewPullRequestClient returns a GitHub client for pull request events.
@@ -172,6 +173,7 @@ func NewPullRequestClient(ctx context.Context, installationId, githubRepoId int6
 		repos: module.NewRepository(
 			db.NewRepositoriesRepository(db.GetDB()),
 			db.NewRepositoryMetaRepository(db.GetDB()),
+			db.NewRepositorySpamUserRepository(db.GetDB()),
 		),
 	}
 }
@@ -241,12 +243,12 @@ func (c PullRequestClient) PrsOpenedExceeds(issue eval.Issue, count int, within 
 
 // IsAuthorBlocked reports whether the author is on the repository spam blocklist.
 func (c PullRequestClient) IsAuthorBlocked(issue eval.Issue) bool {
-	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.Author)
+	return c.repos.IsAuthorBlocked(c.githubRepoId, issue.AuthorId)
 }
 
-// BlockAuthor adds the login to the repository spam blocklist.
-func (c PullRequestClient) BlockAuthor(login string) {
-	c.repos.BlockAuthor(c.githubRepoId, login)
+// BlockAuthor adds the author to the repository spam blocklist.
+func (c PullRequestClient) BlockAuthor(issue eval.Issue) {
+	c.repos.BlockAuthor(c.githubRepoId, issue.Author, issue.AuthorId)
 }
 
 // GetClassifyPrompt fills the classify chat prompt.

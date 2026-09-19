@@ -169,6 +169,7 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 	r := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	err = r.Update(
@@ -222,6 +223,7 @@ func issues(_ context.Context, d webhook.Delivery) {
 	r := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
@@ -300,6 +302,7 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 	r := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
@@ -376,6 +379,7 @@ func pullRequests(_ context.Context, d webhook.Delivery) {
 	r := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
@@ -455,6 +459,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 	r := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	err = r.SetConfigPath(payload.Repository.ID, path)

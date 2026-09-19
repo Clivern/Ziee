@@ -18,15 +18,21 @@ import (
 
 // Repository is the module for GitHub repositories.
 type Repository struct {
-	RepoRepository db.RepositoriesRepository
-	MetaRepository db.RepositoryMetaRepository
+	RepoRepository     db.RepositoriesRepository
+	MetaRepository     db.RepositoryMetaRepository
+	SpamUserRepository db.RepositorySpamUserRepository
 }
 
 // NewRepository creates a repository module with the given stores.
-func NewRepository(repos db.RepositoriesRepository, meta db.RepositoryMetaRepository) *Repository {
+func NewRepository(
+	repos db.RepositoriesRepository,
+	meta db.RepositoryMetaRepository,
+	spam db.RepositorySpamUserRepository,
+) *Repository {
 	return &Repository{
-		RepoRepository: repos,
-		MetaRepository: meta,
+		RepoRepository:     repos,
+		MetaRepository:     meta,
+		SpamUserRepository: spam,
 	}
 }
 
@@ -165,34 +171,28 @@ func (r *Repository) GetConfigPath(githubRepoId int64) (string, error) {
 	return lo.FromPtr(repo.ConfigPath), nil
 }
 
-// IsAuthorBlocked reports whether login is on the repository spam blocklist.
-func (r *Repository) IsAuthorBlocked(githubRepoId int64, login string) bool {
-	raw, err := r.GetMeta(githubRepoId, db.RepositoryMetaSpamBlocklist)
+// IsAuthorBlocked reports whether the GitHub user is on the repository spam blocklist.
+func (r *Repository) IsAuthorBlocked(githubRepoId, githubUserId int64) bool {
+	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)
 	if err != nil {
 		return false
 	}
 
-	var logins []string
-	_ = json.Unmarshal([]byte(raw), &logins)
-
-	return lo.ContainsBy(logins, func(user string) bool {
-		return strings.EqualFold(user, login)
-	})
-}
-
-// BlockAuthor adds login to the repository spam blocklist.
-func (r *Repository) BlockAuthor(githubRepoId int64, login string) {
-	raw, _ := r.GetMeta(githubRepoId, db.RepositoryMetaSpamBlocklist)
-
-	var logins []string
-	_ = json.Unmarshal([]byte(raw), &logins)
-
-	if lo.ContainsBy(logins, func(user string) bool {
-		return strings.EqualFold(user, login)
-	}) {
-		return
+	item, err := r.SpamUserRepository.GetByGitHubId(repo.Id, githubUserId)
+	if err != nil {
+		return false
 	}
 
-	payload, _ := json.Marshal(append(logins, login))
-	_ = r.UpsertMeta(githubRepoId, db.RepositoryMetaSpamBlocklist, string(payload))
+	return item != nil
+}
+
+// BlockAuthor adds the GitHub user to the repository spam blocklist.
+func (r *Repository) BlockAuthor(githubRepoId int64, username string, githubUserId int64) {
+	repo, _ := r.RepoRepository.GetByGitHubId(githubRepoId)
+
+	_ = r.SpamUserRepository.Upsert(&db.RepositorySpamUser{
+		RepositoryId: repo.Id,
+		GitHubId:     &githubUserId,
+		Username:     &username,
+	})
 }

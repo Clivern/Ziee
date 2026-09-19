@@ -47,6 +47,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 	repos := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	path, err := app.Get().FileExists(

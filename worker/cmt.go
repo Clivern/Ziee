@@ -47,6 +47,7 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 	repos := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),
+		db.NewRepositorySpamUserRepository(db.GetDB()),
 	)
 
 	path, err := repos.GetConfigPath(comment.Repository.ID)
@@ -88,6 +89,7 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 			Title:       comment.Issue.Title,
 			Body:        comment.Issue.Body,
 			Author:      comment.Issue.User.Login,
+			AuthorId:    comment.Issue.User.ID,
 			Association: comment.Issue.AuthorAssociation,
 			Labels:      labels,
 			Assignees:   assignees,

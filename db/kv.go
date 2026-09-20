@@ -88,6 +88,7 @@ func (r *KVRepositoryPostgres) Get(key string) (*KV, error) {
 // Delete removes a key/value row.
 func (r *KVRepositoryPostgres) Delete(key string) error {
 	_, err := r.db.Exec(`DELETE FROM kv WHERE key = $1`, key)
+
 	return err
 }
 

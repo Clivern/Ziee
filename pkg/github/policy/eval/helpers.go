@@ -41,6 +41,7 @@ func CollectIntentions(clauses v1.Clauses, intentions *[]v1.Intention) {
 // MatchPattern reports whether value matches pattern, ignoring case.
 func MatchPattern(pattern, value string) bool {
 	matched, _ := regexp.MatchString("(?i)"+pattern, value)
+
 	return matched
 }
 

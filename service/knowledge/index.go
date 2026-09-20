@@ -146,7 +146,6 @@ func (s *Service) Index(ctx context.Context, documentId db.Id) error {
 		migration.WorkspaceKnowledgeCollection,
 		points,
 	)
-
 	if err != nil {
 		s.MarkAsFailed(document)
 		return fmt.Errorf("%w: upsert vectors: %v", ErrIndexFailed, err)

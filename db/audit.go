@@ -66,6 +66,7 @@ func (r *AuditEventRepositoryPostgres) Create(event *AuditEvent) error {
 		event.UserAgent,
 		event.Meta,
 	).Scan(&event.CreatedAt)
+
 	return err
 }
 
@@ -95,6 +96,7 @@ func (r *AuditEventRepositoryPostgres) GetById(id Id) (*AuditEvent, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return event, err
 }
 
@@ -149,5 +151,6 @@ func (r *AuditEventRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&count)
+
 	return count, err
 }

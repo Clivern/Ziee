@@ -63,6 +63,7 @@ func (r *APIKeyRepositoryPostgres) Create(apiKey *APIKey) error {
 		&apiKey.CreatedAt,
 		&apiKey.UpdatedAt,
 	)
+
 	return err
 }
 
@@ -87,6 +88,7 @@ func (r *APIKeyRepositoryPostgres) GetById(id Id) (*APIKey, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return k, err
 }
 
@@ -111,6 +113,7 @@ func (r *APIKeyRepositoryPostgres) GetByKey(key string) (*APIKey, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return k, err
 }
 
@@ -147,6 +150,7 @@ func (r *APIKeyRepositoryPostgres) ListByUserId(userId Id, limit, offset int) ([
 		}
 		list = append(list, k)
 	}
+
 	return list, rows.Err()
 }
 
@@ -156,6 +160,7 @@ func (r *APIKeyRepositoryPostgres) Delete(id Id) error {
 		`DELETE FROM user_api_keys WHERE id = $1`,
 		id.String(),
 	)
+
 	return err
 }
 
@@ -169,6 +174,7 @@ func (r *APIKeyRepositoryPostgres) DeleteExpired() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return result.RowsAffected()
 }
 
@@ -181,6 +187,7 @@ func (r *APIKeyRepositoryPostgres) Count() (int64, error) {
 		WHERE (expires_at IS NULL OR expires_at > $1)`,
 		time.Now().UTC(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -193,5 +200,6 @@ func (r *APIKeyRepositoryPostgres) CountByUserId(userId Id) (int64, error) {
 		WHERE user_id = $1 AND (expires_at IS NULL OR expires_at > $2)`,
 		userId.String(), time.Now().UTC(),
 	).Scan(&count)
+
 	return count, err
 }

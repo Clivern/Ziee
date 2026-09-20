@@ -253,7 +253,6 @@ func issues(_ context.Context, d webhook.Delivery) {
 		"repo":           payload.Repository.Name,
 		"number":         strconv.Itoa(payload.Issue.Number),
 	}, installation.WorkspaceId)
-
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub issue webhook")
 		return
@@ -332,7 +331,6 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		"repo":           payload.Repository.Name,
 		"number":         strconv.Itoa(payload.Issue.Number),
 	}, installation.WorkspaceId)
-
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
 		return
@@ -409,7 +407,6 @@ func pullRequests(_ context.Context, d webhook.Delivery) {
 		"repo":           payload.Repository.Name,
 		"number":         strconv.Itoa(payload.PullRequest.Number),
 	}, installation.WorkspaceId)
-
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub pull request webhook")
 		return
@@ -476,7 +473,6 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		"path":           path,
 		"sha":            payload.After,
 	}, installation.WorkspaceId)
-
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub push webhook")
 		return

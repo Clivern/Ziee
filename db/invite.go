@@ -74,6 +74,7 @@ func (r *UserInviteRepositoryPostgres) Create(invite *UserInvite) error {
 		invite.ExpiresAt,
 		invite.AcceptedAt,
 	)
+
 	return err
 }
 
@@ -103,6 +104,7 @@ func (r *UserInviteRepositoryPostgres) GetById(id Id) (*UserInvite, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return u, err
 }
 
@@ -132,6 +134,7 @@ func (r *UserInviteRepositoryPostgres) GetByToken(token string) (*UserInvite, er
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return u, err
 }
 
@@ -176,6 +179,7 @@ func (r *UserInviteRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 		}
 		list = append(list, u)
 	}
+
 	return list, rows.Err()
 }
 
@@ -220,6 +224,7 @@ func (r *UserInviteRepositoryPostgres) ListByEmail(email string, limit, offset i
 		}
 		list = append(list, u)
 	}
+
 	return list, rows.Err()
 }
 
@@ -259,6 +264,7 @@ func (r *UserInviteRepositoryPostgres) ListPendingByEmail(email string) ([]*User
 		}
 		list = append(list, u)
 	}
+
 	return list, rows.Err()
 }
 
@@ -276,6 +282,7 @@ func (r *UserInviteRepositoryPostgres) UpdateStatus(id Id, status string, accept
 		time.Now().UTC(),
 		id.String(),
 	)
+
 	return err
 }
 
@@ -293,6 +300,7 @@ func (r *UserInviteRepositoryPostgres) MarkExpiredAsExpired() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return result.RowsAffected()
 }
 
@@ -302,6 +310,7 @@ func (r *UserInviteRepositoryPostgres) Delete(id Id) error {
 		`DELETE FROM user_invites WHERE id = $1`,
 		id.String(),
 	)
+
 	return err
 }
 
@@ -312,6 +321,7 @@ func (r *UserInviteRepositoryPostgres) Count() (int64, error) {
 		`SELECT COUNT(*)
 		FROM user_invites`,
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -324,6 +334,7 @@ func (r *UserInviteRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -336,6 +347,7 @@ func (r *UserInviteRepositoryPostgres) CountByEmail(email string) (int64, error)
 		WHERE email = $1`,
 		email,
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -350,5 +362,6 @@ func (r *UserInviteRepositoryPostgres) CountPendingByEmailInWorkspace(workspaceI
 		email,
 		time.Now().UTC(),
 	).Scan(&count)
+
 	return count, err
 }

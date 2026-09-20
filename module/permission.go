@@ -75,6 +75,7 @@ func NewPerm(dbConn *sql.DB) *Perm {
 func (p *Perm) WithUser(user *db.User) *Perm {
 	p.user = user
 	p.accessKey = nil
+
 	return p
 }
 
@@ -82,12 +83,14 @@ func (p *Perm) WithUser(user *db.User) *Perm {
 func (p *Perm) WithAccessKey(accessKey *db.AccessKey) *Perm {
 	p.accessKey = accessKey
 	p.user = nil
+
 	return p
 }
 
 // WithWorkspace sets the workspace being accessed.
 func (p *Perm) WithWorkspace(workspace *db.Workspace) *Perm {
 	p.workspace = workspace
+
 	return p
 }
 
@@ -95,6 +98,7 @@ func (p *Perm) WithWorkspace(workspace *db.Workspace) *Perm {
 func (p *Perm) WithWorkspaceId(workspaceId db.Id) *Perm {
 	workspace, _ := p.WorkspaceRepository.GetById(workspaceId)
 	p.workspace = workspace
+
 	return p
 }
 
@@ -176,6 +180,7 @@ func ValidAccessKeyPermissions(permissions []string) bool {
 	if len(permissions) == 0 {
 		return false
 	}
+
 	return lo.EveryBy(permissions, func(permission string) bool {
 		return AccessKeyPermissions[permission]
 	})

@@ -261,7 +261,6 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 		req.Labels,
 		limit,
 	)
-
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):

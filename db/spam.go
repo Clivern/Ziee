@@ -106,6 +106,7 @@ func (r *RepositorySpamUserRepositoryPostgres) GetById(id Id) (*RepositorySpamUs
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -131,12 +132,14 @@ func (r *RepositorySpamUserRepositoryPostgres) GetByGitHubId(repositoryId Id, gi
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
 // Delete deletes a repository spam user row.
 func (r *RepositorySpamUserRepositoryPostgres) Delete(id Id) error {
 	_, err := r.db.Exec(`DELETE FROM repository_spam_users WHERE id = $1`, id.String())
+
 	return err
 }
 
@@ -171,5 +174,6 @@ func (r *RepositorySpamUserRepositoryPostgres) ListByRepositoryId(repositoryId I
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }

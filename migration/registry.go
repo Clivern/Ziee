@@ -25,6 +25,7 @@ func GetAll() []Migration {
 	if err != nil {
 		panic(err)
 	}
+
 	return migrations
 }
 
@@ -118,5 +119,6 @@ func descriptionFromSlug(slug string) string {
 		return slug
 	}
 	parts[0] = strings.ToUpper(parts[0][:1]) + parts[0][1:]
+
 	return strings.Join(parts, " ")
 }

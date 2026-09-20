@@ -82,6 +82,7 @@ func (r *WorkspaceRepositoryPostgres) Create(workspace *Workspace) error {
 		&workspace.CreatedAt,
 		&workspace.UpdatedAt,
 	)
+
 	return err
 }
 
@@ -108,6 +109,7 @@ func (r *WorkspaceRepositoryPostgres) GetById(id Id) (*Workspace, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return w, err
 }
 
@@ -134,6 +136,7 @@ func (r *WorkspaceRepositoryPostgres) GetByHandle(handle string) (*Workspace, er
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return w, err
 }
 
@@ -149,6 +152,7 @@ func (r *WorkspaceRepositoryPostgres) Update(workspace *Workspace) error {
 		time.Now().UTC(),
 		workspace.Id.String(),
 	)
+
 	return err
 }
 
@@ -158,6 +162,7 @@ func (r *WorkspaceRepositoryPostgres) Delete(id Id) error {
 		`DELETE FROM workspaces WHERE id = $1`,
 		id.String(),
 	)
+
 	return err
 }
 
@@ -198,6 +203,7 @@ func (r *WorkspaceRepositoryPostgres) List(limit, offset int, userId Id) ([]*Wor
 		}
 		list = append(list, w)
 	}
+
 	return list, rows.Err()
 }
 
@@ -211,6 +217,7 @@ func (r *WorkspaceRepositoryPostgres) Count(userId Id) (int64, error) {
 		WHERE wu.user_id = $1`,
 		userId.String(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -221,6 +228,7 @@ func (r *WorkspaceRepositoryPostgres) CountAll() (int64, error) {
 		`SELECT COUNT(*)
 		FROM workspaces`,
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -251,6 +259,7 @@ func (r *WorkspaceRepositoryPostgres) GetWorkspaceMembership(workspaceId, userId
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return m, err
 }
 
@@ -274,6 +283,7 @@ func (r *WorkspaceMetaRepositoryPostgres) Create(id Id, key, value string) error
 		key,
 		value,
 	)
+
 	return err
 }
 
@@ -297,6 +307,7 @@ func (r *WorkspaceMetaRepositoryPostgres) Get(id Id, key string) (*WorkspaceMeta
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return meta, err
 }
 
@@ -311,6 +322,7 @@ func (r *WorkspaceMetaRepositoryPostgres) Update(id Id, key, value string) error
 		id.String(),
 		key,
 	)
+
 	return err
 }
 
@@ -322,6 +334,7 @@ func (r *WorkspaceMetaRepositoryPostgres) Delete(id Id, key string) error {
 		id.String(),
 		key,
 	)
+
 	return err
 }
 
@@ -355,6 +368,7 @@ func (r *WorkspaceMetaRepositoryPostgres) ListByWorkspaceId(id Id) ([]*Workspace
 		}
 		list = append(list, meta)
 	}
+
 	return list, rows.Err()
 }
 
@@ -367,5 +381,6 @@ func (r *WorkspaceMetaRepositoryPostgres) Upsert(id Id, key, value string) error
 	if existing == nil {
 		return r.Create(id, key, value)
 	}
+
 	return r.Update(id, key, value)
 }

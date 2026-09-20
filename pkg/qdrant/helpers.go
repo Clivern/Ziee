@@ -37,5 +37,6 @@ func Float32Vector(values []float64) []float32 {
 	for i, value := range values {
 		out[i] = float32(value)
 	}
+
 	return out
 }

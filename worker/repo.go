@@ -27,6 +27,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 	}
 
 	taskId := db.Id(payload["taskId"])
+
 	h.tasks.MarkRunning(taskId)
 
 	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)

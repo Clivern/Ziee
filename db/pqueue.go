@@ -180,12 +180,14 @@ func (r *PQueueRepositoryPostgres) Update(item *PQueue) error {
 		time.Now().UTC(),
 		item.Id.String(),
 	)
+
 	return err
 }
 
 // Delete removes a merge-queue PR row.
 func (r *PQueueRepositoryPostgres) Delete(id Id) error {
 	_, err := r.db.Exec(`DELETE FROM pqueue WHERE id = $1`, id.String())
+
 	return err
 }
 
@@ -231,5 +233,6 @@ func (r *PQueueRepositoryPostgres) ListByRepoId(repoId Id) ([]*PQueue, error) {
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }

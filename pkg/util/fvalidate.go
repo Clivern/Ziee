@@ -65,7 +65,6 @@ func ParseUploadForm(r *http.Request) (*UploadForm, error) {
 	}
 
 	file, header, err := r.FormFile("file")
-
 	if err != nil {
 		return nil, fmt.Errorf("File is required")
 	}

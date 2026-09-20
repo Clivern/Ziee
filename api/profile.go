@@ -32,8 +32,8 @@ func GetProfileAction(w http.ResponseWriter, r *http.Request) {
 		Msg("Getting profile")
 
 	pm := module.NewProfile(db.NewUserRepository(db.GetDB()))
-	profile, err := pm.GetProfile(user.Id)
 
+	profile, err := pm.GetProfile(user.Id)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -86,8 +86,8 @@ func UpdateProfileAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pm := module.NewProfile(db.NewUserRepository(db.GetDB()))
-	updated, err := pm.UpdateProfile(user.Id, &req)
 
+	updated, err := pm.UpdateProfile(user.Id, &req)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrFailedUpdateProfile), errors.Is(err, module.ErrUserNotFound):

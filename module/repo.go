@@ -51,7 +51,6 @@ func (r *Repository) Import(workspaceId db.Id, installationId int64, repositorie
 			"fullName":       repository.FullName,
 			"name":           repository.Name,
 		}, workspaceId)
-
 		if err != nil {
 			log.Error().
 				Err(err).
@@ -94,6 +93,7 @@ func (r *Repository) Store(workspaceId db.Id, installationId int64, repo app.Rep
 	if err != nil {
 		return fmt.Errorf("encode repo meta: %w", err)
 	}
+
 	raw := string(meta)
 	owner, _, _ := strings.Cut(repo.FullName, "/")
 

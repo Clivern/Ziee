@@ -154,6 +154,7 @@ func (r *DocumentRepositoryPostgres) GetById(id Id) (*Document, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -188,6 +189,7 @@ func (r *DocumentRepositoryPostgres) GetByInternalId(internalId Id) (*Document, 
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -225,6 +227,7 @@ func (r *DocumentRepositoryPostgres) Update(document *Document) error {
 		time.Now().UTC(),
 		document.Id.String(),
 	)
+
 	return err
 }
 
@@ -235,6 +238,7 @@ func (r *DocumentRepositoryPostgres) Delete(id Id) error {
 		WHERE id = $1`,
 		id.String(),
 	)
+
 	return err
 }
 
@@ -282,6 +286,7 @@ func (r *DocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, of
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }
 
@@ -294,6 +299,7 @@ func (r *DocumentRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, 
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -306,6 +312,7 @@ func (r *DocumentRepositoryPostgres) SumSizeByWorkspaceId(workspaceId Id) (int64
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&total)
+
 	return total, err
 }
 
@@ -327,6 +334,7 @@ func (r *DocumentMetaRepositoryPostgres) Create(id Id, key, value string) error 
 		VALUES ($1, $2, $3, $4)`,
 		metaId.String(), id.String(), key, value,
 	)
+
 	return err
 }
 
@@ -350,6 +358,7 @@ func (r *DocumentMetaRepositoryPostgres) Get(id Id, key string) (*DocumentMeta, 
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return meta, err
 }
 
@@ -363,6 +372,7 @@ func (r *DocumentMetaRepositoryPostgres) Update(id Id, key, value string) error 
 		WHERE document_id = $3 AND key = $4`,
 		value, time.Now().UTC(), id.String(), key,
 	)
+
 	return err
 }
 
@@ -373,6 +383,7 @@ func (r *DocumentMetaRepositoryPostgres) Delete(id Id, key string) error {
 		WHERE document_id = $1 AND key = $2`,
 		id.String(), key,
 	)
+
 	return err
 }
 
@@ -407,6 +418,7 @@ func (r *DocumentMetaRepositoryPostgres) ListByDocumentId(id Id) ([]*DocumentMet
 		}
 		list = append(list, meta)
 	}
+
 	return list, rows.Err()
 }
 
@@ -419,5 +431,6 @@ func (r *DocumentMetaRepositoryPostgres) Upsert(id Id, key, value string) error 
 	if existing == nil {
 		return r.Create(id, key, value)
 	}
+
 	return r.Update(id, key, value)
 }

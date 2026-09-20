@@ -130,6 +130,7 @@ func CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request) {
 		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
+
 	session, err := bm.CreateCheckoutSession(
 		r.Context(),
 		db.Id(workspaceId),
@@ -138,7 +139,6 @@ func CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request) {
 		fmt.Sprintf("%s/billing?checkout=success", viper.GetString("app.url")),
 		fmt.Sprintf("%s/billing?checkout=cancel", viper.GetString("app.url")),
 	)
-
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -182,12 +182,12 @@ func CreateBillingPortalAction(w http.ResponseWriter, r *http.Request) {
 		db.NewTokenPurchaseRepository(db.GetDB()),
 		module.Usage{},
 	)
+
 	session, err := bm.CreatePortalSession(
 		r.Context(),
 		db.Id(workspaceId),
 		fmt.Sprintf("%s/billing", viper.GetString("app.url")),
 	)
-
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):

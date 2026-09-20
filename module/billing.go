@@ -323,5 +323,6 @@ func (b *Billing) GetWorkspaceSubscription(workspaceId db.Id) (*db.Subscription,
 	if subscription == nil {
 		return nil, ErrBillingSubscriptionNotFound
 	}
+
 	return subscription, nil
 }

@@ -92,14 +92,15 @@ func (c *EmbedClient) Generate(ctx context.Context, texts []string, opts ...Embe
 // EmbedDocuments generates embeddings optimized for indexing documents.
 func (c *EmbedClient) EmbedDocuments(ctx context.Context, texts []string, opts EmbedOptions) ([][]float64, Usage, error) {
 	opts.InputType = InputTypeSearchDocument
+
 	return c.Generate(ctx, texts, opts)
 }
 
 // EmbedQuery generates an embedding optimized for search queries.
 func (c *EmbedClient) EmbedQuery(ctx context.Context, text string, opts EmbedOptions) ([]float64, Usage, error) {
 	opts.InputType = InputTypeSearchQuery
-	res, u, err := c.Generate(ctx, []string{text}, opts)
 
+	res, u, err := c.Generate(ctx, []string{text}, opts)
 	if err != nil {
 		return nil, Usage{}, err
 	}

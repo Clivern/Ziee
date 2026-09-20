@@ -143,6 +143,7 @@ func (r *RepositoriesRepositoryPostgres) GetById(id Id) (*Repository, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -172,6 +173,7 @@ func (r *RepositoriesRepositoryPostgres) GetByGitHubId(githubId int64) (*Reposit
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -205,24 +207,28 @@ func (r *RepositoriesRepositoryPostgres) Update(repo *Repository) error {
 		time.Now().UTC(),
 		repo.Id.String(),
 	)
+
 	return err
 }
 
 // Delete deletes a workspace GitHub repo row.
 func (r *RepositoriesRepositoryPostgres) Delete(id Id) error {
 	_, err := r.db.Exec(`DELETE FROM repositories WHERE id = $1`, id.String())
+
 	return err
 }
 
 // DeleteByGitHubId deletes a workspace GitHub repo by GitHub repository id.
 func (r *RepositoriesRepositoryPostgres) DeleteByGitHubId(githubId int64) error {
 	_, err := r.db.Exec(`DELETE FROM repositories WHERE github_id = $1`, githubId)
+
 	return err
 }
 
 // DeleteByInstallationId deletes all repos for a GitHub App installation.
 func (r *RepositoriesRepositoryPostgres) DeleteByInstallationId(installationId int64) error {
 	_, err := r.db.Exec(`DELETE FROM repositories WHERE installation_id = $1`, installationId)
+
 	return err
 }
 
@@ -265,6 +271,7 @@ func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }
 
@@ -304,6 +311,7 @@ func (r *RepositoriesRepositoryPostgres) ListByInstallationId(installationId int
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }
 
@@ -316,6 +324,7 @@ func (r *RepositoriesRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -360,6 +369,7 @@ func (r *RepositoryMetaRepositoryPostgres) Create(id Id, key, value string) erro
 		VALUES ($1, $2, $3, to_jsonb($4::text))`,
 		metaId.String(), id.String(), key, value,
 	)
+
 	return err
 }
 
@@ -375,6 +385,7 @@ func (r *RepositoryMetaRepositoryPostgres) Get(id Id, key string) (*RepositoryMe
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return meta, err
 }
 
@@ -386,6 +397,7 @@ func (r *RepositoryMetaRepositoryPostgres) Update(id Id, key, value string) erro
 		WHERE repository_id = $3 AND key = $4`,
 		value, time.Now().UTC(), id.String(), key,
 	)
+
 	return err
 }
 
@@ -396,6 +408,7 @@ func (r *RepositoryMetaRepositoryPostgres) Delete(id Id, key string) error {
 		WHERE repository_id = $1 AND key = $2`,
 		id.String(), key,
 	)
+
 	return err
 }
 
@@ -422,6 +435,7 @@ func (r *RepositoryMetaRepositoryPostgres) ListByRepositoryId(id Id) ([]*Reposit
 		}
 		list = append(list, meta)
 	}
+
 	return list, rows.Err()
 }
 
@@ -434,5 +448,6 @@ func (r *RepositoryMetaRepositoryPostgres) Upsert(id Id, key, value string) erro
 	if existing == nil {
 		return r.Create(id, key, value)
 	}
+
 	return r.Update(id, key, value)
 }

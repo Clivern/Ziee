@@ -55,8 +55,8 @@ func (a *App) JWT() (string, error) {
 	)
 
 	hashed := sha256.Sum256([]byte(unsigned))
-	sig, err := rsa.SignPKCS1v15(rand.Reader, a.key, crypto.SHA256, hashed[:])
 
+	sig, err := rsa.SignPKCS1v15(rand.Reader, a.key, crypto.SHA256, hashed[:])
 	if err != nil {
 		return "", fmt.Errorf("github app jwt sign: %w", err)
 	}

@@ -25,7 +25,6 @@ func New() (*Client, error) {
 		UseTLS:   viper.GetBool("app.ai.embed.qdb.use_tls"),
 		PoolSize: uint(viper.GetInt("app.ai.embed.qdb.pool_size")),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +35,6 @@ func New() (*Client, error) {
 // EnsureCollection creates the collection when it does not exist.
 func (c *Client) EnsureCollection(ctx context.Context, collection string, indexes ...Index) error {
 	exists, err := c.api.CollectionExists(ctx, collection)
-
 	if err != nil {
 		return fmt.Errorf("qdrant collection exists: %w", err)
 	}
@@ -63,7 +61,6 @@ func (c *Client) CreateCollection(ctx context.Context, collection string, indexe
 			},
 		}),
 	})
-
 	if err != nil {
 		return fmt.Errorf("qdrant create collection: %w", err)
 	}
@@ -75,7 +72,6 @@ func (c *Client) CreateCollection(ctx context.Context, collection string, indexe
 			FieldType:      ParseFieldType(index.Type),
 			Wait:           new(true),
 		})
-
 		if err != nil && !IsIndexExists(err) {
 			return fmt.Errorf("qdrant create field index %q: %w", index.Field, err)
 		}
@@ -110,7 +106,6 @@ func (c *Client) Upsert(ctx context.Context, collection string, points []Point) 
 		Wait:           new(true),
 		Points:         qpoints,
 	})
-
 	if err != nil {
 		return fmt.Errorf("qdrant upsert: %w", err)
 	}
@@ -172,7 +167,6 @@ func (c *Client) Delete(ctx context.Context, collection string, ids []string) er
 		Wait:           new(true),
 		Points:         qdrantsdk.NewPointsSelector(pointIds...),
 	})
-
 	if err != nil {
 		return fmt.Errorf("qdrant delete: %w", err)
 	}
@@ -198,7 +192,6 @@ func (c *Client) DeleteByFilter(ctx context.Context, collection string, filters 
 			Must: conditions,
 		}),
 	})
-
 	if err != nil {
 		return fmt.Errorf("qdrant delete by filter: %w", err)
 	}
@@ -209,5 +202,6 @@ func (c *Client) DeleteByFilter(ctx context.Context, collection string, filters 
 // Close closes the underlying Qdrant connection pool.
 func (c *Client) Close() error {
 	c.api.Close()
+
 	return nil
 }

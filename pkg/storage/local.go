@@ -92,5 +92,6 @@ func (s *LocalStore) objectPath(key string) string {
 // documentURI builds the URI for a stored document.
 func (s *LocalStore) documentURI(key string) (string, error) {
 	path := s.objectPath(key)
+
 	return "file://" + filepath.ToSlash(path), nil
 }

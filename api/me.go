@@ -37,7 +37,6 @@ func GetMeAction(w http.ResponseWriter, r *http.Request) {
 	// Check if the request is for an API key
 	if lo.IsNotEmpty(apiKey) {
 		me, err := mm.GetByAPIKey(apiKey)
-
 		if err != nil {
 			switch {
 			case errors.Is(err, module.ErrAPIKeyNotFound):

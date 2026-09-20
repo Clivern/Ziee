@@ -50,6 +50,7 @@ func GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
 	)
 	opts.SameSite = http.SameSiteLaxMode
 	opts.MaxAge = int((10 * time.Minute) / time.Second)
+
 	util.SetCookie(w, OauthStateCookie, state, opts)
 
 	http.Redirect(w, r, authorizeURL, http.StatusFound)
@@ -129,6 +130,7 @@ func GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) {
 		db.NewWorkspaceUserRepository(db.GetDB()),
 		resend.NewMailer(),
 	)
+
 	err = im.AttachPending(result.User)
 	if err != nil {
 		log.Error().

@@ -44,6 +44,7 @@ func Auth() func(http.Handler) http.Handler {
 					})
 					return
 				}
+
 				log.Info().
 					Str("path", r.URL.Path).
 					Msg("API key validated")
@@ -76,6 +77,7 @@ func Auth() func(http.Handler) http.Handler {
 					})
 					return
 				}
+
 				log.Info().
 					Str("path", r.URL.Path).
 					Str("workspaceId", key.WorkspaceId.String()).

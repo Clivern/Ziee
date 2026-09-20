@@ -105,6 +105,7 @@ func (r *SubscriptionRepositoryPostgres) GetById(id Id) (*Subscription, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -129,6 +130,7 @@ func (r *SubscriptionRepositoryPostgres) GetByWorkspaceId(workspaceId Id) (*Subs
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -146,6 +148,7 @@ func (r *SubscriptionRepositoryPostgres) Update(subscription *Subscription) erro
 		time.Now().UTC(),
 		subscription.Id.String(),
 	)
+
 	return err
 }
 
@@ -193,6 +196,7 @@ func (r *SubscriptionMetaRepositoryPostgres) Create(id Id, key, value string) er
 		VALUES ($1, $2, $3, to_jsonb($4::text))`,
 		metaId.String(), id.String(), key, value,
 	)
+
 	return err
 }
 
@@ -216,6 +220,7 @@ func (r *SubscriptionMetaRepositoryPostgres) Get(id Id, key string) (*Subscripti
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return meta, err
 }
 
@@ -227,6 +232,7 @@ func (r *SubscriptionMetaRepositoryPostgres) Update(id Id, key, value string) er
 		WHERE subscription_id = $3 AND key = $4`,
 		value, time.Now().UTC(), id.String(), key,
 	)
+
 	return err
 }
 
@@ -237,6 +243,7 @@ func (r *SubscriptionMetaRepositoryPostgres) Delete(id Id, key string) error {
 		WHERE subscription_id = $1 AND key = $2`,
 		id.String(), key,
 	)
+
 	return err
 }
 
@@ -283,5 +290,6 @@ func (r *SubscriptionMetaRepositoryPostgres) Upsert(id Id, key, value string) er
 	if existing == nil {
 		return r.Create(id, key, value)
 	}
+
 	return r.Update(id, key, value)
 }

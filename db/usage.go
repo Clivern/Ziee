@@ -64,6 +64,7 @@ func (r *UsageRepositoryPostgres) Create(usage *Usage) error {
 		usage.PeriodEnd,
 		usage.Meta,
 	).Scan(&usage.CreatedAt, &usage.UpdatedAt)
+
 	return err
 }
 
@@ -92,6 +93,7 @@ func (r *UsageRepositoryPostgres) GetById(id Id) (*Usage, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -133,6 +135,7 @@ func (r *UsageRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offse
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }
 
@@ -145,6 +148,7 @@ func (r *UsageRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64, err
 		WHERE workspace_id = $1`,
 		workspaceId.String(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -164,6 +168,7 @@ func (r *UsageRepositoryPostgres) GetQuantityByPeriod(workspaceId Id, utype stri
 	if isNotFound(err) {
 		return 0, nil
 	}
+
 	return quantity, err
 }
 
@@ -195,5 +200,6 @@ func (r *UsageRepositoryPostgres) IncrementByPeriod(workspaceId Id, utype string
 		pstart,
 		pend,
 	)
+
 	return err
 }

@@ -37,6 +37,7 @@ func Load(f fs.FS) error {
 			panic("locale: failed to read " + name + ": " + err.Error())
 		}
 		po := gotext.NewPo()
+
 		po.Parse(data)
 		locales[strings.TrimSuffix(name, ".po")] = po
 	}

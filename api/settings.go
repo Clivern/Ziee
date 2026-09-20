@@ -43,6 +43,7 @@ func UpdateSettingsAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mod := module.NewSettings(db.NewConfigRepository(db.GetDB()))
+
 	err = mod.Update(req.PlatformEmail, req.MaintenanceMode)
 	if err != nil {
 		log.Error().
@@ -79,8 +80,8 @@ func GetSettingsAction(w http.ResponseWriter, r *http.Request) {
 		Msg("Getting settings")
 
 	mod := module.NewSettings(db.NewConfigRepository(db.GetDB()))
-	settings, err := mod.GetSettings()
 
+	settings, err := mod.GetSettings()
 	if err != nil {
 		log.Error().
 			Err(err).

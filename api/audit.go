@@ -34,6 +34,7 @@ func ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) {
 		db.NewAuditEventRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 	)
+
 	result, err := am.ListAuditEvents(workspaceId, limit, offset)
 	if err != nil {
 		switch {
@@ -83,6 +84,7 @@ func GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
 		db.NewAuditEventRepository(db.GetDB()),
 		db.NewWorkspaceRepository(db.GetDB()),
 	)
+
 	event, err := am.GetAuditEvent(workspaceId, db.Id(auditId))
 	if err != nil {
 		switch {

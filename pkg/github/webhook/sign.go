@@ -13,6 +13,7 @@ import (
 func SignBody(secret string, body []byte) []byte {
 	mac := hmac.New(sha1.New, []byte(secret))
 	mac.Write(body)
+
 	return mac.Sum(nil)
 }
 

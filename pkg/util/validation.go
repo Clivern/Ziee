@@ -140,6 +140,7 @@ func validateJSONString(fl validator.FieldLevel) bool {
 	}
 
 	var tmp interface{}
+
 	return json.Unmarshal([]byte(s), &tmp) == nil
 }
 
@@ -156,6 +157,7 @@ func validateJSONObjectString(fl validator.FieldLevel) bool {
 	}
 
 	var tmp map[string]interface{}
+
 	return json.Unmarshal([]byte(s), &tmp) == nil
 }
 

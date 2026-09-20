@@ -80,7 +80,6 @@ func (s *S3Store) GetDocument(ctx context.Context, id string) (string, error) {
 		Bucket: aws.String(s.config.S3.Bucket),
 		Key:    aws.String(key),
 	})
-
 	if err != nil {
 		if isS3NotFound(err) {
 			return "", ErrDocumentNotFound
@@ -139,5 +138,6 @@ func isS3NotFound(err error) bool {
 			return true
 		}
 	}
+
 	return false
 }

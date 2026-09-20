@@ -20,6 +20,7 @@ func (h *handlers) HandleDocumentIndex(ctx context.Context, msg *broker.Msg) err
 	}
 
 	taskId := db.Id(payload["taskId"])
+
 	h.tasks.MarkRunning(taskId)
 
 	err = h.knowledge.Index(ctx, db.Id(payload["documentId"]))
@@ -40,6 +41,7 @@ func (h *handlers) HandleDocumentDelete(ctx context.Context, msg *broker.Msg) er
 	}
 
 	taskId := db.Id(payload["taskId"])
+
 	h.tasks.MarkRunning(taskId)
 
 	err = h.knowledge.Delete(ctx, db.Id(payload["documentId"]), payload["internalId"])

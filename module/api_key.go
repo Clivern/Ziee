@@ -126,6 +126,7 @@ func (a *APIKey) ListAPIKeys(user *db.User, limit, offset int) (*ListAPIKeysResu
 			),
 		})
 	}
+
 	return &ListAPIKeysResult{APIKeys: list, Total: total}, nil
 }
 

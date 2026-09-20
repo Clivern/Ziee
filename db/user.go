@@ -131,6 +131,7 @@ func (r *UserRepositoryPostgres) Create(user *User) error {
 		user.Language,
 		user.Theme,
 	)
+
 	return err
 }
 
@@ -164,6 +165,7 @@ func (r *UserRepositoryPostgres) GetById(id Id) (*User, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return user, err
 }
 
@@ -177,6 +179,7 @@ func (r *UserRepositoryPostgres) GetByAPIKey(apiKey string) (*User, error) {
 	if lo.IsEmpty(apiKey) {
 		return nil, nil
 	}
+
 	user := &User{}
 	err := r.db.QueryRow(
 		`SELECT
@@ -207,6 +210,7 @@ func (r *UserRepositoryPostgres) GetByAPIKey(apiKey string) (*User, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return user, err
 }
 
@@ -240,6 +244,7 @@ func (r *UserRepositoryPostgres) GetByEmail(email string) (*User, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return user, err
 }
 
@@ -274,6 +279,7 @@ func (r *UserRepositoryPostgres) GetByProvider(provider, providerUserId string) 
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return user, err
 }
 
@@ -311,6 +317,7 @@ func (r *UserRepositoryPostgres) Update(user *User) error {
 		time.Now().UTC(),
 		user.Id.String(),
 	)
+
 	return err
 }
 
@@ -327,6 +334,7 @@ func (r *UserRepositoryPostgres) UpdateLastLogin(id Id) error {
 		now,
 		id.String(),
 	)
+
 	return err
 }
 
@@ -336,6 +344,7 @@ func (r *UserRepositoryPostgres) Delete(id Id) error {
 		`DELETE FROM users WHERE id = $1`,
 		id.String(),
 	)
+
 	return err
 }
 
@@ -379,6 +388,7 @@ func (r *UserRepositoryPostgres) List(limit, offset int) ([]*User, error) {
 		}
 		list = append(list, u)
 	}
+
 	return list, rows.Err()
 }
 
@@ -389,6 +399,7 @@ func (r *UserRepositoryPostgres) Count() (int64, error) {
 		`SELECT COUNT(*)
 		FROM users`,
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -412,6 +423,7 @@ func (r *UserMetaRepositoryPostgres) Create(id Id, key, value string) error {
 		key,
 		value,
 	)
+
 	return err
 }
 
@@ -435,6 +447,7 @@ func (r *UserMetaRepositoryPostgres) Get(id Id, key string) (*UserMeta, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return meta, err
 }
 
@@ -451,6 +464,7 @@ func (r *UserMetaRepositoryPostgres) Update(id Id, key, value string) error {
 		id.String(),
 		key,
 	)
+
 	return err
 }
 
@@ -461,6 +475,7 @@ func (r *UserMetaRepositoryPostgres) Delete(id Id, key string) error {
 		id.String(),
 		key,
 	)
+
 	return err
 }
 
@@ -493,6 +508,7 @@ func (r *UserMetaRepositoryPostgres) ListByUser(id Id) ([]*UserMeta, error) {
 		}
 		list = append(list, m)
 	}
+
 	return list, rows.Err()
 }
 
@@ -505,5 +521,6 @@ func (r *UserMetaRepositoryPostgres) Upsert(id Id, key, value string) error {
 	if existing == nil {
 		return r.Create(id, key, value)
 	}
+
 	return r.Update(id, key, value)
 }

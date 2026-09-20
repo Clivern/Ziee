@@ -57,6 +57,7 @@ func CreateInviteAction(w http.ResponseWriter, r *http.Request) {
 		db.NewWorkspaceUserRepository(db.GetDB()),
 		resend.NewMailer(),
 	)
+
 	invite, err := im.CreateInvite(db.Id(workspaceId), &req, user)
 	if err != nil {
 		switch {
@@ -117,6 +118,7 @@ func ListInvitesAction(w http.ResponseWriter, r *http.Request) {
 		db.NewWorkspaceUserRepository(db.GetDB()),
 		resend.NewMailer(),
 	)
+
 	result, err := im.ListInvites(db.Id(workspaceId), limit, offset)
 	if err != nil {
 		switch {
@@ -174,6 +176,7 @@ func GetInviteAction(w http.ResponseWriter, r *http.Request) {
 		db.NewWorkspaceUserRepository(db.GetDB()),
 		resend.NewMailer(),
 	)
+
 	invite, err := im.GetInvite(db.Id(workspaceId), db.Id(inviteId))
 	if err != nil {
 		switch {
@@ -232,6 +235,7 @@ func DeleteInviteAction(w http.ResponseWriter, r *http.Request) {
 		db.NewWorkspaceUserRepository(db.GetDB()),
 		resend.NewMailer(),
 	)
+
 	err := im.DeleteInvite(db.Id(workspaceId), db.Id(inviteId))
 	if err != nil {
 		switch {

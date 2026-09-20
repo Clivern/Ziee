@@ -79,12 +79,14 @@ func GetCookie(r *http.Request, name string) string {
 	if err != nil {
 		return ""
 	}
+
 	return cookie.Value
 }
 
 // HasCookie checks if a cookie with the given name exists.
 func HasCookie(r *http.Request, name string) bool {
 	_, err := r.Cookie(name)
+
 	return err == nil
 }
 

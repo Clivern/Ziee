@@ -40,6 +40,7 @@ func CreateUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
+
 	apiKey, err := am.CreateAPIKey(&req, user)
 	if err != nil {
 		switch {
@@ -85,6 +86,7 @@ func ListUserAPIKeysAction(w http.ResponseWriter, r *http.Request) {
 	limit, offset := util.ParsePagination(r)
 
 	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
+
 	result, err := am.ListAPIKeys(user, limit, offset)
 	if err != nil {
 		log.Error().
@@ -131,6 +133,7 @@ func GetUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 		Msg("Getting API key")
 
 	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
+
 	k, err := am.GetAPIKey(db.Id(apiKeyId), user)
 	if err != nil {
 		switch {
@@ -179,6 +182,7 @@ func DeleteUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 		Msg("Deleting API key")
 
 	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
+
 	err := am.DeleteAPIKey(db.Id(apiKeyId), user)
 	if err != nil {
 		switch {

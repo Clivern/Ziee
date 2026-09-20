@@ -266,6 +266,7 @@ func (m *MetricsResponseWriter) WriteHeader(code int) {
 func (m *MetricsResponseWriter) Write(b []byte) (int, error) {
 	n, err := m.ResponseWriter.Write(b)
 	m.size += n
+
 	return n, err
 }
 

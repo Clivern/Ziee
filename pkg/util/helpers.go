@@ -29,6 +29,7 @@ func AppURL(path string) string {
 func CurrentMonthPeriod() (time.Time, time.Time) {
 	now := time.Now().UTC()
 	start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+
 	return start, start.AddDate(0, 1, 0)
 }
 
@@ -36,8 +37,8 @@ func CurrentMonthPeriod() (time.Time, time.Time) {
 func WriteJSON(w http.ResponseWriter, statusCode int, data interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	err := json.NewEncoder(w).Encode(data)
 
+	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
 		return fmt.Errorf("failed to write JSON response: %w", err)
 	}
@@ -51,14 +52,15 @@ func GenerateUUID() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("generate uuid: %w", err)
 	}
+
 	return id.String(), nil
 }
 
 // GenerateSecureToken returns a cryptographically secure random token.
 func GenerateSecureToken(length int) (string, error) {
 	bytes := make([]byte, length)
-	_, err := rand.Read(bytes)
 
+	_, err := rand.Read(bytes)
 	if err != nil {
 		return "", fmt.Errorf("generate secure token: %w", err)
 	}
@@ -143,6 +145,7 @@ func RandomHandle(min, max int) (string, error) {
 		}
 		handle[letterLen+1+i] = digits[idx]
 	}
+
 	return string(handle), nil
 }
 
@@ -166,6 +169,7 @@ func HandleFromName(name string, maxLength int) string {
 	if maxLength > 0 && len(handle) > maxLength {
 		handle = strings.TrimRight(handle[:maxLength], "-")
 	}
+
 	return handle
 }
 
@@ -190,6 +194,7 @@ func RemoveLabelFromJSON(labels *string, label string) (*string, bool) {
 		return labels, false
 	}
 	s := string(raw)
+
 	return &s, true
 }
 
@@ -198,6 +203,7 @@ func JSONRawFromString(raw *string) json.RawMessage {
 	if raw == nil || lo.IsEmpty(*raw) {
 		return nil
 	}
+
 	return json.RawMessage(*raw)
 }
 
@@ -210,5 +216,6 @@ func JSONSliceFromString[T any](raw *string) []T {
 	if err := json.Unmarshal([]byte(*raw), &items); err != nil {
 		return nil
 	}
+
 	return items
 }

@@ -45,6 +45,7 @@ func CreateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 		db.NewSubscriptionRepository(db.GetDB()),
 		db.NewUserRepository(db.GetDB()),
 	)
+
 	workspace, err := wm.CreateWorkspace(&req, user)
 	if err != nil {
 		log.Error().

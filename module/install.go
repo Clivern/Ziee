@@ -150,6 +150,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 		if err != nil {
 			return fmt.Errorf("encode repo meta: %w", err)
 		}
+
 		raw := string(meta)
 		owner, _, _ := strings.Cut(repository.FullName, "/")
 
@@ -175,7 +176,6 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 			"fullName":       repository.FullName,
 			"name":           repository.Name,
 		}, workspaceId)
-
 		if err != nil {
 			log.Error().
 				Err(err).

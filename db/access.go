@@ -84,6 +84,7 @@ func (r *AccessKeyRepositoryPostgres) GetById(id Id) (*AccessKey, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -109,6 +110,7 @@ func (r *AccessKeyRepositoryPostgres) GetByKey(key string) (*AccessKey, error) {
 	if isNotFound(err) {
 		return nil, nil
 	}
+
 	return item, err
 }
 
@@ -146,12 +148,14 @@ func (r *AccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, o
 		}
 		list = append(list, item)
 	}
+
 	return list, rows.Err()
 }
 
 // Delete deletes a workspace access key row.
 func (r *AccessKeyRepositoryPostgres) Delete(id Id) error {
 	_, err := r.db.Exec(`DELETE FROM access_keys WHERE id = $1`, id.String())
+
 	return err
 }
 
@@ -165,6 +169,7 @@ func (r *AccessKeyRepositoryPostgres) DeleteExpired() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return result.RowsAffected()
 }
 
@@ -177,6 +182,7 @@ func (r *AccessKeyRepositoryPostgres) Count() (int64, error) {
 		WHERE expires_at IS NULL OR expires_at > $1`,
 		time.Now().UTC(),
 	).Scan(&count)
+
 	return count, err
 }
 
@@ -190,5 +196,6 @@ func (r *AccessKeyRepositoryPostgres) CountByWorkspaceId(workspaceId Id) (int64,
 		workspaceId.String(),
 		time.Now().UTC(),
 	).Scan(&count)
+
 	return count, err
 }

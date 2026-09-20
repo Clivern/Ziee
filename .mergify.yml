@@ -1,0 +1,41 @@
+# Auto-merge PRs from Clivern or renovate[bot] once CI is green.
+# Add the label `no-automerge` to skip.
+
+shared:
+  from_trusted_author: &from_trusted_author
+    or:
+      - author = Clivern
+      - author = clivern
+      - author = v0xk
+      - author = renovate[bot]
+
+  ci_passed: &ci_passed
+    and:
+      - "#check-failure = 0"
+      - "#check-pending = 0"
+      - or:
+          - check-success ~= ^CI / Go .+ run
+          - check-success ~= ^Go .+ run$
+      - or:
+          - check-success ~= ^Dashboard Build / Build Dashboard
+          - check-success = "Build Dashboard"
+      - or:
+          - check-success ~= ^Vulnerability Check / Go Vulnerability Check
+          - check-success = "Go Vulnerability Check"
+
+pull_request_rules:
+  - name: Automerge Clivern and Renovate when CI is green
+    conditions:
+      - base = main
+      - -draft
+      - -conflict
+      - -closed
+      - label != no-automerge
+      - *from_trusted_author
+      - *ci_passed
+    actions:
+      merge:
+        method: squash
+        commit_message_format:
+          title: pr-title
+          body: empty

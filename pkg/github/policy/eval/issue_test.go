@@ -385,6 +385,70 @@ func TestUnitEvaluateIssueOpenedAuthorBlocked(t *testing.T) {
 	assert.Empty(t, plan.Actions)
 }
 
+func TestUnitEvaluateIssueOpenedOr(t *testing.T) {
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name: "trusted",
+					When: v1.Clauses{{
+						Or: v1.Clauses{
+							{AuthorInTeam: []string{"sre"}},
+							{AuthorIn: []string{"clivern"}},
+						},
+					}},
+					Labels: v1.Labels{Add: []string{"team/sre"}},
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "clivern"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"team/sre"}},
+	}, plan.Actions)
+
+	plan = EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
+func TestUnitEvaluateIssueOpenedClosed(t *testing.T) {
+	closed := false
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name:   "open",
+					When:   v1.Clauses{{Closed: &closed}},
+					Labels: v1.Labels{Add: []string{"bug"}},
+				},
+			},
+		},
+	}
+
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+	}, plan.Actions)
+
+	plan = EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya", Closed: true},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
 type stubClient struct {
 	got          []v1.Intention
 	intention    v1.Intention

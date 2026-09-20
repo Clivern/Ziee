@@ -153,6 +153,11 @@ type Clause struct {
 	MaxIssuesOpened   *MaxIssuesOpened `json:"max_issues_opened,omitempty" yaml:"max_issues_opened,omitempty"`
 	MaxPrsOpened      *MaxIssuesOpened `json:"max_prs_opened,omitempty" yaml:"max_prs_opened,omitempty"`
 	AuthorBlocked     *bool            `json:"author_blocked,omitempty" yaml:"author_blocked,omitempty"`
+	Draft             *bool            `json:"draft,omitempty" yaml:"draft,omitempty"`
+	Conflict          *bool            `json:"conflict,omitempty" yaml:"conflict,omitempty"`
+	Closed            *bool            `json:"closed,omitempty" yaml:"closed,omitempty"`
+	And               Clauses          `json:"and,omitempty" yaml:"and,omitempty"`
+	Or                Clauses          `json:"or,omitempty" yaml:"or,omitempty"`
 }
 
 // MaxIssuesOpened matches when the author opened more than Count issues within the duration.

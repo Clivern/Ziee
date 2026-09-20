@@ -36,6 +36,9 @@ type Issue struct {
 	Teams       []string
 	Files       []string
 	Intention   v1.Intention
+	Draft       bool
+	Conflict    bool
+	Closed      bool
 }
 
 // Actor is who opened the issue or typed the comment.

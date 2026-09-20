@@ -38,47 +38,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 	}
 
 	for _, rule := range conf.IssueTriage.Rules {
-		matched := true
-		for _, when := range rule.When {
-			if !lo.IsEmpty(when.Title) && !MatchPattern(when.Title, event.Issue.Title) {
-				matched = false
-			}
-			if !lo.IsEmpty(when.Body) && !MatchPattern(when.Body, event.Issue.Body) {
-				matched = false
-			}
-			if len(when.AuthorIn) > 0 && !lo.Contains(when.AuthorIn, event.Issue.Author) {
-				matched = false
-			}
-			if lo.Contains(when.AuthorNotIn, event.Issue.Author) {
-				matched = false
-			}
-			if !lo.IsEmpty(when.Intention.Name) && event.Issue.Intention.Name != when.Intention.Name {
-				matched = false
-			}
-			if !lo.IsEmpty(when.Label) && !lo.Contains(event.Issue.Labels, when.Label) {
-				matched = false
-			}
-			if len(when.AuthorInTeam) > 0 && !lo.Some(event.Issue.Teams, when.AuthorInTeam) {
-				matched = false
-			}
-			if len(when.AuthorNotInTeam) > 0 && lo.Some(event.Issue.Teams, when.AuthorNotInTeam) {
-				matched = false
-			}
-			if when.FirstContribution != nil && *when.FirstContribution != client.IsFirstContribution(event.Issue) {
-				matched = false
-			}
-			if when.MaxIssuesOpened != nil && !client.IssuesOpenedExceeds(
-				event.Issue,
-				when.MaxIssuesOpened.Count,
-				when.MaxIssuesOpened.Within,
-			) {
-				matched = false
-			}
-			if when.AuthorBlocked != nil && *when.AuthorBlocked != client.IsAuthorBlocked(event.Issue) {
-				matched = false
-			}
-		}
-		if !matched {
+		if !MatchClauses(rule.When, event.Issue, client) {
 			continue
 		}
 		if len(rule.Labels.Add) > 0 {

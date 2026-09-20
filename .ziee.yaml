@@ -137,7 +137,8 @@ merge_queue:
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
     #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
-    #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
+    #   first_contribution, author_blocked, draft, conflict, closed
+    #     (`name` / `name: true`, `-name` / `name: false`),
     #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
     # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams),
     #   comment, close, block_author.
@@ -564,9 +565,9 @@ issue_triage:
   #   title, body,
   #   author_in / author_not_in (user logins),
   #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
-  #   first_contribution (GitHub FIRST_TIMER / FIRST_TIME_CONTRIBUTOR),
+  #   first_contribution, author_blocked, draft, conflict, closed
+  #     (`name` / `name: true`, `-name` / `name: false`),
   #   max_issues_opened ({count, within}) — author opened more than count issues in the window,
-  #   author_blocked — author is on the repo spam blocklist (from `@ziee spam`),
   #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
   # Actions: labels.add / labels.remove, assign (users), comment (body), close, block_author.
   rules:

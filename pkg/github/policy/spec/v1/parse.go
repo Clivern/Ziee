@@ -5,6 +5,7 @@ package v1
 
 import (
 	"fmt"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -23,6 +24,10 @@ func Parse(data []byte) (*File, error) {
 }
 
 func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		return c.SetBoolScalar(value.Value)
+	}
+
 	var raw map[string]yaml.Node
 	err := value.Decode(&raw)
 	if err != nil {
@@ -53,10 +58,12 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			err = node.Decode(&c.AuthorInTeam)
 		case "author_not_in_team":
 			err = node.Decode(&c.AuthorNotInTeam)
-		case "first_contribution":
+		case "first_contribution", "author_blocked", "draft", "conflict", "closed":
 			var v bool
 			err = node.Decode(&v)
-			c.FirstContribution = &v
+			if err == nil {
+				err = c.SetBool(key, v)
+			}
 		case "intention":
 			err = node.Decode(&c.Intention)
 		case "label":
@@ -75,16 +82,45 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			var m MaxIssuesOpened
 			err = node.Decode(&m)
 			c.MaxPrsOpened = &m
-		case "author_blocked":
-			var v bool
-			err = node.Decode(&v)
-			c.AuthorBlocked = &v
+		case "and":
+			err = node.Decode(&c.And)
+		case "or":
+			err = node.Decode(&c.Or)
 		default:
 			return fmt.Errorf("spec: unknown when key %q", key)
 		}
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (c *Clause) SetBoolScalar(name string) error {
+	v := true
+	if strings.HasPrefix(name, "-") {
+		v = false
+		name = name[1:]
+	}
+
+	return c.SetBool(name, v)
+}
+
+func (c *Clause) SetBool(name string, v bool) error {
+	switch name {
+	case "first_contribution":
+		c.FirstContribution = &v
+	case "author_blocked":
+		c.AuthorBlocked = &v
+	case "draft":
+		c.Draft = &v
+	case "conflict":
+		c.Conflict = &v
+	case "closed":
+		c.Closed = &v
+	default:
+		return fmt.Errorf("spec: unknown when key %q", name)
 	}
 
 	return nil

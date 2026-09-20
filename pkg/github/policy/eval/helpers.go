@@ -19,16 +19,23 @@ func GetIntentionsFromRules(rules []v1.Rule) []v1.Intention {
 	var intentions []v1.Intention
 
 	for _, rule := range rules {
-		for _, when := range rule.When {
-			if !lo.IsEmpty(when.Intention.Name) {
-				intentions = append(intentions, when.Intention)
-			}
-		}
+		CollectIntentions(rule.When, &intentions)
 	}
 
 	return lo.UniqBy(intentions, func(intention v1.Intention) string {
 		return intention.Name
 	})
+}
+
+// CollectIntentions collects intentions from clauses.
+func CollectIntentions(clauses v1.Clauses, intentions *[]v1.Intention) {
+	for _, when := range clauses {
+		if !lo.IsEmpty(when.Intention.Name) {
+			*intentions = append(*intentions, when.Intention)
+		}
+		CollectIntentions(when.And, intentions)
+		CollectIntentions(when.Or, intentions)
+	}
 }
 
 // MatchPattern reports whether value matches pattern, ignoring case.
@@ -125,21 +132,32 @@ func SkipAI(rules []v1.Rule, issue Issue, client Client) bool {
 	}
 
 	for _, rule := range rules {
-		for _, when := range rule.When {
-			if when.MaxIssuesOpened != nil && client.IssuesOpenedExceeds(
-				issue,
-				when.MaxIssuesOpened.Count,
-				when.MaxIssuesOpened.Within,
-			) {
-				return true
-			}
-			if when.MaxPrsOpened != nil && client.PrsOpenedExceeds(
-				issue,
-				when.MaxPrsOpened.Count,
-				when.MaxPrsOpened.Within,
-			) {
-				return true
-			}
+		if SkipAIClauses(rule.When, issue, client) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func SkipAIClauses(clauses v1.Clauses, issue Issue, client Client) bool {
+	for _, when := range clauses {
+		if when.MaxIssuesOpened != nil && client.IssuesOpenedExceeds(
+			issue,
+			when.MaxIssuesOpened.Count,
+			when.MaxIssuesOpened.Within,
+		) {
+			return true
+		}
+		if when.MaxPrsOpened != nil && client.PrsOpenedExceeds(
+			issue,
+			when.MaxPrsOpened.Count,
+			when.MaxPrsOpened.Within,
+		) {
+			return true
+		}
+		if SkipAIClauses(when.And, issue, client) || SkipAIClauses(when.Or, issue, client) {
+			return true
 		}
 	}
 

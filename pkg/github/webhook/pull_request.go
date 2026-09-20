@@ -18,6 +18,9 @@ type PullRequestPayload struct {
 	Number            int           `json:"number"`
 	Title             string        `json:"title"`
 	Body              string        `json:"body"`
+	Draft             bool          `json:"draft"`
+	Mergeable         *bool         `json:"mergeable"`
+	State             string        `json:"state"`
 	User              UserPayload   `json:"user"`
 	AuthorAssociation string        `json:"author_association"`
 	Labels            []NamePayload `json:"labels"`

@@ -93,6 +93,7 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 			Association: comment.Issue.AuthorAssociation,
 			Labels:      labels,
 			Assignees:   assignees,
+			Closed:      comment.Issue.State == "closed",
 		},
 		Comment: comment.Comment.Body,
 		Actor: eval.Actor{

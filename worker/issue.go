@@ -93,6 +93,7 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 			Association: issue.Issue.AuthorAssociation,
 			Labels:      labels,
 			Assignees:   assignees,
+			Closed:      issue.Issue.State == "closed",
 		},
 		Actor: eval.Actor{
 			Login: issue.Sender.Login,

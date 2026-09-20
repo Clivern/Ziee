@@ -202,3 +202,92 @@ issue_triage:
 	assert.Equal(t, 4, file.MergeQueue.QueueRules[0].BatchSize.Max)
 	assert.Equal(t, []string{"maya"}, file.IssueTriage.Commands["label"].Allow[0].Users)
 }
+
+func TestUnitParseSharedAnchors(t *testing.T) {
+	file, err := Parse([]byte(`
+version: 1.0.0
+shared:
+  bots: &bots
+    author_in: [dependabot, ziee-bot]
+  from_sre: &from_sre
+    author_in_team: [sre]
+issue_triage:
+  enabled: true
+  rules:
+    - name: bot
+      when:
+        - *bots
+    - name: from-sre
+      when:
+        - *from_sre
+`))
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"dependabot", "ziee-bot"}, file.IssueTriage.Rules[0].When[0].AuthorIn)
+	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[1].When[0].AuthorInTeam)
+}
+
+func TestUnitParseWhenOrAnd(t *testing.T) {
+	file, err := Parse([]byte(`
+version: 1.0.0
+shared:
+  from_sre: &from_sre
+    author_in_team: [sre]
+issue_triage:
+  enabled: true
+  rules:
+    - name: trusted
+      when:
+        - or:
+            - *from_sre
+            - author_in: [clivern]
+        - and:
+            - author_not_in: [dependabot]
+            - label: hotfix
+`))
+	require.NoError(t, err)
+
+	when := file.IssueTriage.Rules[0].When
+	assert.Equal(t, []string{"sre"}, when[0].Or[0].AuthorInTeam)
+	assert.Equal(t, []string{"clivern"}, when[0].Or[1].AuthorIn)
+	assert.Equal(t, []string{"dependabot"}, when[1].And[0].AuthorNotIn)
+	assert.Equal(t, "hotfix", when[1].And[1].Label)
+}
+
+func TestUnitParseWhenBools(t *testing.T) {
+	file, err := Parse([]byte(`
+version: 1.0.0
+issue_triage:
+  enabled: true
+  rules:
+    - name: mapping
+      when:
+        - first_contribution: true
+        - author_blocked: false
+        - draft: false
+        - conflict: false
+        - closed: false
+    - name: scalar
+      when:
+        - first_contribution
+        - author_blocked
+        - -draft
+        - -conflict
+        - -closed
+`))
+	require.NoError(t, err)
+
+	mapping := file.IssueTriage.Rules[0].When
+	assert.True(t, *mapping[0].FirstContribution)
+	assert.False(t, *mapping[1].AuthorBlocked)
+	assert.False(t, *mapping[2].Draft)
+	assert.False(t, *mapping[3].Conflict)
+	assert.False(t, *mapping[4].Closed)
+
+	scalar := file.IssueTriage.Rules[1].When
+	assert.True(t, *scalar[0].FirstContribution)
+	assert.True(t, *scalar[1].AuthorBlocked)
+	assert.False(t, *scalar[2].Draft)
+	assert.False(t, *scalar[3].Conflict)
+	assert.False(t, *scalar[4].Closed)
+}

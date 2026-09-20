@@ -78,6 +78,72 @@ func TestUnitEvaluatePROpenedRateLimit(t *testing.T) {
 	}, plan.Actions)
 }
 
+func TestUnitEvaluatePROpenedOr(t *testing.T) {
+	conf := &v1.File{
+		MergeQueue: v1.MergeQueue{
+			PRTriage: v1.PRTriage{
+				Rules: []v1.Rule{
+					{
+						Name: "trusted",
+						When: v1.Clauses{{
+							Or: v1.Clauses{
+								{AuthorInTeam: []string{"sre"}},
+								{AuthorIn: []string{"clivern"}},
+							},
+						}},
+						Labels: v1.Labels{Add: []string{"team/sre"}},
+					},
+				},
+			},
+		},
+	}
+
+	plan := EvaluatePROpened(conf, Event{
+		Issue: Issue{Author: "clivern"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"team/sre"}},
+	}, plan.Actions)
+
+	plan = EvaluatePROpened(conf, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
+func TestUnitEvaluatePROpenedDraft(t *testing.T) {
+	draft := false
+	conf := &v1.File{
+		MergeQueue: v1.MergeQueue{
+			PRTriage: v1.PRTriage{
+				Rules: []v1.Rule{
+					{
+						Name:   "ready",
+						When:   v1.Clauses{{Draft: &draft}},
+						Labels: v1.Labels{Add: []string{"bot"}},
+					},
+				},
+			},
+		},
+	}
+
+	plan := EvaluatePROpened(conf, Event{
+		Issue: Issue{Author: "maya"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bot"}},
+	}, plan.Actions)
+
+	plan = EvaluatePROpened(conf, Event{
+		Issue: Issue{Author: "maya", Draft: true},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
+}
+
 func TestUnitMatchFile(t *testing.T) {
 	assert.True(t, MatchFile("api/**", "api/health.go"))
 	assert.True(t, MatchFile("**/*.go", "pkg/util/hash.go"))

@@ -11,7 +11,7 @@ require (
 	github.com/aws/smithy-go v1.28.2
 	github.com/drone/envsubst v1.0.3
 	github.com/go-chi/chi/v5 v5.3.2
-	github.com/go-playground/validator/v10 v10.30.4
+	github.com/go-playground/validator/v10 v10.30.5
 	github.com/google/uuid v1.6.0
 	github.com/imroc/req/v3 v3.61.0
 	github.com/leonelquinteros/gotext v1.7.2

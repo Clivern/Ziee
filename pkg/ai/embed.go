@@ -23,7 +23,7 @@ type EmbedOptions struct {
 	Dimensions int64
 }
 
-// EmbedClient calls oroute embedding APIs.
+// EmbedClient calls OpenRouter embedding APIs.
 type EmbedClient struct {
 	api   *orsdk.OpenRouter
 	model string

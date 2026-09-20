@@ -22,6 +22,13 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
+  nats:
+    image: nats:2
+    restart: unless-stopped
+    command: ["--jetstream", "--store_dir=/data", "--http_port=8222"]
+    volumes:
+      - nats_data:/data
+
   migrate:
     image: ${ZIEE_IMAGE:-registry.digitalocean.com/ziee/ziee:main}
     restart: "no"
@@ -50,6 +57,7 @@ services:
     restart: unless-stopped
     command: ["server", "-c", "/app/configs/config.yml"]
     environment:
+      ZIEE_EDITION: ${ZIEE_EDITION:-oss}
       ZIEE_SERVER_URL: ${ZIEE_SERVER_URL:-http://localhost}
       ZIEE_DATABASE_HOST: postgres
       ZIEE_DATABASE_PORT: "5432"
@@ -58,13 +66,20 @@ services:
       ZIEE_DATABASE_NAME: ${POSTGRES_DB:-ziee}
       ZIEE_AI_QDRANT_HOST: qdrant
       ZIEE_AI_QDRANT_PORT: "6334"
+      ZIEE_BROKER_URL: nats://nats:4222
       ZIEE_LOCAL_PATH: /app/var/data
+      ZIEE_GITHUB_OAUTH_CLIENT_ID: ${ZIEE_GITHUB_OAUTH_CLIENT_ID:-}
+      ZIEE_GITHUB_OAUTH_CLIENT_SECRET: ${ZIEE_GITHUB_OAUTH_CLIENT_SECRET:-}
+      ZIEE_GITHUB_OAUTH_REDIRECT_URL: ${ZIEE_GITHUB_OAUTH_REDIRECT_URL:-}
+      ZIEE_GITHUB_WEBHOOK_SECRET: ${ZIEE_GITHUB_WEBHOOK_SECRET:-}
+      ZIEE_GITHUB_ENCRYPTION_KEY: ${ZIEE_GITHUB_ENCRYPTION_KEY:-}
+      ZIEE_GITHUB_APP_PRIVATE_KEY_PATH: /app/priv_key.pem
       ZIEE_AI_OROUTE_API_KEY: ${ZIEE_AI_OROUTE_API_KEY:-}
       ZIEE_RESEND_API_KEY: ${ZIEE_RESEND_API_KEY:-}
-      ZIEE_STRIPE_SECRET_KEY: ${ZIEE_STRIPE_SECRET_KEY:-}
-      ZIEE_STRIPE_WEBHOOK_SECRET: ${ZIEE_STRIPE_WEBHOOK_SECRET:-}
+      ZIEE_MAILER_FROM: ${ZIEE_MAILER_FROM:-}
     volumes:
       - ./etc/config/config.yml:/app/configs/config.yml:ro
+      - ${ZIEE_GITHUB_APP_PRIVATE_KEY_FILE:-./priv_key.pem}:/app/priv_key.pem:ro
       - ziee_data:/app/var
     expose:
       - "8000"
@@ -72,6 +87,8 @@ services:
       postgres:
         condition: service_healthy
       qdrant:
+        condition: service_started
+      nats:
         condition: service_started
       migrate:
         condition: service_completed_successfully
@@ -89,4 +106,5 @@ services:
 volumes:
   postgres_data:
   qdrant_data:
+  nats_data:
   ziee_data:

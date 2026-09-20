@@ -19,7 +19,7 @@ type Message struct {
 	Content string
 }
 
-// ChatClient calls oroute chat completion APIs for a single model tier.
+// ChatClient calls OpenRouter chat completion APIs for a single model tier.
 type ChatClient struct {
 	api   *orsdk.OpenRouter
 	model string

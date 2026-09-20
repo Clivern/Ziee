@@ -225,3 +225,18 @@ issue_triage:
 
 pr_reviews:
   enabled: false
+
+# After git facts change. Ziee dispatches; it does not run kubectl or Ansible.
+flows:
+  enabled: false
+  comments: outcomes
+  rules:
+    - name: deploy-staging
+      when:
+        - event: push
+        - branch: main
+      workflow:
+        name: deploy.yml
+        inputs:
+          environment: staging
+          sha: ${sha}

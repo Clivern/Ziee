@@ -12,6 +12,7 @@ type File struct {
 	MergeQueue  MergeQueue  `yaml:"merge_queue"`
 	PRReviews   PRReviews   `yaml:"pr_reviews"`
 	IssueTriage IssueTriage `yaml:"issue_triage"`
+	Flows       Flows       `yaml:"flows"`
 }
 
 // Label is a GitHub label defined in `.ziee.yml`.
@@ -72,6 +73,45 @@ type IssueTriage struct {
 // PRReviews is parsed and unused until the review engine exists.
 type PRReviews struct {
 	Enabled bool `yaml:"enabled"`
+}
+
+// Flows dispatches workflows and webhooks after push, tag, or release.
+// Parsed and unused until the flow engine exists.
+type Flows struct {
+	Enabled  bool       `yaml:"enabled"`
+	Comments string     `yaml:"comments"`
+	Rules    []FlowRule `yaml:"rules"`
+}
+
+// FlowRule is one flow. Every matching rule fires.
+type FlowRule struct {
+	Name     string        `yaml:"name"`
+	When     Clauses       `yaml:"when"`
+	Workflow *Workflow     `yaml:"workflow,omitempty"`
+	Dispatch *RepoDispatch `yaml:"dispatch,omitempty"`
+	Webhook  *Webhook      `yaml:"webhook,omitempty"`
+	Comment  string        `yaml:"comment,omitempty"`
+}
+
+// Workflow is a GitHub Actions workflow_dispatch.
+type Workflow struct {
+	Name   string            `yaml:"name"`
+	Ref    string            `yaml:"ref,omitempty"`
+	Repo   string            `yaml:"repo,omitempty"`
+	Inputs map[string]string `yaml:"inputs,omitempty"`
+}
+
+// RepoDispatch is a GitHub repository_dispatch.
+type RepoDispatch struct {
+	EventType string            `yaml:"event_type"`
+	Repo      string            `yaml:"repo,omitempty"`
+	Payload   map[string]string `yaml:"payload,omitempty"`
+}
+
+// Webhook is a POST to a named workspace integration.
+type Webhook struct {
+	Integration string            `yaml:"integration"`
+	Payload     map[string]string `yaml:"payload,omitempty"`
 }
 
 // AI classifies intention from title, body, and (for PRs) diff.
@@ -156,6 +196,10 @@ type Clause struct {
 	Draft             *bool            `json:"draft,omitempty" yaml:"draft,omitempty"`
 	Conflict          *bool            `json:"conflict,omitempty" yaml:"conflict,omitempty"`
 	Closed            *bool            `json:"closed,omitempty" yaml:"closed,omitempty"`
+	Event             string           `json:"event,omitempty" yaml:"event,omitempty"`
+	Branch            string           `json:"branch,omitempty" yaml:"branch,omitempty"`
+	Tag               string           `json:"tag,omitempty" yaml:"tag,omitempty"`
+	Prerelease        *bool            `json:"prerelease,omitempty" yaml:"prerelease,omitempty"`
 	And               Clauses          `json:"and,omitempty" yaml:"and,omitempty"`
 	Or                Clauses          `json:"or,omitempty" yaml:"or,omitempty"`
 }

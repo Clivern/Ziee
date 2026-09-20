@@ -58,7 +58,7 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			err = node.Decode(&c.AuthorInTeam)
 		case "author_not_in_team":
 			err = node.Decode(&c.AuthorNotInTeam)
-		case "first_contribution", "author_blocked", "draft", "conflict", "closed":
+		case "first_contribution", "author_blocked", "draft", "conflict", "closed", "prerelease":
 			var v bool
 			err = node.Decode(&v)
 			if err == nil {
@@ -86,6 +86,12 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 			err = node.Decode(&c.And)
 		case "or":
 			err = node.Decode(&c.Or)
+		case "event":
+			err = node.Decode(&c.Event)
+		case "branch":
+			err = node.Decode(&c.Branch)
+		case "tag":
+			err = node.Decode(&c.Tag)
 		default:
 			return fmt.Errorf("spec: unknown when key %q", key)
 		}
@@ -119,6 +125,8 @@ func (c *Clause) SetBool(name string, v bool) error {
 		c.Conflict = &v
 	case "closed":
 		c.Closed = &v
+	case "prerelease":
+		c.Prerelease = &v
 	default:
 		return fmt.Errorf("spec: unknown when key %q", name)
 	}

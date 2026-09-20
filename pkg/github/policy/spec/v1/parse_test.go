@@ -137,6 +137,21 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, []string{"lang/go"}, file.MergeQueue.PRTriage.Rules[6].Labels.Add)
 	assert.Equal(t, []string{"**/*.yml", "**/*.yaml"}, file.MergeQueue.PRTriage.Rules[7].When[0].Files)
 	assert.Equal(t, []string{"**/*.json"}, file.MergeQueue.PRTriage.Rules[8].When[0].Files)
+
+	assert.False(t, file.Flows.Enabled)
+	assert.Equal(t, "outcomes", file.Flows.Comments)
+	assert.Equal(t, "deploy-staging", file.Flows.Rules[0].Name)
+	assert.Equal(t, "push", file.Flows.Rules[0].When[0].Event)
+	assert.Equal(t, "main", file.Flows.Rules[0].When[1].Branch)
+	assert.Equal(t, "deploy.yml", file.Flows.Rules[0].Workflow.Name)
+	assert.Equal(t, "staging", file.Flows.Rules[0].Workflow.Inputs["environment"])
+	assert.Equal(t, "release.published", file.Flows.Rules[1].When[0].Event)
+	assert.False(t, *file.Flows.Rules[1].When[1].Prerelease)
+	assert.Equal(t, "${tag}", file.Flows.Rules[1].Workflow.Ref)
+	assert.Equal(t, "tag", file.Flows.Rules[2].When[0].Event)
+	assert.Equal(t, "edge-*", file.Flows.Rules[2].When[1].Tag)
+	assert.Equal(t, "ansible-awx", file.Flows.Rules[2].Webhook.Integration)
+	assert.Equal(t, "ziee.deploy", file.Flows.Rules[3].Dispatch.EventType)
 }
 
 func TestUnitParseWhenAllowBatchSize(t *testing.T) {

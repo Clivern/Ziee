@@ -713,3 +713,76 @@ issue_triage:
 pr_reviews:
   # Whether to enable AI-assisted PR reviews
   enabled: false
+
+# After git facts change (push, tag, release). Not the merge queue.
+# Ziee dispatches; it does not run kubectl or Ansible.
+# Every matching rule fires (not first-wins).
+flows:
+  enabled: false
+  # How chatty Ziee is on the release/commit. Dispatch still happens either way.
+  #   outcomes — comment when a workflow/webhook was dispatched
+  #   all      — every evaluation, including no-ops
+  #   none     — no comments
+  comments: outcomes
+  # `when` matchers (all must match):
+  #   event — push | tag | release.published
+  #   branch — git branch (push to a branch)
+  #   tag — glob on the git tag (push tag or release tag)
+  #   prerelease — GitHub release prerelease flag
+  #   files, author_in / author_not_in, author_in_team / author_not_in_team
+  # Actions:
+  #   workflow — GitHub Actions workflow_dispatch (.github/workflows/<name>)
+  #   dispatch — GitHub repository_dispatch
+  #   webhook  — named workspace integration (Argo, AWX, custom). URL stays in Ziee.
+  #   comment  — posted on the release or commit
+  # Placeholders expanded before dispatch: ${sha} ${tag} ${branch} ${ref}
+  rules:
+    # Main moved, and the change touched runtime paths.
+    - name: deploy-staging
+      when:
+        - event: push
+        - branch: main
+        - files: [api/**, pkg/**, web/**, deploy/**]
+      workflow:
+        name: deploy.yml
+        ref: ${sha}
+        inputs:
+          environment: staging
+          sha: ${sha}
+      comment: "Dispatched staging deploy for ${sha}."
+
+    # A real GitHub release (not a prerelease).
+    - name: deploy-prod
+      when:
+        - event: release.published
+        - prerelease: false
+      workflow:
+        name: deploy.yml
+        ref: ${tag}
+        inputs:
+          environment: production
+          version: ${tag}
+      comment: "Dispatched production deploy for ${tag}."
+
+    # Tag push from SRE → named workspace webhook (Ansible AWX / Argo / custom).
+    - name: ansible-edge
+      when:
+        - event: tag
+        - tag: "edge-*"
+        - author_in_team: [sre]
+      webhook:
+        integration: ansible-awx
+        payload:
+          version: ${sha}
+
+    # Same moment, as a GitHub repository_dispatch instead of a workflow file.
+    # https://docs.github.com/en/rest/repos/repos?apiVersion=2026-03-10#create-a-repository-dispatch-event
+    - name: notify-deploy
+      when:
+        - event: release.published
+        - prerelease: false
+      dispatch:
+        event_type: ziee.deploy
+        payload:
+          environment: production
+          version: ${tag}

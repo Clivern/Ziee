@@ -348,7 +348,7 @@ merge_queue:
   #   self       — the PR author
   # Omit `permission` so people without repo access can still interact; Ziee uses the app token.
   commands:
-    # `@ziee queue` or `@ziee queue hotfix`
+    # `@zieeio queue` or `@zieeio queue hotfix`
     # No name → first queue_rule whose queue_when matches and whose allow includes the commenter
     queue:
       allow:
@@ -357,64 +357,64 @@ merge_queue:
         - users: [clivern]
         # Only the PR author can queue the PR
         - self: true
-    # `@ziee dequeue` — pull the PR out of the queue
+    # `@zieeio dequeue` — pull the PR out of the queue
     dequeue:
       allow:
         - permission: write
-    # `@ziee requeue` — dequeue then queue again (fresh speculative checks)
+    # `@zieeio requeue` — dequeue then queue again (fresh speculative checks)
     requeue:
       allow:
         - permission: write
-    # `@ziee rebase` — rebase the PR onto latest main
+    # `@zieeio rebase` — rebase the PR onto latest main
     rebase:
       allow:
         - permission: write
-    # `@ziee update` — merge latest main into the PR branch
+    # `@zieeio update` — merge latest main into the PR branch
     update:
       allow:
         - permission: write
-    # `@ziee refresh` — re-run triage and re-evaluate queue_when
+    # `@zieeio refresh` — re-run triage and re-evaluate queue_when
     refresh:
       allow:
         - permission: write
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee label bug security` — add GitHub labels named in the comment
+    # `@zieeio label bug security` — add GitHub labels named in the comment
     label:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee unlabel bot` — remove GitHub labels named in the comment
+    # `@zieeio unlabel bot` — remove GitHub labels named in the comment
     unlabel:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee assign clivern` — assign users named in the comment
+    # `@zieeio assign clivern` — assign users named in the comment
     assign:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee unassign clivern` — remove assignees named in the comment
+    # `@zieeio unassign clivern` — remove assignees named in the comment
     unassign:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee reviewers maya` — request reviewers (user logins)
+    # `@zieeio reviewers maya` — request reviewers (user logins)
     reviewers:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee close` — close the PR (dequeues if it was in line)
+    # `@zieeio close` — close the PR (dequeues if it was in line)
     close:
       allow:
         - teams: [sre]
         - users: [clivern]
-    # `@ziee reopen` — reopen the PR
+    # `@zieeio reopen` — reopen the PR
     reopen:
       allow:
         - teams: [sre]
         - users: [clivern]
-    # `@ziee spam` — label spam, close, and block the author (not implemented yet)
+    # `@zieeio spam` — label spam, close, and block the author (not implemented yet)
     spam:
       allow:
         - teams: [sre]
@@ -444,12 +444,12 @@ merge_queue:
       priority: medium
 
   # How a PR is allowed to enter and land. Walked in order.
-  # `@ziee queue` (no name) → first rule whose queue_when matches and whose allow includes the commenter.
-  # `@ziee queue hotfix` → this named rule only; reject if not allowed.
+  # `@zieeio queue` (no name) → first rule whose queue_when matches and whose allow includes the commenter.
+  # `@zieeio queue hotfix` → this named rule only; reject if not allowed.
   queue_rules:
     # Narrow rule first. Only SRE may target it.
     - name: hotfix
-      # Who may `@ziee queue hotfix` (on top of commands.queue.allow)
+      # Who may `@zieeio queue hotfix` (on top of commands.queue.allow)
       allow:
         - teams: [sre]
       # Must all match before the PR may enter this queue
@@ -470,7 +470,7 @@ merge_queue:
       checks_timeout: 45m
       # Retry failed checks this many times before giving up
       max_checks_retries: 1
-    # Everyone with write who can `@ziee queue` lands here unless hotfix matched.
+    # Everyone with write who can `@zieeio queue` lands here unless hotfix matched.
     - name: default
       queue_when:
         - approvals:
@@ -519,44 +519,44 @@ issue_triage:
   #   self  — the issue author
   # Omit `permission` so people without repo access can still interact.
   commands:
-    # `@ziee label bug security` — add GitHub labels named in the comment
+    # `@zieeio label bug security` — add GitHub labels named in the comment
     label:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee unlabel bot` — remove GitHub labels named in the comment
+    # `@zieeio unlabel bot` — remove GitHub labels named in the comment
     unlabel:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee assign clivern` — assign users named in the comment
+    # `@zieeio assign clivern` — assign users named in the comment
     assign:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee unassign clivern` — remove assignees named in the comment
+    # `@zieeio unassign clivern` — remove assignees named in the comment
     unassign:
       allow:
         - teams: [sre, core]
         - users: [clivern]
-    # `@ziee close` — close the issue
+    # `@zieeio close` — close the issue
     close:
       allow:
         - teams: [sre]
         - users: [clivern]
-    # `@ziee reopen` — reopen the issue
+    # `@zieeio reopen` — reopen the issue
     reopen:
       allow:
         - teams: [sre]
         - users: [clivern]
 
-    # `@ziee spam` — label spam, close, and block the author from further issues
+    # `@zieeio spam` — label spam, close, and block the author from further issues
     spam:
       allow:
         - teams: [sre]
         - users: [clivern]
 
-    # `@ziee summarize` — summarize the issue
+    # `@zieeio summarize` — summarize the issue
     summarize:
       allow:
         - teams: [sre, core]
@@ -593,7 +593,7 @@ issue_triage:
       block_author: true
       comment: "This account is blocked from opening issues here."
 
-    # Authors marked via `@ziee spam` or prior spam/rate-limit hits
+    # Authors marked via `@zieeio spam` or prior spam/rate-limit hits
     - name: spam-blocklist
       when:
         - author_blocked: true

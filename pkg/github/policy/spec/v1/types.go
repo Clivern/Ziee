@@ -102,10 +102,10 @@ type Labels struct {
 	Remove []string `yaml:"remove,omitempty"`
 }
 
-// Commands maps `@ziee` verbs to allow lists.
+// Commands maps `@zieeio` verbs to allow lists.
 type Commands map[string]Command
 
-// Command is who may run one `@ziee` verb.
+// Command is who may run one `@zieeio` verb.
 type Command struct {
 	Allow Allow `yaml:"allow,omitempty"`
 }

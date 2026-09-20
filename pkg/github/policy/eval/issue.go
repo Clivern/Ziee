@@ -118,15 +118,14 @@ func EvaluateIssueLabelChange(conf *v1.File, event Event, client Client) action.
 // EvaluateIssueComment evaluates an issue comment as a Ziee command.
 func EvaluateIssueComment(conf *v1.File, event Event, client Client) action.Plan {
 	// 1. Ignore the event when event.Actor is the Ziee GitHub App.
-	// 2. Ignore comments that do not start with `@ziee`.
-	// 3. Parse the command verb and arguments from event.Comment.
-	// 4. Find the verb in conf.IssueTriage.Commands (label, unlabel, assign, unassign, close, reopen, spam, summarize).
-	// 5. Use client to load the actor's repository permission and teams.
-	// 6. Allow the command when any permission, team, or user entry matches.
-	// 7. Convert the command and arguments into label, assignment, or state actions.
+	// 2. cmd := ParseCommand(event.Comment); ignore when Verb is empty.
+	// 3. Find cmd.Verb in conf.IssueTriage.Commands (label, unlabel, assign, unassign, close, reopen, spam, summarize).
+	// 4. Use client to load the actor's repository permission and teams.
+	// 5. Allow the command when any permission, team, or user entry matches.
+	// 6. Convert cmd.Verb and cmd.Args into label, assignment, or state actions.
 	//    For `spam`: add spam label, close, block the issue author (BlockAuthor), and comment.
-	// 8. Add an outcome comment action when the configured comment mode requires it.
-	// 9. Return the complete ordered action plan.
+	// 7. Add an outcome comment action when the configured comment mode requires it.
+	// 8. Return the complete ordered action plan.
 
 	return action.Plan{}
 }

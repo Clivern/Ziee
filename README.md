@@ -7,7 +7,7 @@
             <img alt="CI" src="https://github.com/clivern/ziee/actions/workflows/ci.yml/badge.svg">
         </a>
         <a href="https://github.com/clivern/ziee/releases">
-            <img src="https://img.shields.io/badge/Version-v0.1.0-red.svg">
+            <img src="https://img.shields.io/badge/Version-v0.0.1-red.svg">
         </a>
         <a href="https://github.com/clivern/ziee/blob/main/LICENSE">
             <img src="https://img.shields.io/badge/LICENSE-MIT-blue.svg">

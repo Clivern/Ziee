@@ -26,7 +26,12 @@ import (
 var Webhook = event.New[webhook.Delivery]("github.webhook")
 
 func init() {
+	// TODO: Remove this after release v0.1.0
 	Webhook.On(dump)
+	// TODO: Remove this after release v0.1.0
+	Webhook.On(uniquedump)
+
+	// These events stay
 	Webhook.On(installation)
 	Webhook.On(installationRepositories)
 	Webhook.On(issues)
@@ -66,43 +71,47 @@ func dump(_ context.Context, d webhook.Delivery) {
 		Str("deliveryId", d.ID).
 		Str("path", path).
 		Msg("GitHub webhook dumped")
-
-	collectTestdata(d.Event, d.Body, pretty.Bytes())
 }
 
-func collectTestdata(event string, body, pretty []byte) {
-	err := os.MkdirAll("testdata", 0o755)
+func uniquedump(_ context.Context, d webhook.Delivery) {
+	var pretty bytes.Buffer
+	err := json.Indent(&pretty, d.Body, "", "  ")
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to format GitHub webhook testdata")
+		return
+	}
+
+	pretty.WriteByte('\n')
+
+	err = os.MkdirAll("testdata", 0o755)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create GitHub webhook testdata dir")
 		return
 	}
 
-	path := filepath.Join("testdata", testdataName(event, body))
+	var payload struct {
+		Action string `json:"action"`
+	}
+	json.Unmarshal(d.Body, &payload)
+
+	name := d.Event + ".json"
+	if lo.IsNotEmpty(payload.Action) {
+		name = d.Event + "_" + payload.Action + ".json"
+	}
+
+	path := filepath.Join("testdata", name)
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		return
 	}
 
-	file.Write(pretty)
+	file.Write(pretty.Bytes())
 	file.Close()
 
 	log.Info().
-		Str("event", event).
+		Str("event", d.Event).
 		Str("path", path).
 		Msg("GitHub webhook testdata collected")
-}
-
-func testdataName(event string, body []byte) string {
-	var payload struct {
-		Action string `json:"action"`
-	}
-	json.Unmarshal(body, &payload)
-
-	if lo.IsEmpty(payload.Action) {
-		return event + ".json"
-	}
-
-	return event + "_" + payload.Action + ".json"
 }
 
 func installation(_ context.Context, d webhook.Delivery) {

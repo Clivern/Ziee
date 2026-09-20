@@ -106,7 +106,7 @@ func TestUnitIssueEvent(t *testing.T) {
 }
 
 func TestUnitIssueOpenedPayload(t *testing.T) {
-	body, err := os.ReadFile("../../../testdata/issue_opened.json")
+	body, err := os.ReadFile("../../../testdata/issues_opened.json")
 	assert.NoError(t, err)
 
 	var event IssueEvent

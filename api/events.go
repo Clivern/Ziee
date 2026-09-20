@@ -66,6 +66,43 @@ func dump(_ context.Context, d webhook.Delivery) {
 		Str("deliveryId", d.ID).
 		Str("path", path).
 		Msg("GitHub webhook dumped")
+
+	collectTestdata(d.Event, d.Body, pretty.Bytes())
+}
+
+func collectTestdata(event string, body, pretty []byte) {
+	err := os.MkdirAll("testdata", 0o755)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create GitHub webhook testdata dir")
+		return
+	}
+
+	path := filepath.Join("testdata", testdataName(event, body))
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	if err != nil {
+		return
+	}
+
+	file.Write(pretty)
+	file.Close()
+
+	log.Info().
+		Str("event", event).
+		Str("path", path).
+		Msg("GitHub webhook testdata collected")
+}
+
+func testdataName(event string, body []byte) string {
+	var payload struct {
+		Action string `json:"action"`
+	}
+	json.Unmarshal(body, &payload)
+
+	if lo.IsEmpty(payload.Action) {
+		return event + ".json"
+	}
+
+	return event + "_" + payload.Action + ".json"
 }
 
 func installation(_ context.Context, d webhook.Delivery) {

@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -102,6 +103,35 @@ func TestUnitIssueEvent(t *testing.T) {
 	assert.Equal(t, "acme", event.Repository.Owner.Login)
 	assert.Equal(t, "Organization", event.Repository.Owner.Type)
 	assert.Equal(t, int64(9), event.Installation.ID)
+}
+
+func TestUnitIssueOpenedPayload(t *testing.T) {
+	body, err := os.ReadFile("../../../testdata/issue_opened.json")
+	assert.NoError(t, err)
+
+	var event IssueEvent
+	err = json.Unmarshal(body, &event)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "opened", event.Action)
+	assert.Equal(t, 6, event.Issue.Number)
+	assert.Equal(t, "Test the issue request", event.Issue.Title)
+	assert.Equal(t, "Test the issue request", event.Issue.Body)
+	assert.Equal(t, "open", event.Issue.State)
+	assert.Equal(t, "Clivern", event.Issue.User.Login)
+	assert.Equal(t, int64(1634427), event.Issue.User.ID)
+	assert.Equal(t, "OWNER", event.Issue.AuthorAssociation)
+	assert.Empty(t, event.Issue.Labels)
+	assert.Empty(t, event.Issue.Assignees)
+	assert.Nil(t, event.Issue.PullRequest)
+	assert.Equal(t, int64(1376221789), event.Repository.ID)
+	assert.Equal(t, "Glitch", event.Repository.Name)
+	assert.Equal(t, "Clivern/Glitch", event.Repository.FullName)
+	assert.Equal(t, "Clivern", event.Repository.Owner.Login)
+	assert.Equal(t, "User", event.Repository.Owner.Type)
+	assert.Equal(t, "main", event.Repository.DefaultBranch)
+	assert.Equal(t, int64(161202156), event.Installation.ID)
+	assert.Equal(t, "Clivern", event.Sender.Login)
 }
 
 func TestUnitIssueCommentEvent(t *testing.T) {

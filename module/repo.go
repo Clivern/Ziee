@@ -44,7 +44,7 @@ func (r *Repository) Import(workspaceId db.Id, installationId int64, repositorie
 			return err
 		}
 
-		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]any{
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
 			"workspaceId":    workspaceId.String(),
 			"installationId": strconv.FormatInt(installationId, 10),
 			"githubId":       strconv.FormatInt(repository.ID, 10),

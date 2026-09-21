@@ -20,44 +20,32 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type commandPayload struct {
-	TaskId         string   `json:"taskId"`
-	DeliveryId     string   `json:"deliveryId"`
-	Event          string   `json:"event"`
-	Action         string   `json:"action"`
-	Body           string   `json:"body"`
-	InstallationId string   `json:"installationId"`
-	Owner          string   `json:"owner"`
-	Repo           string   `json:"repo"`
-	Number         string   `json:"number"`
-	Verb           string   `json:"verb"`
-	Args           []string `json:"args"`
-}
-
 // HandleGitHubCommand evaluates an `@bot` command from an issue or PR comment.
 func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) error {
-	var payload commandPayload
+	var payload map[string]string
 	err := json.Unmarshal(msg.Data, &payload)
 	if err != nil {
 		return ErrInvalidPayload
 	}
 
-	taskId := db.Id(payload.TaskId)
+	taskId := db.Id(payload["taskId"])
 
 	h.tasks.MarkRunning(taskId)
 
-	installationId, err := strconv.ParseInt(payload.InstallationId, 10, 64)
+	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	var comment webhook.IssueCommentEvent
-	err = json.Unmarshal([]byte(payload.Body), &comment)
+	err = json.Unmarshal([]byte(payload["body"]), &comment)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
 	}
+
+	cmd := eval.ParseCommand(comment.Comment.Body)
 
 	repos := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
@@ -71,7 +59,7 @@ func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) err
 		return err
 	}
 
-	data, err := app.Get().GetFile(ctx, installationId, payload.Owner, payload.Repo, path)
+	data, err := app.Get().GetFile(ctx, installationId, payload["owner"], payload["repo"], path)
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
@@ -114,28 +102,28 @@ func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) err
 		Actor: eval.Actor{
 			Login: comment.Sender.Login,
 		},
-	}, NewIssueClient(ctx, installationId, comment.Repository.ID, payload.Owner, payload.Repo))
+	}, NewIssueClient(ctx, installationId, comment.Repository.ID, payload["owner"], payload["repo"]))
 
 	log.Info().
-		Str("deliveryId", payload.DeliveryId).
-		Str("owner", payload.Owner).
-		Str("repo", payload.Repo).
-		Str("number", payload.Number).
-		Str("action", payload.Action).
-		Str("verb", payload.Verb).
-		Strs("args", payload.Args).
+		Str("deliveryId", payload["deliveryId"]).
+		Str("owner", payload["owner"]).
+		Str("repo", payload["repo"]).
+		Str("number", payload["number"]).
+		Str("action", payload["action"]).
+		Str("verb", cmd.Verb).
+		Strs("args", cmd.Args).
 		Interface("actions", plan.Actions).
 		Msg("Command plan")
 
 	result, err := json.Marshal(map[string]any{
-		"deliveryId": payload.DeliveryId,
-		"event":      payload.Event,
-		"action":     payload.Action,
-		"owner":      payload.Owner,
-		"repo":       payload.Repo,
-		"number":     payload.Number,
-		"verb":       payload.Verb,
-		"args":       payload.Args,
+		"deliveryId": payload["deliveryId"],
+		"event":      payload["event"],
+		"action":     payload["action"],
+		"owner":      payload["owner"],
+		"repo":       payload["repo"],
+		"number":     payload["number"],
+		"verb":       cmd.Verb,
+		"args":       cmd.Args,
 		"actions":    plan.Actions,
 	})
 	if err != nil {

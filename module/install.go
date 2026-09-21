@@ -169,7 +169,7 @@ func (i *Installation) Attach(ctx context.Context, id, workspaceId db.Id, github
 			return fmt.Errorf("store installation repo: %w", err)
 		}
 
-		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]any{
+		err = EnqueueTask(db.AsyncTaskTypeRepoBootstrap, map[string]string{
 			"workspaceId":    workspaceId.String(),
 			"installationId": strconv.FormatInt(item.GitHubId, 10),
 			"githubId":       strconv.FormatInt(repository.ID, 10),

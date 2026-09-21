@@ -291,7 +291,7 @@ func issues(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, map[string]any{
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubIssue, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -371,7 +371,7 @@ func command(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubCommand, map[string]any{
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubCommand, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -380,8 +380,6 @@ func command(_ context.Context, d webhook.Delivery) {
 		"owner":          payload.Repository.Owner.Login,
 		"repo":           payload.Repository.Name,
 		"number":         strconv.Itoa(payload.Issue.Number),
-		"verb":           cmd.Verb,
-		"args":           cmd.Args,
 	}, installation.WorkspaceId)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to enqueue GitHub command webhook")
@@ -459,7 +457,7 @@ func pullRequests(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubPullRequest, map[string]any{
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubPullRequest, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -527,7 +525,7 @@ func detectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeRepoLabels, map[string]any{
+	err = module.EnqueueTask(db.AsyncTaskTypeRepoLabels, map[string]string{
 		"deliveryId":     d.ID,
 		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
 		"fullName":       payload.Repository.FullName,

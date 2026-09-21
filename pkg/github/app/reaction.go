@@ -34,8 +34,15 @@ func (a *App) CreateIssueCommentReaction(ctx context.Context, installationID int
 	}
 
 	var reaction Reaction
-	path := fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d/reactions", a.apiURL, owner, repo, commentID)
-	err = Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), map[string]string{"content": content}, &reaction)
+	err = Call(
+		ctx,
+		http.MethodPost,
+		fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d/reactions", a.apiURL, owner, repo, commentID),
+		token.Token,
+		GetHeaders(),
+		map[string]string{"content": content},
+		&reaction,
+	)
 	if err != nil {
 		return nil, err
 	}

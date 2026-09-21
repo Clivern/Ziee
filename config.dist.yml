@@ -89,9 +89,9 @@ app:
         pool_size: ${ZIEE_AI_QDRANT_POOL_SIZE:-3}
     llm:
       lite:
-        model: ${ZIEE_AI_LITE_LLM_MODEL:-cohere/command-r}
+        model: ${ZIEE_AI_LITE_LLM_MODEL:-openai/gpt-4o-mini}
       large:
-        model: ${ZIEE_AI_LARGE_LLM_MODEL:-openai/gpt-4o}
+        model: ${ZIEE_AI_LARGE_LLM_MODEL:-openai/gpt-4o-mini}
 
   cache:
     provider: ${ZIEE_CACHE_PROVIDER:-redis}

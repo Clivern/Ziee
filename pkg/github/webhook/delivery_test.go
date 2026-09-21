@@ -136,11 +136,12 @@ func TestUnitIssueOpenedPayload(t *testing.T) {
 
 func TestUnitIssueCommentEvent(t *testing.T) {
 	var event IssueCommentEvent
-	json.Unmarshal([]byte(`{"action":"created","issue":{"number":3},"comment":{"body":"@zieeio label bug","user":{"login":"maya"}},"repository":{"name":"ziee","owner":{"login":"acme"}},"installation":{"id":9}}`), &event)
+	json.Unmarshal([]byte(`{"action":"created","issue":{"number":3},"comment":{"id":99,"body":"@zieeio label bug","user":{"login":"maya"}},"repository":{"name":"ziee","owner":{"login":"acme"}},"installation":{"id":9}}`), &event)
 
 	assert.Equal(t, "created", event.Action)
 	assert.Equal(t, 3, event.Issue.Number)
 	assert.Nil(t, event.Issue.PullRequest)
+	assert.Equal(t, int64(99), event.Comment.ID)
 	assert.Equal(t, "@zieeio label bug", event.Comment.Body)
 	assert.Equal(t, int64(9), event.Installation.ID)
 

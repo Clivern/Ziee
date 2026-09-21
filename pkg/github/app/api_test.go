@@ -367,4 +367,23 @@ func TestUnitAppHTTP(t *testing.T) {
 
 		assert.NoError(t, client.CompleteCheckRun(ctx, 1, "acme", "ziee", 42, "success", "Config synced", "Created 3 labels."))
 	})
+
+	t.Run("CreateIssueCommentReaction", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, "/repos/acme/ziee/issues/comments/99/reactions", r.URL.Path)
+
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			assert.Equal(t, ReactionEyes, body["content"])
+
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(Reaction{ID: 7, Content: ReactionEyes})
+		}))
+
+		reaction, err := client.CreateIssueCommentReaction(ctx, 1, "acme", "ziee", 99, ReactionEyes)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(7), reaction.ID)
+		assert.Equal(t, ReactionEyes, reaction.Content)
+	})
 }

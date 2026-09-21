@@ -47,6 +47,22 @@ func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) err
 
 	cmd := eval.ParseCommand(comment.Comment.Body)
 
+	_, err = app.Get().CreateIssueCommentReaction(
+		ctx,
+		installationId,
+		payload["owner"],
+		payload["repo"],
+		comment.Comment.ID,
+		app.ReactionEyes,
+	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("deliveryId", payload["deliveryId"]).
+			Int64("commentId", comment.Comment.ID).
+			Msg("Failed to react to command comment")
+	}
+
 	repos := module.NewRepository(
 		db.NewRepositoriesRepository(db.GetDB()),
 		db.NewRepositoryMetaRepository(db.GetDB()),

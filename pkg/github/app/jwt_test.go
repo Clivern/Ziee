@@ -26,6 +26,10 @@ func TestUnitGetConfig(t *testing.T) {
 	assert.Equal(t, "app-123", cfg.ClientID)
 	assert.Equal(t, "/tmp/key.pem", cfg.PrivateKeyPath)
 	assert.Equal(t, "enc-secret", cfg.EncryptionKey)
+	assert.Equal(t, "zieeio", cfg.BotName)
+
+	viper.Set("app.oauth.github.bot_name", "acmebot")
+	assert.Equal(t, "acmebot", GetConfig().BotName)
 }
 
 func TestUnitParsePrivateKeyAndJWT(t *testing.T) {

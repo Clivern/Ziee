@@ -6,10 +6,13 @@ package eval
 import (
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUnitParseCommand(t *testing.T) {
+	viper.Set("app.oauth.github.bot_name", "zieeio")
+
 	assert.Equal(t, Command{Verb: "label", Args: []string{"bug", "security"}}, ParseCommand("@zieeio label bug security"))
 	assert.Equal(t, Command{Verb: "unlabel", Args: []string{"bot"}}, ParseCommand("@zieeio unlabel bot"))
 	assert.Equal(t, Command{Verb: "assign", Args: []string{"clivern"}}, ParseCommand("@zieeio assign clivern"))
@@ -26,4 +29,13 @@ func TestUnitParseCommand(t *testing.T) {
 	assert.Equal(t, Command{}, ParseCommand("@zieeio"))
 	assert.Equal(t, Command{}, ParseCommand("@ziee close"))
 	assert.Equal(t, Command{}, ParseCommand("thanks"))
+}
+
+func TestUnitParseCommandCustomBotName(t *testing.T) {
+	viper.Set("app.oauth.github.bot_name", "acmebot")
+	t.Cleanup(func() { viper.Set("app.oauth.github.bot_name", "zieeio") })
+
+	assert.Equal(t, Command{Verb: "queue"}, ParseCommand("@acmebot queue"))
+	assert.Equal(t, Command{Verb: "label", Args: []string{"bug"}}, ParseCommand("@AcmeBot label bug"))
+	assert.Equal(t, Command{}, ParseCommand("@zieeio queue"))
 }

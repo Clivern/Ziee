@@ -18,7 +18,7 @@ const (
 	AsyncTaskTypeDocDelete         = "ziee.doc.delete"
 	AsyncTaskTypeRepoBootstrap     = "ziee.repo.bootstrap"
 	AsyncTaskTypeGitHubIssue       = "ziee.github.issue"
-	AsyncTaskTypeGitHubComment     = "ziee.github.comment"
+	AsyncTaskTypeGitHubCommand     = "ziee.github.command"
 	AsyncTaskTypeGitHubPullRequest = "ziee.github.pull_request"
 	AsyncTaskTypeRepoLabels        = "ziee.repo.labels"
 )

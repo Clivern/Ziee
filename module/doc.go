@@ -323,7 +323,7 @@ func (d *Document) SearchDocuments(ctx context.Context, workspaceId db.Id, query
 
 // EnqueueIndexTask records an async task and publishes a NATS message to index a document.
 func (d *Document) EnqueueIndexTask(workspaceId, documentId db.Id) error {
-	return EnqueueTask(db.AsyncTaskTypeDocIndex, map[string]string{
+	return EnqueueTask(db.AsyncTaskTypeDocIndex, map[string]any{
 		"workspaceId": workspaceId.String(),
 		"documentId":  documentId.String(),
 	}, workspaceId)
@@ -331,7 +331,7 @@ func (d *Document) EnqueueIndexTask(workspaceId, documentId db.Id) error {
 
 // EnqueueDeleteTask records an async task and publishes a NATS message to delete a document.
 func (d *Document) EnqueueDeleteTask(workspaceId, documentId, internalId db.Id) error {
-	return EnqueueTask(db.AsyncTaskTypeDocDelete, map[string]string{
+	return EnqueueTask(db.AsyncTaskTypeDocDelete, map[string]any{
 		"workspaceId": workspaceId.String(),
 		"documentId":  documentId.String(),
 		"internalId":  internalId.String(),

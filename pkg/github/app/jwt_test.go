@@ -21,6 +21,7 @@ func TestUnitGetConfig(t *testing.T) {
 	viper.Set("app.oauth.github.client_id", "app-123")
 	viper.Set("app.oauth.github.private_key_path", "/tmp/key.pem")
 	viper.Set("app.oauth.github.encryption_key", "enc-secret")
+	viper.Set("app.oauth.github.bot_name", "zieeio")
 
 	cfg := GetConfig()
 	assert.Equal(t, "app-123", cfg.ClientID)

@@ -161,6 +161,13 @@ func (r *Repository) SetConfigPath(githubRepoId int64, path string) error {
 	return nil
 }
 
+// WorkspaceId returns the Ziee workspace for a GitHub repository id.
+func (r *Repository) WorkspaceId(githubRepoId int64) db.Id {
+	repo, _ := r.RepoRepository.GetByGitHubId(githubRepoId)
+
+	return repo.WorkspaceId
+}
+
 // GetConfigPath returns the `.ziee.yml` path by GitHub repository id.
 func (r *Repository) GetConfigPath(githubRepoId int64) (string, error) {
 	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)

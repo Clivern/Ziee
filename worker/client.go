@@ -76,6 +76,8 @@ func (c IssueClient) GetTeams(org, login string) []string {
 
 // EvaluateIssue classifies issue intention from title and body.
 func (c IssueClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) v1.Intention {
+	usage := module.NewUsage()
+
 	options := make([]ai.ClassifyOption, len(intentions))
 	for i, intention := range intentions {
 		options[i] = ai.ClassifyOption{
@@ -84,7 +86,17 @@ func (c IssueClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) 
 		}
 	}
 
-	name, _, _ := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+	name, aiUsage, _ := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+
+	// record usage
+	usage.IncrementAIUsage(
+		db.NewUsageRepository(db.GetDB()),
+		db.NewSubscriptionRepository(db.GetDB()),
+		c.repos.WorkspaceId(c.githubRepoId),
+		aiUsage.TotalTokens,
+		aiUsage.Cost,
+	)
+
 	if lo.IsEmpty(name) {
 		return v1.Intention{}
 	}
@@ -178,6 +190,8 @@ func (c PullRequestClient) GetTeams(org, login string) []string {
 
 // EvaluateIssue classifies pull request intention from title and body.
 func (c PullRequestClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) v1.Intention {
+	usage := module.NewUsage()
+
 	options := make([]ai.ClassifyOption, len(intentions))
 	for i, intention := range intentions {
 		options[i] = ai.ClassifyOption{
@@ -186,7 +200,17 @@ func (c PullRequestClient) EvaluateIssue(issue eval.Issue, intentions []v1.Inten
 		}
 	}
 
-	name, _, _ := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+	name, aiUsage, _ := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+
+	// record usage
+	usage.IncrementAIUsage(
+		db.NewUsageRepository(db.GetDB()),
+		db.NewSubscriptionRepository(db.GetDB()),
+		c.repos.WorkspaceId(c.githubRepoId),
+		aiUsage.TotalTokens,
+		aiUsage.Cost,
+	)
+
 	if lo.IsEmpty(name) {
 		return v1.Intention{}
 	}

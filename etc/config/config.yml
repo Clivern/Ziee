@@ -91,6 +91,8 @@ app:
         model: ${ZIEE_AI_LITE_LLM_MODEL:-openai/gpt-4o-mini}
       large:
         model: ${ZIEE_AI_LARGE_LLM_MODEL:-openai/gpt-4o-mini}
+      classify:
+        model: ${ZIEE_AI_CLASSIFY_LLM_MODEL:-typesafe/jev-1.13}
 
   cache:
     provider: ${ZIEE_CACHE_PROVIDER:-redis}

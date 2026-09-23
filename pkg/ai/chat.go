@@ -13,21 +13,29 @@ import (
 	"github.com/spf13/viper"
 )
 
+const ClassifyNoneChoice = "none"
+
 // Message is a chat message passed to Complete.
 type Message struct {
 	Role    string
 	Content string
 }
 
-// ChatClient calls OpenRouter chat completion APIs for a single model tier.
-type ChatClient struct {
+// Client is an OpenRouter model handle for chat or System One (Jev).
+type Client struct {
 	api   *orsdk.OpenRouter
 	model string
 }
 
+// ClassifyOption is one allowed intention for Jev choice questions.
+type ClassifyOption struct {
+	Name        string
+	Description string
+}
+
 // NewLiteClient returns the lite LLM client loaded from app.ai.llm.lite config.
-func NewLiteClient() *ChatClient {
-	return &ChatClient{
+func NewLiteClient() *Client {
+	return &Client{
 		api: orsdk.New(
 			orsdk.WithSecurity(viper.GetString("app.ai.api_key")),
 		),
@@ -36,8 +44,8 @@ func NewLiteClient() *ChatClient {
 }
 
 // NewLargeClient returns the large LLM client loaded from app.ai.llm.large config.
-func NewLargeClient() *ChatClient {
-	return &ChatClient{
+func NewLargeClient() *Client {
+	return &Client{
 		api: orsdk.New(
 			orsdk.WithSecurity(viper.GetString("app.ai.api_key")),
 		),
@@ -45,8 +53,79 @@ func NewLargeClient() *ChatClient {
 	}
 }
 
+// NewClassifyClient returns the classify client loaded from app.ai.llm.classify config.
+func NewClassifyClient() *Client {
+	return &Client{
+		api: orsdk.New(
+			orsdk.WithSecurity(viper.GetString("app.ai.api_key")),
+		),
+		model: viper.GetString("app.ai.llm.classify.model"),
+	}
+}
+
+// Classify picks one intention name from options given a GitHub title and body.
+func (c *Client) Classify(ctx context.Context, title, body string, options []ClassifyOption) (string, Usage, error) {
+	none := components.CreateCriteriaStr("None of the listed intentions apply.")
+	criteria := map[string]*components.Criteria{
+		ClassifyNoneChoice: &none,
+	}
+
+	for _, option := range options {
+		text := option.Description
+		if text == "" {
+			text = option.Name
+		}
+		criterion := components.CreateCriteriaStr(text)
+		criteria[option.Name] = &criterion
+	}
+
+	response, err := c.api.SystemOne.Create(ctx, components.DecisionsRequest{
+		Model: c.model,
+		State: components.CreateStateMapOfAny(map[string]any{
+			"title": title,
+			"body":  body,
+		}),
+		Questions: map[string]components.Questions{
+			"intention": components.CreateQuestionsChoice(components.DecisionsChoiceQuestion{
+				Type: components.DecisionsChoiceQuestionTypeChoice,
+				Instructions: components.CreateDecisionsChoiceQuestionInstructionsStr(
+					"Classify this GitHub issue or pull request. Pick exactly one intention.",
+				),
+				Criteria: criteria,
+			}),
+		},
+	})
+	if err != nil {
+		return "", Usage{}, fmt.Errorf("ai classify: %w", err)
+	}
+
+	if response == nil {
+		return "", Usage{}, ErrNoDecision
+	}
+
+	usage := Usage{
+		PromptTokens: response.Usage.InputTokens,
+		TotalTokens:  response.Usage.InputTokens + response.Usage.OutputTokens,
+	}
+	if cost := response.Usage.Cost; cost != nil {
+		usage.Cost = CostFromUSD(*cost)
+	}
+
+	answer, ok := response.Answers["intention"]
+	if !ok || answer.DecisionsChoiceAnswer == nil {
+		return "", usage, ErrNoDecision
+	}
+
+	choice := answer.DecisionsChoiceAnswer.Choice
+	if choice == ClassifyNoneChoice {
+		return "", usage, nil
+	}
+
+	return choice, usage, nil
+}
+
 // Complete sends messages using this client's model and returns the reply and usage.
-func (c *ChatClient) Complete(ctx context.Context, messages []Message) (string, Usage, error) {
+func (c *Client) Complete(ctx context.Context, messages []Message) (string, Usage, error) {
 	items := make([]components.ChatMessages, 0, len(messages))
 
 	for _, message := range messages {
@@ -82,35 +161,17 @@ func (c *ChatClient) Complete(ctx context.Context, messages []Message) (string, 
 		return "", Usage{}, fmt.Errorf("ai chat: %w", err)
 	}
 
-	if response == nil || response.ChatResult == nil {
-		return "", Usage{}, ErrNoCompletion
+	message := response.ChatResult.GetChoices()[0].GetMessage()
+	content, _ := message.GetContent().GetOrZero()
+	cusage := response.ChatResult.GetUsage()
+
+	usage := Usage{
+		PromptTokens: cusage.GetPromptTokens(),
+		TotalTokens:  cusage.GetTotalTokens(),
+	}
+	if amount, ok := cusage.GetCost().GetOrZero(); ok {
+		usage.Cost = CostFromUSD(amount)
 	}
 
-	choices := response.ChatResult.GetChoices()
-	if len(choices) == 0 {
-		return "", Usage{}, ErrNoCompletion
-	}
-
-	assistantMessage := choices[0].GetMessage()
-	content, ok := assistantMessage.GetContent().GetOrZero()
-	if !ok {
-		return "", Usage{}, ErrNoCompletion
-	}
-
-	usage := Usage{}
-	if chatUsage := response.ChatResult.GetUsage(); chatUsage != nil {
-		usage = Usage{
-			PromptTokens: chatUsage.GetPromptTokens(),
-			TotalTokens:  chatUsage.GetTotalTokens(),
-		}
-		if amount, ok := chatUsage.GetCost().GetOrZero(); ok {
-			usage.Cost = CostFromUSD(amount)
-		}
-	}
-
-	if content.Type == components.ChatAssistantMessageContentTypeStr && content.Str != nil {
-		return *content.Str, usage, nil
-	}
-
-	return "", usage, ErrNoCompletion
+	return *content.Str, usage, nil
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/policy/eval"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -59,12 +60,21 @@ func (c IssueClient) GetTeams(org, login string) []string {
 		return []string{}
 	}
 
-	teams, _ := app.Get().ListUserTeams(
+	teams, err := app.Get().ListUserTeams(
 		c.ctx,
 		c.installationId,
 		org,
 		login,
 	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Str("org", org).
+			Str("login", login).
+			Msg("Failed to list issue author teams")
+	}
 
 	slugs := make([]string, len(teams))
 	for i, team := range teams {
@@ -86,7 +96,15 @@ func (c IssueClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) 
 		}
 	}
 
-	name, aiUsage, _ := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+	name, aiUsage, err := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Msg("Failed to classify issue")
+	}
 
 	// record usage
 	usage.IncrementAIUsage(
@@ -110,21 +128,40 @@ func (c IssueClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) 
 
 // IsFirstContribution reports whether the issue author is a first-time contributor.
 func (c IssueClient) IsFirstContribution(issue eval.Issue) bool {
-	first, _ := app.Get().IsFirstIssue(
+	first, err := app.Get().IsFirstIssue(
 		c.ctx,
 		c.installationId,
 		c.owner,
 		c.repo,
 		issue.Author,
 	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Str("author", issue.Author).
+			Msg("Failed to check first issue")
+	}
 
 	return first
 }
 
 // IssuesOpenedExceeds reports whether the author opened more than count issues within the duration.
 func (c IssueClient) IssuesOpenedExceeds(issue eval.Issue, count int, within string) bool {
-	window, _ := time.ParseDuration(within)
-	opened, _ := app.Get().CountIssuesOpened(
+	window, err := time.ParseDuration(within)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Str("within", within).
+			Msg("Failed to parse issue window")
+	}
+
+	opened, err := app.Get().CountIssuesOpened(
 		c.ctx,
 		c.installationId,
 		c.owner,
@@ -132,6 +169,15 @@ func (c IssueClient) IssuesOpenedExceeds(issue eval.Issue, count int, within str
 		issue.Author,
 		time.Now().UTC().Add(-window),
 	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Str("author", issue.Author).
+			Msg("Failed to count issues opened")
+	}
 
 	return opened > count
 }
@@ -173,12 +219,21 @@ func (c PullRequestClient) GetTeams(org, login string) []string {
 		return []string{}
 	}
 
-	teams, _ := app.Get().ListUserTeams(
+	teams, err := app.Get().ListUserTeams(
 		c.ctx,
 		c.installationId,
 		org,
 		login,
 	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Str("org", org).
+			Str("login", login).
+			Msg("Failed to list pull request author teams")
+	}
 
 	slugs := make([]string, len(teams))
 	for i, team := range teams {
@@ -200,7 +255,15 @@ func (c PullRequestClient) EvaluateIssue(issue eval.Issue, intentions []v1.Inten
 		}
 	}
 
-	name, aiUsage, _ := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+	name, aiUsage, err := ai.NewClassifyClient().Classify(c.ctx, issue.Title, issue.Body, options)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Msg("Failed to classify pull request")
+	}
 
 	// record usage
 	usage.IncrementAIUsage(
@@ -224,13 +287,22 @@ func (c PullRequestClient) EvaluateIssue(issue eval.Issue, intentions []v1.Inten
 
 // IsFirstContribution reports whether the author is opening their first pull request.
 func (c PullRequestClient) IsFirstContribution(issue eval.Issue) bool {
-	first, _ := app.Get().IsFirstPullRequest(
+	first, err := app.Get().IsFirstPullRequest(
 		c.ctx,
 		c.installationId,
 		c.owner,
 		c.repo,
 		issue.Author,
 	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Str("author", issue.Author).
+			Msg("Failed to check first pull request")
+	}
 
 	return first
 }
@@ -242,8 +314,18 @@ func (c PullRequestClient) IssuesOpenedExceeds(eval.Issue, int, string) bool {
 
 // PrsOpenedExceeds reports whether the author opened more than count pull requests within the duration.
 func (c PullRequestClient) PrsOpenedExceeds(issue eval.Issue, count int, within string) bool {
-	window, _ := time.ParseDuration(within)
-	opened, _ := app.Get().CountPullRequestsOpened(
+	window, err := time.ParseDuration(within)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Str("within", within).
+			Msg("Failed to parse pull request window")
+	}
+
+	opened, err := app.Get().CountPullRequestsOpened(
 		c.ctx,
 		c.installationId,
 		c.owner,
@@ -251,6 +333,15 @@ func (c PullRequestClient) PrsOpenedExceeds(issue eval.Issue, count int, within 
 		issue.Author,
 		time.Now().UTC().Add(-window),
 	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Str("author", issue.Author).
+			Msg("Failed to count pull requests opened")
+	}
 
 	return opened > count
 }

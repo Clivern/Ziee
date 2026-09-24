@@ -25,9 +25,14 @@ var migrateUpCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Run all pending migrations",
 	Run: func(cmd *cobra.Command, _ []string) {
-		configFile, _ := cmd.Flags().GetString("config")
+		configFile, err := cmd.Flags().GetString("config")
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Failed to read config flag")
+		}
 
-		err := core.Load(configFile)
+		err = core.Load(configFile)
 		if err != nil {
 			log.Fatal().
 				Err(err).
@@ -89,9 +94,14 @@ var migrateDownCmd = &cobra.Command{
 	Use:   "down",
 	Short: "Roll back the last migration",
 	Run: func(cmd *cobra.Command, _ []string) {
-		configFile, _ := cmd.Flags().GetString("config")
+		configFile, err := cmd.Flags().GetString("config")
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Failed to read config flag")
+		}
 
-		err := core.Load(configFile)
+		err = core.Load(configFile)
 		if err != nil {
 			log.Fatal().
 				Err(err).
@@ -134,9 +144,14 @@ var migrateStatusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show migration status",
 	Run: func(cmd *cobra.Command, _ []string) {
-		configFile, _ := cmd.Flags().GetString("config")
+		configFile, err := cmd.Flags().GetString("config")
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Failed to read config flag")
+		}
 
-		err := core.Load(configFile)
+		err = core.Load(configFile)
 		if err != nil {
 			log.Fatal().
 				Err(err).

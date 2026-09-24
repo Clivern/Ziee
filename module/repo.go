@@ -163,7 +163,13 @@ func (r *Repository) SetConfigPath(githubRepoId int64, path string) error {
 
 // WorkspaceId returns the Ziee workspace for a GitHub repository id.
 func (r *Repository) WorkspaceId(githubRepoId int64) db.Id {
-	repo, _ := r.RepoRepository.GetByGitHubId(githubRepoId)
+	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Int64("githubRepoId", githubRepoId).
+			Msg("Failed to load repository workspace")
+	}
 
 	return repo.WorkspaceId
 }
@@ -182,11 +188,23 @@ func (r *Repository) GetConfigPath(githubRepoId int64) (string, error) {
 func (r *Repository) IsAuthorBlocked(githubRepoId, githubUserId int64) bool {
 	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Int64("githubRepoId", githubRepoId).
+			Int64("githubUserId", githubUserId).
+			Msg("Failed to load repository for blocklist check")
+
 		return false
 	}
 
 	item, err := r.SpamUserRepository.GetByGitHubId(repo.Id, githubUserId)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Int64("githubRepoId", githubRepoId).
+			Int64("githubUserId", githubUserId).
+			Msg("Failed to load author blocklist")
+
 		return false
 	}
 
@@ -195,11 +213,25 @@ func (r *Repository) IsAuthorBlocked(githubRepoId, githubUserId int64) bool {
 
 // BlockAuthor adds the GitHub user to the repository spam blocklist.
 func (r *Repository) BlockAuthor(githubRepoId int64, username string, githubUserId int64) {
-	repo, _ := r.RepoRepository.GetByGitHubId(githubRepoId)
+	repo, err := r.RepoRepository.GetByGitHubId(githubRepoId)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Int64("githubRepoId", githubRepoId).
+			Str("author", username).
+			Msg("Failed to load repository for blocklist")
+	}
 
-	_ = r.SpamUserRepository.Upsert(&db.RepositorySpamUser{
+	err = r.SpamUserRepository.Upsert(&db.RepositorySpamUser{
 		RepositoryId: repo.Id,
 		GitHubId:     &githubUserId,
 		Username:     &username,
 	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Int64("githubRepoId", githubRepoId).
+			Str("author", username).
+			Msg("Failed to block author")
+	}
 }

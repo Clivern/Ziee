@@ -6,6 +6,7 @@ package core
 import (
 	"github.com/clivern/ziee/db"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -32,7 +33,12 @@ func ReadOnlyDatabase() []db.DatabaseConfig {
 	var databases []Database
 	ro := []db.DatabaseConfig{}
 
-	_ = viper.UnmarshalKey("app.database.ro", &databases)
+	err := viper.UnmarshalKey("app.database.ro", &databases)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Failed to read read-only database config")
+	}
 
 	for _, database := range databases {
 		ro = append(ro, database.DBConfig())

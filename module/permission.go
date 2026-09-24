@@ -10,6 +10,7 @@ import (
 
 	"github.com/clivern/ziee/db"
 
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -96,7 +97,14 @@ func (p *Perm) WithWorkspace(workspace *db.Workspace) *Perm {
 
 // WithWorkspaceId loads the workspace by id from the repository.
 func (p *Perm) WithWorkspaceId(workspaceId db.Id) *Perm {
-	workspace, _ := p.WorkspaceRepository.GetById(workspaceId)
+	workspace, err := p.WorkspaceRepository.GetById(workspaceId)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("workspaceId", workspaceId.String()).
+			Msg("Failed to load workspace")
+	}
+
 	p.workspace = workspace
 
 	return p

@@ -11,6 +11,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -115,12 +116,26 @@ func MatchAnyFile(patterns, files []string) bool {
 func MatchFile(pattern, file string) bool {
 	pattern = strings.ReplaceAll(pattern, "**/", "")
 	pattern = strings.ReplaceAll(pattern, "**", "*")
-	matched, _ := path.Match(pattern, file)
+	matched, err := path.Match(pattern, file)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("pattern", pattern).
+			Str("file", file).
+			Msg("Failed to match file")
+	}
 	if matched {
 		return true
 	}
 
-	matched, _ = path.Match(pattern, path.Base(file))
+	matched, err = path.Match(pattern, path.Base(file))
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("pattern", pattern).
+			Str("file", file).
+			Msg("Failed to match file")
+	}
 
 	return matched
 }

@@ -236,7 +236,13 @@ func (d *Document) ListDocuments(workspaceId db.Id, limit, offset int) (*ListDoc
 	for _, document := range documents {
 		var labels []string
 		if document.Labels != nil && lo.IsNotEmpty(*document.Labels) {
-			_ = json.Unmarshal([]byte(*document.Labels), &labels)
+			err := json.Unmarshal([]byte(*document.Labels), &labels)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Str("documentId", document.Id.String()).
+					Msg("Failed to parse document labels")
+			}
 		}
 
 		chkOpts := util.DefaultChunkingOptions(document.CharCount, document.Filename)

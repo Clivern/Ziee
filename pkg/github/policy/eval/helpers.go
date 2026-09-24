@@ -11,6 +11,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -40,7 +41,13 @@ func CollectIntentions(clauses v1.Clauses, intentions *[]v1.Intention) {
 
 // MatchPattern reports whether value matches pattern, ignoring case.
 func MatchPattern(pattern, value string) bool {
-	matched, _ := regexp.MatchString("(?i)"+pattern, value)
+	matched, err := regexp.MatchString("(?i)"+pattern, value)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("pattern", pattern).
+			Msg("Failed to match pattern")
+	}
 
 	return matched
 }

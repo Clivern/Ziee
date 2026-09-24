@@ -57,7 +57,12 @@ func SetupLogging() error {
 		writer = os.Stdout
 	}
 
-	hostname, _ := os.Hostname()
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Failed to read hostname")
+	}
 	if viper.GetString("app.log.format") == "json" {
 		log.Logger = zerolog.New(writer).With().Timestamp().Str("hostname", hostname).Logger()
 	} else {

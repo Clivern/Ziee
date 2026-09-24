@@ -37,10 +37,10 @@ func MatchClause(when v1.Clause, issue Issue, client Client) bool {
 	if !lo.IsEmpty(when.Body) && !MatchPattern(when.Body, issue.Body) {
 		return false
 	}
-	if len(when.AuthorIn) > 0 && !lo.Contains(when.AuthorIn, issue.Author) {
+	if len(when.AuthorIn) > 0 && !ContainsFold(when.AuthorIn, issue.Author) {
 		return false
 	}
-	if lo.Contains(when.AuthorNotIn, issue.Author) {
+	if ContainsFold(when.AuthorNotIn, issue.Author) {
 		return false
 	}
 	if !lo.IsEmpty(when.Intention.Name) && issue.Intention.Name != when.Intention.Name {

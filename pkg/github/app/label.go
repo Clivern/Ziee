@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -64,9 +65,16 @@ func (a *App) RemoveLabels(ctx context.Context, installationID int64, owner, rep
 	for _, label := range labels {
 		path := fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", a.apiURL, owner, repo, number, url.PathEscape(label))
 		err = Call(ctx, http.MethodDelete, path, token.Token, GetHeaders(), nil, nil)
-		if err != nil {
-			return err
+		if err == nil {
+			continue
 		}
+
+		var status *StatusError
+		if errors.As(err, &status) && status.Status == http.StatusNotFound {
+			continue
+		}
+
+		return err
 	}
 
 	return nil

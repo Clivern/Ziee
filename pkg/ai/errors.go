@@ -12,4 +12,5 @@ var (
 	ErrLLMNotConfigured   = errors.New("ai llm is not configured")
 	ErrNoEmbeddings       = errors.New("ai returned no embeddings")
 	ErrNoCompletion       = errors.New("ai returned no completion")
+	ErrNoDecision         = errors.New("ai returned no decision")
 )

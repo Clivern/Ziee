@@ -56,6 +56,7 @@ type PullRequestRef struct {
 
 // CommentPayload is the comment object on an issue_comment webhook.
 type CommentPayload struct {
+	ID   int64       `json:"id"`
 	Body string      `json:"body"`
 	User UserPayload `json:"user"`
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/event"
 	"github.com/clivern/ziee/pkg/github/app"
+	"github.com/clivern/ziee/pkg/github/policy/eval"
 	"github.com/clivern/ziee/pkg/github/webhook"
 
 	"github.com/rs/zerolog/log"
@@ -27,20 +28,21 @@ var Webhook = event.New[webhook.Delivery]("github.webhook")
 
 func init() {
 	// TODO: Remove this after release v0.1.0
-	Webhook.On(dump)
+	Webhook.On(Dump)
 	// TODO: Remove this after release v0.1.0
-	Webhook.On(uniquedump)
+	Webhook.On(UniqueDump)
 
 	// These events stay
-	Webhook.On(installation)
-	Webhook.On(installationRepositories)
-	Webhook.On(issues)
-	Webhook.On(issueComment)
-	Webhook.On(pullRequests)
-	Webhook.On(detectConfChanges)
+	Webhook.On(Installation)
+	Webhook.On(InstallationRepositories)
+	Webhook.On(Issues)
+	Webhook.On(Command)
+	Webhook.On(Comment)
+	Webhook.On(PullRequests)
+	Webhook.On(DetectConfChanges)
 }
 
-func dump(_ context.Context, d webhook.Delivery) {
+func Dump(_ context.Context, d webhook.Delivery) {
 	err := os.MkdirAll("events", 0o755)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create GitHub webhook events dir")
@@ -73,7 +75,7 @@ func dump(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub webhook dumped")
 }
 
-func uniquedump(_ context.Context, d webhook.Delivery) {
+func UniqueDump(_ context.Context, d webhook.Delivery) {
 	var pretty bytes.Buffer
 	err := json.Indent(&pretty, d.Body, "", "  ")
 	if err != nil {
@@ -114,7 +116,7 @@ func uniquedump(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub webhook testdata collected")
 }
 
-func installation(_ context.Context, d webhook.Delivery) {
+func Installation(_ context.Context, d webhook.Delivery) {
 	if d.Event != "installation" {
 		return
 	}
@@ -174,7 +176,7 @@ func installation(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub installation webhook handled")
 }
 
-func installationRepositories(_ context.Context, d webhook.Delivery) {
+func InstallationRepositories(_ context.Context, d webhook.Delivery) {
 	if d.Event != "installation_repositories" {
 		return
 	}
@@ -238,7 +240,7 @@ func installationRepositories(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub installation repositories webhook handled")
 }
 
-func issues(_ context.Context, d webhook.Delivery) {
+func Issues(_ context.Context, d webhook.Delivery) {
 	if d.Event != "issues" {
 		return
 	}
@@ -314,7 +316,7 @@ func issues(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub issue webhook handled")
 }
 
-func issueComment(_ context.Context, d webhook.Delivery) {
+func Command(_ context.Context, d webhook.Delivery) {
 	if d.Event != "issue_comment" {
 		return
 	}
@@ -325,8 +327,9 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 	if payload.Action != "created" {
 		return
 	}
-	// Skip if the comment is on a pull request
-	if lo.IsNotEmpty(payload.Issue.PullRequest) {
+
+	cmd := eval.ParseCommand(payload.Comment.Body)
+	if lo.IsEmpty(cmd.Verb) {
 		return
 	}
 
@@ -337,7 +340,7 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
+		log.Error().Err(err).Msg("Failed to enqueue GitHub command webhook")
 		return
 	}
 	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
@@ -352,22 +355,23 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
+		log.Error().Err(err).Msg("Failed to enqueue GitHub command webhook")
 		return
 	}
 	if lo.IsEmpty(path) {
 		log.Info().
 			Str("deliveryId", d.ID).
 			Str("action", payload.Action).
+			Str("verb", cmd.Verb).
 			Int64("githubId", payload.Installation.ID).
 			Str("owner", payload.Repository.Owner.Login).
 			Str("repo", payload.Repository.Name).
 			Int("number", payload.Issue.Number).
-			Msg("GitHub issue comment webhook skipped, no config")
+			Msg("GitHub command webhook skipped, no config")
 		return
 	}
 
-	err = module.EnqueueTask(db.AsyncTaskTypeGitHubComment, map[string]string{
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubCommand, map[string]string{
 		"deliveryId":     d.ID,
 		"event":          d.Event,
 		"action":         payload.Action,
@@ -378,21 +382,31 @@ func issueComment(_ context.Context, d webhook.Delivery) {
 		"number":         strconv.Itoa(payload.Issue.Number),
 	}, installation.WorkspaceId)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to enqueue GitHub issue comment webhook")
+		log.Error().Err(err).Msg("Failed to enqueue GitHub command webhook")
 		return
 	}
 
 	log.Info().
 		Str("deliveryId", d.ID).
 		Str("action", payload.Action).
+		Str("verb", cmd.Verb).
+		Strs("args", cmd.Args).
 		Int64("githubId", payload.Installation.ID).
 		Str("owner", payload.Repository.Owner.Login).
 		Str("repo", payload.Repository.Name).
 		Int("number", payload.Issue.Number).
-		Msg("GitHub issue comment webhook handled")
+		Msg("GitHub command webhook handled")
 }
 
-func pullRequests(_ context.Context, d webhook.Delivery) {
+func Comment(_ context.Context, d webhook.Delivery) {
+	if d.Event != "issue_comment" {
+		return
+	}
+
+	// Revoked (no-op) for now.
+}
+
+func PullRequests(_ context.Context, d webhook.Delivery) {
 	if d.Event != "pull_request" {
 		return
 	}
@@ -468,7 +482,7 @@ func pullRequests(_ context.Context, d webhook.Delivery) {
 		Msg("GitHub pull request webhook handled")
 }
 
-func detectConfChanges(_ context.Context, d webhook.Delivery) {
+func DetectConfChanges(_ context.Context, d webhook.Delivery) {
 	if d.Event != "push" {
 		return
 	}

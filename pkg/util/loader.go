@@ -10,12 +10,18 @@ import (
 	"path/filepath"
 
 	"github.com/drone/envsubst"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
 // GetBaseDir returns the project base dir
 func GetBaseDir(dirName string) string {
-	baseDir, _ := os.Getwd()
+	baseDir, err := os.Getwd()
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Failed to read working directory")
+	}
 	cacheDir := fmt.Sprintf("%s/%s", baseDir, dirName)
 
 	for {

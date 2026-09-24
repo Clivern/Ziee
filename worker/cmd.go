@@ -20,8 +20,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// HandleGitHubComment evaluates an issue comment webhook.
-func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) error {
+// HandleGitHubCommand evaluates an `@bot` command from an issue or PR comment.
+func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) error {
 	var payload map[string]string
 	err := json.Unmarshal(msg.Data, &payload)
 	if err != nil {
@@ -43,6 +43,24 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 	if err != nil {
 		h.tasks.Fail(taskId, err.Error())
 		return err
+	}
+
+	cmd := eval.ParseCommand(comment.Comment.Body)
+
+	_, err = app.Get().CreateIssueCommentReaction(
+		ctx,
+		installationId,
+		payload["owner"],
+		payload["repo"],
+		comment.Comment.ID,
+		app.ReactionEyes,
+	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("deliveryId", payload["deliveryId"]).
+			Int64("commentId", comment.Comment.ID).
+			Msg("Failed to react to command comment")
 	}
 
 	repos := module.NewRepository(
@@ -108,8 +126,10 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 		Str("repo", payload["repo"]).
 		Str("number", payload["number"]).
 		Str("action", payload["action"]).
+		Str("verb", cmd.Verb).
+		Strs("args", cmd.Args).
 		Interface("actions", plan.Actions).
-		Msg("Comment plan")
+		Msg("Command plan")
 
 	result, err := json.Marshal(map[string]any{
 		"deliveryId": payload["deliveryId"],
@@ -118,6 +138,8 @@ func (h *handlers) HandleGitHubComment(ctx context.Context, msg *broker.Msg) err
 		"owner":      payload["owner"],
 		"repo":       payload["repo"],
 		"number":     payload["number"],
+		"verb":       cmd.Verb,
+		"args":       cmd.Args,
 		"actions":    plan.Actions,
 	})
 	if err != nil {

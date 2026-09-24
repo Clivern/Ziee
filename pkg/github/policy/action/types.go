@@ -25,7 +25,7 @@ type Repo struct {
 	Number int
 }
 
-// Client performs planned actions. The GitHub installation client implements this later.
+// Client performs planned actions on GitHub.
 type Client interface {
 	AddLabels(ctx context.Context, repo Repo, labels []string) error
 	RemoveLabels(ctx context.Context, repo Repo, labels []string) error
@@ -34,4 +34,7 @@ type Client interface {
 	Comment(ctx context.Context, repo Repo, body string) error
 	Close(ctx context.Context, repo Repo) error
 	Reopen(ctx context.Context, repo Repo) error
+	RequestReviewers(ctx context.Context, repo Repo, users []string) error
+	RequestReviewTeams(ctx context.Context, repo Repo, teams []string) error
+	BlockAuthor(ctx context.Context, repo Repo, users []string) error
 }

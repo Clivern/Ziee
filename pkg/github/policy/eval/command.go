@@ -26,7 +26,7 @@ func ParseCommand(comment string) Command {
 		return Command{}
 	}
 
-	cmd := Command{Verb: strings.ToLower(fields[1])}
+	cmd := Command{Verb: strings.ToLower(fields[1]), Args: []string{}}
 	if len(fields) > 2 {
 		cmd.Args = lo.Map(fields[2:], func(arg string, _ int) string {
 			return strings.TrimPrefix(arg, "@")

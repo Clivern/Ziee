@@ -140,40 +140,21 @@ func JoinClause(verb, left, right string, items []string) string {
 	}), ", ")
 }
 
-// SkipAI reports whether cheap spam guards already apply, so classification is skipped.
-func SkipAI(rules []v1.Rule, issue Issue, client Client) bool {
-	if client.IsAuthorBlocked(issue) {
-		return true
-	}
-
-	for _, rule := range rules {
-		if SkipAIClauses(rule.When, issue, client) {
-			return true
-		}
-	}
-
-	return false
+// SkipAI reports whether classification is skipped before triage rules run.
+func SkipAI(_ []v1.Rule, issue Issue, client Client) bool {
+	return client.IsAuthorBlocked(issue)
 }
 
-func SkipAIClauses(clauses v1.Clauses, issue Issue, client Client) bool {
-	for _, when := range clauses {
-		if when.MaxIssuesOpened != nil && client.IssuesOpenedExceeds(
-			issue,
-			when.MaxIssuesOpened.Count,
-			when.MaxIssuesOpened.Within,
-		) {
-			return true
-		}
-		if when.MaxPrsOpened != nil && client.PrsOpenedExceeds(
-			issue,
-			when.MaxPrsOpened.Count,
-			when.MaxPrsOpened.Within,
-		) {
-			return true
-		}
-		if SkipAIClauses(when.And, issue, client) || SkipAIClauses(when.Or, issue, client) {
-			return true
-		}
+// SkipAIQuota reports whether ai.max_* skips classification (except overrides the cap).
+func SkipAIQuota(ai v1.AI, issue Issue, client Client, pr bool) bool {
+	if len(ai.Except) > 0 && MatchClauses(ai.Except, issue, client) {
+		return false
+	}
+	if pr && ai.MaxPrsOpened != nil {
+		return client.PrsOpenedExceeds(issue, ai.MaxPrsOpened.Count, ai.MaxPrsOpened.Within)
+	}
+	if !pr && ai.MaxIssuesOpened != nil {
+		return client.IssuesOpenedExceeds(issue, ai.MaxIssuesOpened.Count, ai.MaxIssuesOpened.Within)
 	}
 
 	return false

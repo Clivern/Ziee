@@ -116,8 +116,11 @@ type Webhook struct {
 
 // AI classifies intention from title, body, and (for PRs) diff.
 type AI struct {
-	Enabled   bool           `yaml:"enabled"`
-	Knowledge []KnowledgeTag `yaml:"knowledge"`
+	Enabled         bool             `yaml:"enabled"`
+	Knowledge       []KnowledgeTag   `yaml:"knowledge"`
+	MaxIssuesOpened *MaxIssuesOpened `yaml:"max_issues_opened,omitempty"`
+	MaxPrsOpened    *MaxIssuesOpened `yaml:"max_prs_opened,omitempty"`
+	Except          Clauses          `yaml:"except,omitempty"`
 }
 
 // KnowledgeTag is a set of workspace knowledge label key-value pairs.

@@ -33,7 +33,10 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 	)
 
 	intentions := GetIntentionsFromRules(conf.IssueTriage.Rules)
-	if conf.IssueTriage.AI.Enabled && len(intentions) > 0 && !SkipAI(conf.IssueTriage.Rules, event.Issue, client) {
+	ai := conf.IssueTriage.AI
+	if ai.Enabled && len(intentions) > 0 &&
+		!SkipAI(conf.IssueTriage.Rules, event.Issue, client) &&
+		!SkipAIQuota(ai, event.Issue, client, false) {
 		event.Issue.Intention = client.EvaluateIssue(event.Issue, intentions)
 	}
 

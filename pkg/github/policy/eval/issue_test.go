@@ -320,6 +320,54 @@ func TestUnitEvaluateIssueOpenedSkipAI(t *testing.T) {
 	}, plan.Actions)
 }
 
+func TestUnitEvaluateIssueOpenedSkipAINotRateLimit(t *testing.T) {
+	conf := &v1.File{
+		Teams: []v1.Team{{Name: "sre", Members: []string{"maya"}}},
+		IssueTriage: v1.IssueTriage{
+			Enabled: true,
+			AI:      v1.AI{Enabled: true},
+			Rules: []v1.Rule{
+				{
+					Name: "rate-limit",
+					When: v1.Clauses{
+						{AuthorNotInTeam: []string{"sre"}},
+						{MaxIssuesOpened: &v1.MaxIssuesOpened{Count: 3, Within: "24h"}},
+					},
+					Labels: v1.Labels{Add: []string{"spam"}},
+					Close:  true,
+				},
+				{
+					Name:   "bug",
+					When:   v1.Clauses{{Intention: v1.Intention{Name: "bug"}}},
+					Labels: v1.Labels{Add: []string{"bug"}},
+				},
+			},
+		},
+	}
+
+	client := &stubClient{exceeds: true, intention: v1.Intention{Name: "bug"}}
+	plan := EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "maya", Title: "crash"},
+	}, client)
+
+	assert.Equal(t, []v1.Intention{{Name: "bug"}}, client.got)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+	}, plan.Actions)
+
+	client = &stubClient{exceeds: true, intention: v1.Intention{Name: "bug"}}
+	plan = EvaluateIssueOpened(conf, Event{
+		Issue: Issue{Author: "flooder", Title: "crash"},
+	}, client)
+
+	assert.Equal(t, []v1.Intention{{Name: "bug"}}, client.got)
+	assert.ElementsMatch(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+	}, plan.Actions)
+}
+
 func TestUnitEvaluateIssueOpenedRateLimit(t *testing.T) {
 	conf := &v1.File{
 		IssueTriage: v1.IssueTriage{

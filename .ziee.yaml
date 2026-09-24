@@ -131,8 +131,14 @@ merge_queue:
   pr_triage:
     # Classify intention once from title, body, and diff.
     # enabled: false → skip classification; `intention:` matchers never match.
+    # max_prs_opened / except — same as issue_triage.ai (PR counter).
     ai:
       enabled: true
+      max_prs_opened: { count: 10, within: 24h }
+      except:
+        - or:
+            - author_in: [dependabot, ziee-bot]
+            - author_in_team: [sre, core]
     # `when` matchers (all must match):
     #   files, min_files_changed, max_files_changed, title,
     #   author_in / author_not_in (user logins),
@@ -509,8 +515,16 @@ issue_triage:
   comments: outcomes
   # Classify intention once from title and body (no diff).
   # enabled: false → skip classification; `intention:` matchers never match.
+  # max_issues_opened — skip classify after the author opens more than count in within
+  #   (does not close or block; triage rate-limit rules are separate).
+  # except — when these clauses match, the cap does not apply (use or: for alternatives).
   ai:
     enabled: true
+    max_issues_opened: { count: 10, within: 24h }
+    except:
+      - or:
+          - author_in: [dependabot, ziee-bot]
+          - author_in_team: [sre, core]
   # Commands are typed on the issue. Ziee performs the action with the app token,
   # so the commenter does not need repo write (or any GitHub permission on this repo).
   # `allow` is who may run them (any matching entry is enough):

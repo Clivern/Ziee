@@ -30,7 +30,10 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 	)
 
 	intentions := GetIntentionsFromRules(conf.MergeQueue.PRTriage.Rules)
-	if conf.MergeQueue.PRTriage.AI.Enabled && len(intentions) > 0 && !SkipAI(conf.MergeQueue.PRTriage.Rules, event.Issue, client) {
+	ai := conf.MergeQueue.PRTriage.AI
+	if ai.Enabled && len(intentions) > 0 &&
+		!SkipAI(conf.MergeQueue.PRTriage.Rules, event.Issue, client) &&
+		!SkipAIQuota(ai, event.Issue, client, true) {
 		event.Issue.Intention = client.EvaluateIssue(event.Issue, intentions)
 	}
 

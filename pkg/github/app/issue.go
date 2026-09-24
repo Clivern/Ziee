@@ -209,6 +209,25 @@ func (a *App) AddAssignees(ctx context.Context, installationID int64, owner, rep
 	return Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), map[string][]string{"assignees": users}, nil)
 }
 
+// GetCollaboratorPermission returns the permission level login has on the repository.
+func (a *App) GetCollaboratorPermission(ctx context.Context, installationID int64, owner, repo, login string) (string, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return "", err
+	}
+
+	var result struct {
+		Permission string `json:"permission"`
+	}
+	path := fmt.Sprintf("%s/repos/%s/%s/collaborators/%s/permission", a.apiURL, owner, repo, login)
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &result)
+	if err != nil {
+		return "", err
+	}
+
+	return result.Permission, nil
+}
+
 // RemoveAssignees removes users from an issue or pull request.
 func (a *App) RemoveAssignees(ctx context.Context, installationID int64, owner, repo string, number int, users []string) error {
 	token, err := a.GetInstallationToken(ctx, installationID)

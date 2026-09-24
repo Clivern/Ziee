@@ -13,6 +13,7 @@ import (
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy"
+	"github.com/clivern/ziee/pkg/github/policy/action"
 	"github.com/clivern/ziee/pkg/github/policy/eval"
 	"github.com/clivern/ziee/pkg/github/policy/spec"
 	"github.com/clivern/ziee/pkg/github/webhook"
@@ -97,6 +98,26 @@ func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) err
 		assignees[i] = user.Login
 	}
 
+	if comment.Issue.PullRequest != nil {
+		result, err := json.Marshal(map[string]any{
+			"deliveryId": payload["deliveryId"],
+			"event":      payload["event"],
+			"action":     payload["action"],
+			"owner":      payload["owner"],
+			"repo":       payload["repo"],
+			"number":     payload["number"],
+			"verb":       cmd.Verb,
+			"args":       cmd.Args,
+			"skipped":    "pull_request",
+		})
+		if err != nil {
+			h.tasks.Fail(taskId, err.Error())
+			return err
+		}
+
+		return h.tasks.Complete(taskId, string(result))
+	}
+
 	plan := eval.Run(file, eval.Event{
 		Kind: policy.KindComment,
 		Account: eval.Account{
@@ -130,6 +151,20 @@ func (h *handlers) HandleGitHubCommand(ctx context.Context, msg *broker.Msg) err
 		Strs("args", cmd.Args).
 		Interface("actions", plan.Actions).
 		Msg("Command plan")
+
+	err = action.Apply(ctx, action.NewClient(
+		installationId,
+		comment.Repository.ID,
+		comment.Issue.User.ID,
+	), action.Repo{
+		Owner:  payload["owner"],
+		Name:   payload["repo"],
+		Number: comment.Issue.Number,
+	}, plan)
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
 
 	result, err := json.Marshal(map[string]any{
 		"deliveryId": payload["deliveryId"],

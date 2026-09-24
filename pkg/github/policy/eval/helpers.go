@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy"
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
@@ -127,6 +128,67 @@ func OutcomeComment(mode string, actions []action.Action) string {
 	}
 
 	return ""
+}
+
+// CommandOutcomeComment returns the command acknowledgement for comments mode.
+func CommandOutcomeComment(mode, actor string, actions []action.Action) string {
+	if mode != policy.CommentsAll && mode != policy.CommentsOutcomes {
+		return ""
+	}
+
+	var add, remove, assign, unassign []string
+	var closed, reopened, blocked bool
+
+	for _, a := range actions {
+		switch a.Kind {
+		case policy.AddLabels:
+			add = append(add, a.Labels...)
+		case policy.RemoveLabels:
+			remove = append(remove, a.Labels...)
+		case policy.Assign:
+			assign = append(assign, a.Users...)
+		case policy.Unassign:
+			unassign = append(unassign, a.Users...)
+		case policy.Close:
+			closed = true
+		case policy.Reopen:
+			reopened = true
+		case policy.BlockAuthor:
+			blocked = true
+		case policy.Comment:
+		}
+	}
+
+	by := " as requested by @" + actor + "."
+	if closed && len(add)+len(remove)+len(assign)+len(unassign)+lo.Ternary(reopened, 1, 0)+lo.Ternary(blocked, 1, 0) == 0 {
+		return "Closed this issue" + by
+	}
+	if reopened && len(add)+len(remove)+len(assign)+len(unassign)+lo.Ternary(closed, 1, 0)+lo.Ternary(blocked, 1, 0) == 0 {
+		return "Reopened this issue" + by
+	}
+
+	parts := lo.Compact([]string{
+		JoinClause("Labeled", "`", "`", add),
+		JoinClause("Removed", "`", "`", remove),
+		JoinClause("Assigned", "@", "", assign),
+		JoinClause("Unassigned", "@", "", unassign),
+		lo.Ternary(closed, "closed this issue", ""),
+		lo.Ternary(reopened, "reopened this issue", ""),
+		lo.Ternary(blocked, "blocked the author", ""),
+	})
+	if len(parts) == 0 {
+		return ""
+	}
+
+	return strings.Join(parts, ", ") + by
+}
+
+// IsAppActor reports whether login is the configured GitHub App bot.
+func IsAppActor(login string) bool {
+	bot := strings.ToLower(app.GetConfig().BotName)
+	login = strings.ToLower(login)
+
+	return login == bot || login == bot+"[bot]"
 }
 
 func JoinClause(verb, left, right string, items []string) string {

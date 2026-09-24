@@ -21,8 +21,10 @@ func Run(conf *v1.File, event Event, client Client) action.Plan {
 		return EvaluateIssueEdited(conf, event, client)
 	case policy.KindIssueLabeled, policy.KindIssueUnlabeled:
 		return EvaluateIssueLabelChange(conf, event, client)
-	case policy.KindComment:
+	case policy.KindIssueComment:
 		return EvaluateIssueComment(conf, event, client)
+	case policy.KindPullRequestComment:
+		return EvaluatePRComment(conf, event, client)
 	case policy.KindPullRequestOpened:
 		return EvaluatePROpened(conf, event, client)
 	default:

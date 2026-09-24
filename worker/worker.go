@@ -52,7 +52,8 @@ func Register(deps Dependencies) {
 	On(db.AsyncTaskTypeDocDelete, h.HandleDocumentDelete)
 	On(db.AsyncTaskTypeRepoBootstrap, h.HandleRepositoryBootstrap)
 	On(db.AsyncTaskTypeGitHubIssue, h.HandleGitHubIssue)
-	On(db.AsyncTaskTypeGitHubCommand, h.HandleGitHubCommand)
+	On(db.AsyncTaskTypeGitHubIssueComment, h.HandleGitHubIssueComment)
+	On(db.AsyncTaskTypeGitHubPullRequestComment, h.HandleGitHubPullRequestComment)
 	On(db.AsyncTaskTypeGitHubPullRequest, h.HandleGitHubPullRequest)
 	On(db.AsyncTaskTypeRepoLabels, h.HandleRepositoryLabels)
 }

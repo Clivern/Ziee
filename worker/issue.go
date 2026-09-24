@@ -13,6 +13,7 @@ import (
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
+	"github.com/clivern/ziee/pkg/github/policy/action"
 	"github.com/clivern/ziee/pkg/github/policy/eval"
 	"github.com/clivern/ziee/pkg/github/policy/spec"
 	"github.com/clivern/ziee/pkg/github/webhook"
@@ -109,6 +110,20 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 		Str("action", payload["action"]).
 		Interface("actions", plan.Actions).
 		Msg("Issue plan")
+
+	err = action.Apply(ctx, action.NewClient(
+		installationId,
+		issue.Repository.ID,
+		issue.Issue.User.ID,
+	), action.Repo{
+		Owner:  payload["owner"],
+		Name:   payload["repo"],
+		Number: issue.Issue.Number,
+	}, plan)
+	if err != nil {
+		h.tasks.Fail(taskId, err.Error())
+		return err
+	}
 
 	result, err := json.Marshal(map[string]any{
 		"deliveryId": payload["deliveryId"],

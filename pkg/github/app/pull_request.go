@@ -156,3 +156,21 @@ func (a *App) CreatePullRequest(ctx context.Context, installationID int64, owner
 
 	return &pull, nil
 }
+
+// RequestReviewers asks users and teams to review a pull request.
+func (a *App) RequestReviewers(ctx context.Context, installationID int64, owner, repo string, number int, reviewers, teams []string) error {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", a.apiURL, owner, repo, number)
+
+	return Call(ctx, http.MethodPost, path, token.Token, GetHeaders(), struct {
+		Reviewers []string `json:"reviewers,omitempty"`
+		Teams     []string `json:"team_reviewers,omitempty"`
+	}{
+		Reviewers: reviewers,
+		Teams:     teams,
+	}, nil)
+}

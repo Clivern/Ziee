@@ -123,7 +123,7 @@ func TestUnitRunIssueOpenedPayload(t *testing.T) {
 				Enabled: true,
 				Rules: []v1.Rule{{
 					Name:   "owner",
-					When:   v1.Clauses{{AuthorIn: []string{"Clivern"}}},
+					When:   v1.Clauses{{AuthorIn: []string{"clivern"}}},
 					Labels: v1.Labels{Add: []string{"from-owner"}},
 				}},
 			},
@@ -132,6 +132,21 @@ func TestUnitRunIssueOpenedPayload(t *testing.T) {
 		assert.Equal(t, []action.Action{
 			{Kind: policy.AddLabels, Labels: []string{"from-owner"}},
 		}, plan.Actions)
+	})
+
+	t.Run("author not in ignores case", func(t *testing.T) {
+		plan := Run(&v1.File{
+			IssueTriage: v1.IssueTriage{
+				Enabled: true,
+				Rules: []v1.Rule{{
+					Name:   "others",
+					When:   v1.Clauses{{AuthorNotIn: []string{"clivern"}}},
+					Labels: v1.Labels{Add: []string{"community"}},
+				}},
+			},
+		}, event, &stubClient{})
+
+		assert.Empty(t, plan.Actions)
 	})
 
 	t.Run("author not bot", func(t *testing.T) {

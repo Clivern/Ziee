@@ -349,6 +349,15 @@ func TestUnitAppHTTP(t *testing.T) {
 		}))
 	})
 
+	t.Run("RemoveLabelsMissing", func(t *testing.T) {
+		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodDelete, r.Method)
+			http.NotFound(w, r)
+		}))
+
+		assert.NoError(t, client.RemoveLabels(ctx, 1, "acme", "ziee", 8, []string{"needs-triage"}))
+	})
+
 	t.Run("CheckRun", func(t *testing.T) {
 		client, _ := testApp(t, withInstallToken(func(w http.ResponseWriter, r *http.Request) {
 			switch {

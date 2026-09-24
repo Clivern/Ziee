@@ -45,6 +45,13 @@ func MatchPattern(pattern, value string) bool {
 	return matched
 }
 
+// ContainsFold reports whether items includes value, ignoring case.
+func ContainsFold(items []string, value string) bool {
+	return lo.ContainsBy(items, func(item string) bool {
+		return strings.EqualFold(item, value)
+	})
+}
+
 // GetTeamsFromFile returns `.ziee.yml` team names that include login.
 func GetTeamsFromFile(teams []v1.Team, login string) []string {
 	var names []string

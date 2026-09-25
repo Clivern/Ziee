@@ -28,12 +28,19 @@ type Request struct {
 	SSHKey   string
 }
 
+// ChangedFile is one path the agent touched.
+type ChangedFile struct {
+	Path    string
+	Status  string
+	Content string
+}
+
 // Result is the patch Swarm produced.
 type Result struct {
-	Patch   string
-	Summary string
-	RepoDir string
-	OutDir  string
+	Patch        string
+	Summary      string
+	TotalTokens  int
+	ChangedFiles []ChangedFile
 }
 
 // New returns a coding client loaded from app.coding config.
@@ -56,6 +63,7 @@ func (c *Client) Run(ctx context.Context, req Request) (*Result, error) {
 		PIModel:          c.model,
 		OpenRouterAPIKey: c.apiKey,
 		DockerImage:      c.image,
+		Cleanup:          true,
 		GitCloneAuth: swarm.GitCloneAuth{
 			Token:             req.Token,
 			Username:          req.Username,
@@ -66,10 +74,20 @@ func (c *Client) Run(ctx context.Context, req Request) (*Result, error) {
 		return nil, err
 	}
 
+	files := make([]ChangedFile, len(out.ChangedFiles))
+	for i, file := range out.ChangedFiles {
+		files[i] = ChangedFile{
+			Path: file.Path,
+			// D for deleted, A for added, M for modified
+			Status:  file.Status,
+			Content: file.Content,
+		}
+	}
+
 	return &Result{
-		Patch:   out.Patch,
-		Summary: out.Summary,
-		RepoDir: out.RepoDir,
-		OutDir:  out.OutDir,
+		Patch:        out.Patch,
+		Summary:      out.Summary,
+		TotalTokens:  out.TotalTokens,
+		ChangedFiles: files,
 	}, nil
 }

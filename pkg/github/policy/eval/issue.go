@@ -120,15 +120,100 @@ func EvaluateIssueLabelChange(conf *v1.File, event Event, client Client) action.
 
 // EvaluateIssueComment evaluates an issue comment as a Ziee command.
 func EvaluateIssueComment(conf *v1.File, event Event, client Client) action.Plan {
-	// 1. Ignore the event when event.Actor is the Ziee GitHub App.
-	// 2. cmd := ParseCommand(event.Comment); ignore when Verb is empty.
-	// 3. Find cmd.Verb in conf.IssueTriage.Commands (label, unlabel, assign, unassign, close, reopen, spam, summarize).
-	// 4. Use client to load the actor's repository permission and teams.
-	// 5. Allow the command when any permission, team, or user entry matches.
-	// 6. Convert cmd.Verb and cmd.Args into label, assignment, or state actions.
-	//    For `spam`: add spam label, close, block the issue author (BlockAuthor), and comment.
-	// 7. Add an outcome comment action when the configured comment mode requires it.
-	// 8. Return the complete ordered action plan.
+	var plan action.Plan
 
-	return action.Plan{}
+	if !conf.IssueTriage.Enabled || IsAppActor(event.Actor.Login) {
+		return plan
+	}
+
+	cmd := ParseCommand(event.Comment)
+	if lo.IsEmpty(cmd.Verb) {
+		return plan
+	}
+
+	command, ok := conf.IssueTriage.Commands[cmd.Verb]
+	if !ok {
+		return plan
+	}
+
+	if strings.ToLower(event.Account.Type) == "organization" {
+		event.Org = event.Account.Login
+	}
+
+	event.Actor.Permission = client.GetPermission(event.Actor.Login)
+	event.Actor.Teams = MergeTeams(
+		event.Actor.Teams,
+		GetTeamsFromFile(conf.Teams, event.Actor.Login),
+		client.GetTeams(event.Org, event.Actor.Login),
+	)
+
+	if !MatchAllow(command.Allow, event.Actor, event.Issue) {
+		return plan
+	}
+
+	switch cmd.Verb {
+	case "label":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:   policy.AddLabels,
+				Labels: cmd.Args,
+			})
+		}
+	case "unlabel":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:   policy.RemoveLabels,
+				Labels: cmd.Args,
+			})
+		}
+	case "assign":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.Assign,
+				Users: cmd.Args,
+			})
+		}
+	case "unassign":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.Unassign,
+				Users: cmd.Args,
+			})
+		}
+	case "close":
+		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+	case "reopen":
+		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Reopen})
+	case "spam":
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind:   policy.AddLabels,
+			Labels: []string{"spam"},
+		})
+		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+		client.BlockAuthor(event.Issue)
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind:  policy.BlockAuthor,
+			Users: []string{event.Issue.Author},
+		})
+	case "summarize":
+		body := client.SummarizeIssue(event.Issue)
+		if !lo.IsEmpty(body) {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind: policy.Comment,
+				Body: body,
+			})
+		}
+	}
+
+	if cmd.Verb != "summarize" {
+		body := CommandOutcomeComment(conf.IssueTriage.Comments, event.Actor.Login, plan.Actions)
+		if !lo.IsEmpty(body) {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind: policy.Comment,
+				Body: body,
+			})
+		}
+	}
+
+	return plan
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -540,4 +541,73 @@ func (s *stubClient) IsAuthorBlocked(Issue) bool {
 func (s *stubClient) BlockAuthor(issue Issue) {
 	s.blockedLogin = issue.Author
 	s.blocked = true
+}
+
+func (s *stubClient) GetPermission(string) string {
+	return ""
+}
+
+func (s *stubClient) SummarizeIssue(Issue) string {
+	return ""
+}
+
+func TestUnitEvaluateIssueComment(t *testing.T) {
+	viper.Set("app.oauth.github.bot_name", "zieeio")
+
+	conf := &v1.File{
+		IssueTriage: v1.IssueTriage{
+			Enabled:  true,
+			Comments: policy.CommentsOutcomes,
+			Commands: v1.Commands{
+				"label": {Allow: v1.Allow{{Users: []string{"maya"}}}},
+				"close": {Allow: v1.Allow{{Users: []string{"clivern"}}}},
+				"spam":  {Allow: v1.Allow{{Users: []string{"clivern"}}}},
+			},
+		},
+	}
+
+	plan := EvaluateIssueComment(conf, Event{
+		Comment: "@zieeio label bug",
+		Actor:   Actor{Login: "maya"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+		{Kind: policy.Comment, Body: "Labeled `bug` as requested by @maya."},
+	}, plan.Actions)
+
+	plan = EvaluateIssueComment(conf, Event{
+		Comment: "@zieeio close",
+		Actor:   Actor{Login: "clivern"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.Close},
+		{Kind: policy.Comment, Body: "Closed this issue as requested by @clivern."},
+	}, plan.Actions)
+
+	client := &stubClient{}
+	plan = EvaluateIssueComment(conf, Event{
+		Comment: "@zieeio spam",
+		Actor:   Actor{Login: "clivern"},
+		Issue:   Issue{Author: "spammer"},
+	}, client)
+
+	assert.Equal(t, "spammer", client.blockedLogin)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+		{Kind: policy.BlockAuthor, Users: []string{"spammer"}},
+		{Kind: policy.Comment, Body: "Labeled `spam`, closed this issue, blocked the author as requested by @clivern."},
+	}, plan.Actions)
+
+	plan = EvaluateIssueComment(conf, Event{
+		Comment: "@zieeio label bug",
+		Actor:   Actor{Login: "guest"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
 }

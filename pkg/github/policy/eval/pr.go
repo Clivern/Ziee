@@ -102,6 +102,11 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 	return plan
 }
 
+// EvaluatePRComment evaluates a pull request comment as a Ziee command.
+func EvaluatePRComment(_ *v1.File, _ Event, _ Client) action.Plan {
+	return action.Plan{}
+}
+
 // MatchAnyFile reports whether any file matches any glob-like pattern.
 func MatchAnyFile(patterns, files []string) bool {
 	for _, file := range files {

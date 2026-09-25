@@ -65,4 +65,8 @@ type Client interface {
 	IsAuthorBlocked(issue Issue) bool
 	// BlockAuthor adds the author to the repository spam blocklist.
 	BlockAuthor(issue Issue)
+	// GetPermission returns the actor's repository permission (admin, write, read, …).
+	GetPermission(login string) string
+	// SummarizeIssue returns an AI summary of the issue title and body.
+	SummarizeIssue(issue Issue) string
 }

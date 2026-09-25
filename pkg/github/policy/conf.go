@@ -7,12 +7,13 @@
 package policy
 
 const (
-	KindIssueOpened       = "issue.opened"
-	KindIssueEdited       = "issue.edited"
-	KindIssueLabeled      = "issue.labeled"
-	KindIssueUnlabeled    = "issue.unlabeled"
-	KindComment           = "issue.comment"
-	KindPullRequestOpened = "pull_request.opened"
+	KindIssueOpened        = "issue.opened"
+	KindIssueEdited        = "issue.edited"
+	KindIssueLabeled       = "issue.labeled"
+	KindIssueUnlabeled     = "issue.unlabeled"
+	KindIssueComment       = "issue.comment"
+	KindPullRequestComment = "pull_request.comment"
+	KindPullRequestOpened  = "pull_request.opened"
 
 	CommentsOutcomes = "outcomes"
 	CommentsAll      = "all"

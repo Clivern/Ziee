@@ -5,6 +5,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/clivern/ziee/db"
@@ -197,6 +198,55 @@ func (c IssueClient) BlockAuthor(issue eval.Issue) {
 	c.repos.BlockAuthor(c.githubRepoId, issue.Author, issue.AuthorId)
 }
 
+// GetPermission returns the actor's repository permission.
+func (c IssueClient) GetPermission(login string) string {
+	permission, err := app.Get().GetCollaboratorPermission(
+		c.ctx,
+		c.installationId,
+		c.owner,
+		c.repo,
+		login,
+	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Str("login", login).
+			Msg("Failed to get collaborator permission")
+	}
+
+	return permission
+}
+
+// SummarizeIssue returns an AI summary of the issue title and body.
+func (c IssueClient) SummarizeIssue(issue eval.Issue) string {
+	usage := module.NewUsage()
+
+	text, aiUsage, err := ai.NewLiteClient().Complete(c.ctx, []ai.Message{
+		{Role: "system", Content: "Summarize this GitHub issue concisely for maintainers."},
+		{Role: "user", Content: fmt.Sprintf("Title: %s\n\n%s", issue.Title, issue.Body)},
+	})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Int("number", issue.Number).
+			Msg("Failed to summarize issue")
+	}
+
+	usage.IncrementAIUsage(
+		db.NewUsageRepository(db.GetDB()),
+		db.NewSubscriptionRepository(db.GetDB()),
+		c.repos.WorkspaceId(c.githubRepoId),
+		aiUsage.TotalTokens,
+		aiUsage.Cost,
+	)
+
+	return text
+}
+
 // NewPullRequestClient returns a GitHub client for pull request events.
 func NewPullRequestClient(ctx context.Context, installationId, githubRepoId int64, owner, repo string) PullRequestClient {
 	return PullRequestClient{
@@ -354,4 +404,30 @@ func (c PullRequestClient) IsAuthorBlocked(issue eval.Issue) bool {
 // BlockAuthor adds the author to the repository spam blocklist.
 func (c PullRequestClient) BlockAuthor(issue eval.Issue) {
 	c.repos.BlockAuthor(c.githubRepoId, issue.Author, issue.AuthorId)
+}
+
+// GetPermission returns the actor's repository permission.
+func (c PullRequestClient) GetPermission(login string) string {
+	permission, err := app.Get().GetCollaboratorPermission(
+		c.ctx,
+		c.installationId,
+		c.owner,
+		c.repo,
+		login,
+	)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("owner", c.owner).
+			Str("repo", c.repo).
+			Str("login", login).
+			Msg("Failed to get collaborator permission")
+	}
+
+	return permission
+}
+
+// SummarizeIssue is unused for pull request events.
+func (c PullRequestClient) SummarizeIssue(eval.Issue) string {
+	return ""
 }

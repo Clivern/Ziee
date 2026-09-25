@@ -12,10 +12,10 @@ import (
 
 // Client runs coding agents through Swarm.
 type Client struct {
-	dir string
-	model   string
-	image   string
-	apiKey  string
+	dir    string
+	model  string
+	image  string
+	apiKey string
 }
 
 // Request is one coding job against a repository.
@@ -39,10 +39,10 @@ type Result struct {
 // New returns a coding client loaded from app.coding config.
 func New() *Client {
 	return &Client{
-		dir: viper.GetString("app.coding.dir"),
-		model:   viper.GetString("app.coding.model"),
-		image:   viper.GetString("app.coding.docker_image"),
-		apiKey:  viper.GetString("app.ai.api_key"),
+		dir:    viper.GetString("app.coding.dir"),
+		model:  viper.GetString("app.coding.model"),
+		image:  viper.GetString("app.coding.docker_image"),
+		apiKey: viper.GetString("app.ai.api_key"),
 	}
 }
 

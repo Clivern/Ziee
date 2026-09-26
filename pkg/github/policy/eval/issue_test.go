@@ -552,7 +552,7 @@ func (s *stubClient) SummarizeIssue(Issue) string {
 }
 
 func TestUnitEvaluateIssueComment(t *testing.T) {
-	viper.Set("app.oauth.github.bot_name", "zieeio")
+	viper.Set("app.oauth.github.bot_name", "zieeai")
 
 	conf := &v1.File{
 		IssueTriage: v1.IssueTriage{
@@ -567,7 +567,7 @@ func TestUnitEvaluateIssueComment(t *testing.T) {
 	}
 
 	plan := EvaluateIssueComment(conf, Event{
-		Comment: "@zieeio label bug",
+		Comment: "@zieeai label bug",
 		Actor:   Actor{Login: "maya"},
 		Issue:   Issue{Author: "guest"},
 	}, &stubClient{})
@@ -578,7 +578,7 @@ func TestUnitEvaluateIssueComment(t *testing.T) {
 	}, plan.Actions)
 
 	plan = EvaluateIssueComment(conf, Event{
-		Comment: "@zieeio close",
+		Comment: "@zieeai close",
 		Actor:   Actor{Login: "clivern"},
 		Issue:   Issue{Author: "guest"},
 	}, &stubClient{})
@@ -590,7 +590,7 @@ func TestUnitEvaluateIssueComment(t *testing.T) {
 
 	client := &stubClient{}
 	plan = EvaluateIssueComment(conf, Event{
-		Comment: "@zieeio spam",
+		Comment: "@zieeai spam",
 		Actor:   Actor{Login: "clivern"},
 		Issue:   Issue{Author: "spammer"},
 	}, client)
@@ -604,7 +604,7 @@ func TestUnitEvaluateIssueComment(t *testing.T) {
 	}, plan.Actions)
 
 	plan = EvaluateIssueComment(conf, Event{
-		Comment: "@zieeio label bug",
+		Comment: "@zieeai label bug",
 		Actor:   Actor{Login: "guest"},
 		Issue:   Issue{Author: "guest"},
 	}, &stubClient{})

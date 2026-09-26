@@ -22,7 +22,7 @@ app:
 
   oauth:
     github:
-      bot_name: ${ZIEE_GITHUB_BOT_NAME:-zieeio}
+      bot_name: ${ZIEE_GITHUB_BOT_NAME:-zieeai}
       client_id: ${ZIEE_GITHUB_OAUTH_CLIENT_ID:-}
       client_secret: ${ZIEE_GITHUB_OAUTH_CLIENT_SECRET:-}
       redirect_url: ${ZIEE_GITHUB_OAUTH_REDIRECT_URL:-}

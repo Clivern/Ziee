@@ -21,13 +21,13 @@ func TestUnitGetConfig(t *testing.T) {
 	viper.Set("app.oauth.github.client_id", "app-123")
 	viper.Set("app.oauth.github.private_key_path", "/tmp/key.pem")
 	viper.Set("app.oauth.github.encryption_key", "enc-secret")
-	viper.Set("app.oauth.github.bot_name", "zieeio")
+	viper.Set("app.oauth.github.bot_name", "zieeai")
 
 	cfg := GetConfig()
 	assert.Equal(t, "app-123", cfg.ClientID)
 	assert.Equal(t, "/tmp/key.pem", cfg.PrivateKeyPath)
 	assert.Equal(t, "enc-secret", cfg.EncryptionKey)
-	assert.Equal(t, "zieeio", cfg.BotName)
+	assert.Equal(t, "zieeai", cfg.BotName)
 
 	viper.Set("app.oauth.github.bot_name", "acmebot")
 	assert.Equal(t, "acmebot", GetConfig().BotName)

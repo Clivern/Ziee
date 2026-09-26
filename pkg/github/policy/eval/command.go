@@ -17,7 +17,7 @@ type Command struct {
 }
 
 // ParseCommand reads the first line of a comment as `@<bot_name> <verb> [args...]`.
-// bot_name comes from app.oauth.github.bot_name (default zieeio).
+// bot_name comes from app.oauth.github.bot_name (default zieeai).
 func ParseCommand(comment string) Command {
 	line, _, _ := strings.Cut(comment, "\n")
 	fields := strings.Fields(line)

@@ -32,13 +32,13 @@ Modes:
 
 Comment on a pull request:
 
-- `@zieeio queue` — enter the first matching queue rule
-- `@zieeio queue hotfix` — enter the hotfix line (SRE only)
-- `@zieeio dequeue` — leave the queue
-- `@zieeio requeue` — dequeue then queue again
-- `@zieeio rebase` — rebase onto latest `main`
-- `@zieeio update` — merge latest `main` into the PR branch
-- `@zieeio refresh` — re-run triage and re-evaluate `queue_when`
+- `@zieeai queue` — enter the first matching queue rule
+- `@zieeai queue hotfix` — enter the hotfix line (SRE only)
+- `@zieeai dequeue` — leave the queue
+- `@zieeai requeue` — dequeue then queue again
+- `@zieeai rebase` — rebase onto latest `main`
+- `@zieeai update` — merge latest `main` into the PR branch
+- `@zieeai refresh` — re-run triage and re-evaluate `queue_when`
 
 ## Priority
 

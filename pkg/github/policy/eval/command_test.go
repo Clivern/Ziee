@@ -11,31 +11,31 @@ import (
 )
 
 func TestUnitParseCommand(t *testing.T) {
-	viper.Set("app.oauth.github.bot_name", "zieeio")
+	viper.Set("app.oauth.github.bot_name", "zieeai")
 
-	assert.Equal(t, Command{Verb: "label", Args: []string{"bug", "security"}}, ParseCommand("@zieeio label bug security"))
-	assert.Equal(t, Command{Verb: "unlabel", Args: []string{"bot"}}, ParseCommand("@zieeio unlabel bot"))
-	assert.Equal(t, Command{Verb: "assign", Args: []string{"clivern"}}, ParseCommand("@zieeio assign clivern"))
-	assert.Equal(t, Command{Verb: "assign", Args: []string{"clivern"}}, ParseCommand("@zieeio assign @clivern"))
-	assert.Equal(t, Command{Verb: "unassign", Args: []string{"clivern"}}, ParseCommand("@zieeio unassign clivern"))
-	assert.Equal(t, Command{Verb: "close", Args: []string{}}, ParseCommand("@zieeio close"))
-	assert.Equal(t, Command{Verb: "reopen", Args: []string{}}, ParseCommand("@zieeio reopen"))
-	assert.Equal(t, Command{Verb: "spam", Args: []string{}}, ParseCommand("@zieeio spam"))
-	assert.Equal(t, Command{Verb: "summarize", Args: []string{}}, ParseCommand("@zieeio summarize"))
-	assert.Equal(t, Command{Verb: "queue", Args: []string{"hotfix"}}, ParseCommand("@zieeio queue hotfix"))
-	assert.Equal(t, Command{Verb: "label", Args: []string{"bug"}}, ParseCommand("  @ZIEEIO Label bug  "))
-	assert.Equal(t, Command{Verb: "close", Args: []string{}}, ParseCommand("@zieeio close\nthis is a duplicate"))
-	assert.Equal(t, Command{}, ParseCommand("please @zieeio close"))
-	assert.Equal(t, Command{}, ParseCommand("@zieeio"))
+	assert.Equal(t, Command{Verb: "label", Args: []string{"bug", "security"}}, ParseCommand("@zieeai label bug security"))
+	assert.Equal(t, Command{Verb: "unlabel", Args: []string{"bot"}}, ParseCommand("@zieeai unlabel bot"))
+	assert.Equal(t, Command{Verb: "assign", Args: []string{"clivern"}}, ParseCommand("@zieeai assign clivern"))
+	assert.Equal(t, Command{Verb: "assign", Args: []string{"clivern"}}, ParseCommand("@zieeai assign @clivern"))
+	assert.Equal(t, Command{Verb: "unassign", Args: []string{"clivern"}}, ParseCommand("@zieeai unassign clivern"))
+	assert.Equal(t, Command{Verb: "close", Args: []string{}}, ParseCommand("@zieeai close"))
+	assert.Equal(t, Command{Verb: "reopen", Args: []string{}}, ParseCommand("@zieeai reopen"))
+	assert.Equal(t, Command{Verb: "spam", Args: []string{}}, ParseCommand("@zieeai spam"))
+	assert.Equal(t, Command{Verb: "summarize", Args: []string{}}, ParseCommand("@zieeai summarize"))
+	assert.Equal(t, Command{Verb: "queue", Args: []string{"hotfix"}}, ParseCommand("@zieeai queue hotfix"))
+	assert.Equal(t, Command{Verb: "label", Args: []string{"bug"}}, ParseCommand("  @ZIEEAI Label bug  "))
+	assert.Equal(t, Command{Verb: "close", Args: []string{}}, ParseCommand("@zieeai close\nthis is a duplicate"))
+	assert.Equal(t, Command{}, ParseCommand("please @zieeai close"))
+	assert.Equal(t, Command{}, ParseCommand("@zieeai"))
 	assert.Equal(t, Command{}, ParseCommand("@ziee close"))
 	assert.Equal(t, Command{}, ParseCommand("thanks"))
 }
 
 func TestUnitParseCommandCustomBotName(t *testing.T) {
 	viper.Set("app.oauth.github.bot_name", "acmebot")
-	t.Cleanup(func() { viper.Set("app.oauth.github.bot_name", "zieeio") })
+	t.Cleanup(func() { viper.Set("app.oauth.github.bot_name", "zieeai") })
 
 	assert.Equal(t, Command{Verb: "queue", Args: []string{}}, ParseCommand("@acmebot queue"))
 	assert.Equal(t, Command{Verb: "label", Args: []string{"bug"}}, ParseCommand("@AcmeBot label bug"))
-	assert.Equal(t, Command{}, ParseCommand("@zieeio queue"))
+	assert.Equal(t, Command{}, ParseCommand("@zieeai queue"))
 }

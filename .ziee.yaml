@@ -24,7 +24,7 @@ labels:
     color: "8E44AD"
     description: "PR changes one or more YAML files."
   - name: "lang/json"
-    color: "292929"
+    color: "34495E"
     description: "PR changes one or more JSON files."
   - name: "size/s"
     color: "0E8A16"

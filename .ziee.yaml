@@ -9,7 +9,7 @@ labels:
     color: "F1C40F"
     description: "Speculative CI checks are running on this PR."
   - name: "state/dequeued"
-    color: "D93F0B"
+    color: "C0392B"
     description: "PR was kicked out or removed from the merge queue."
   - name: "area/api"
     color: "1D76DB"

@@ -54,7 +54,7 @@ labels:
     color: "BDC3C7"
     description: "Author's first issue or pull request on this repository."
   - name: "security"
-    color: "E99695"
+    color: "F39C12"
     description: "Vulnerability remediation or security improvement."
   - name: "spam"
     color: "B60205"

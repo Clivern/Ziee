@@ -45,7 +45,7 @@ labels:
     color: "E74C3C"
     description: "Identified bug fix requiring patch-level verification."
   - name: "enhancement"
-    color: "A2EEEF"
+    color: "3498DB"
     description: "New feature or system optimization."
   - name: "docs"
     color: "0075CA"

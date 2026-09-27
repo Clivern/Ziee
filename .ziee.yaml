@@ -21,7 +21,7 @@ labels:
     color: "16A085"
     description: "PR changes one or more Go files."
   - name: "lang/yaml"
-    color: "CB171E"
+    color: "8E44AD"
     description: "PR changes one or more YAML files."
   - name: "lang/json"
     color: "292929"

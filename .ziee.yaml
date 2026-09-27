@@ -30,7 +30,7 @@ labels:
     color: "2ECC71"
     description: "Small PR with 20 or fewer files changed."
   - name: "size/l"
-    color: "B60205"
+    color: "E67E22"
     description: "Large PR with 21 or more files changed."
   - name: "bot"
     color: "EEEEEE"

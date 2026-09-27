@@ -48,7 +48,7 @@ labels:
     color: "3498DB"
     description: "New feature or system optimization."
   - name: "docs"
-    color: "0075CA"
+    color: "2C3E50"
     description: "Documentation changes only."
   - name: "first-contribution"
     color: "C5DEF5"

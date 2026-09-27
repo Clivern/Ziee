@@ -6,7 +6,7 @@ labels:
     color: "27AE60"
     description: "PR is currently waiting in the merge queue line."
   - name: "state/checking"
-    color: "FBCA04"
+    color: "F1C40F"
     description: "Speculative CI checks are running on this PR."
   - name: "state/dequeued"
     color: "D93F0B"

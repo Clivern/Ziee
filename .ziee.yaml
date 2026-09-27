@@ -27,7 +27,7 @@ labels:
     color: "34495E"
     description: "PR changes one or more JSON files."
   - name: "size/s"
-    color: "0E8A16"
+    color: "2ECC71"
     description: "Small PR with 20 or fewer files changed."
   - name: "size/l"
     color: "B60205"

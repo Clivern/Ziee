@@ -3,7 +3,7 @@ version: 1.0.0
 # Labels definitions
 labels:
   - name: "state/queued"
-    color: "0E8A16"
+    color: "27AE60"
     description: "PR is currently waiting in the merge queue line."
   - name: "state/checking"
     color: "FBCA04"

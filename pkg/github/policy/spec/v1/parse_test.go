@@ -23,7 +23,7 @@ func TestUnitParseRepoFile(t *testing.T) {
 
 	assert.Equal(t, "1.0.0", file.Version)
 	assert.Equal(t, "state/queued", file.Labels[0].Name)
-	assert.Equal(t, "0E8A16", file.Labels[0].Color)
+	assert.Equal(t, "27AE60", file.Labels[0].Color)
 	assert.Equal(t, "sre", file.Teams[0].Name)
 	assert.Equal(t, []string{"clivern", "maya"}, file.Teams[0].Members)
 	assert.Equal(t, "core", file.Teams[1].Name)

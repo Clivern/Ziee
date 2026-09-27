@@ -57,7 +57,7 @@ labels:
     color: "F39C12"
     description: "Vulnerability remediation or security improvement."
   - name: "spam"
-    color: "B60205"
+    color: "7F8C8D"
     description: "Spam or abuse."
 
 # Teams definitions (union with GitHub org teams for author_in_team)

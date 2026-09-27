@@ -99,6 +99,7 @@ app:
     dir: ${ZIEE_CODING_DIR:-/tmp/ziee}
     model: ${ZIEE_CODING_MODEL:-openrouter/anthropic/claude-sonnet-4.5}
     docker_image: ${ZIEE_CODING_DOCKER_IMAGE:-swarm:v0.7.0}
+    proxy_url: ${ZIEE_CODING_PROXY_URL:-}
 
   cache:
     provider: ${ZIEE_CACHE_PROVIDER:-redis}

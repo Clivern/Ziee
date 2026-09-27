@@ -12,10 +12,10 @@ import (
 
 // Client runs coding agents through Swarm.
 type Client struct {
-	dir    string
-	model  string
-	image  string
-	apiKey string
+	dir      string
+	model    string
+	image    string
+	proxyURL string
 }
 
 // Request is one coding job against a repository.
@@ -46,24 +46,24 @@ type Result struct {
 // New returns a coding client loaded from app.coding config.
 func New() *Client {
 	return &Client{
-		dir:    viper.GetString("app.coding.dir"),
-		model:  viper.GetString("app.coding.model"),
-		image:  viper.GetString("app.coding.docker_image"),
-		apiKey: viper.GetString("app.ai.api_key"),
+		dir:      viper.GetString("app.coding.dir"),
+		model:    viper.GetString("app.coding.model"),
+		image:    viper.GetString("app.coding.docker_image"),
+		proxyURL: viper.GetString("app.coding.proxy_url"),
 	}
 }
 
 // Run clones the repository, runs the agent, and returns the patch.
 func (c *Client) Run(ctx context.Context, req Request) (*Result, error) {
 	out, err := swarm.Run(ctx, swarm.RunRequest{
-		WorkDir:          c.dir,
-		ID:               req.ID,
-		RepoURL:          req.RepoURL,
-		Prompt:           req.Prompt,
-		PIModel:          c.model,
-		OpenRouterAPIKey: c.apiKey,
-		DockerImage:      c.image,
-		Cleanup:          true,
+		WorkDir:     c.dir,
+		ID:          req.ID,
+		RepoURL:     req.RepoURL,
+		Prompt:      req.Prompt,
+		PIModel:     c.model,
+		ProxyURL:    c.proxyURL,
+		DockerImage: c.image,
+		Cleanup:     true,
 		GitCloneAuth: swarm.GitCloneAuth{
 			Token:             req.Token,
 			Username:          req.Username,

@@ -18,7 +18,7 @@ labels:
     color: "1ABC9C"
     description: "Changes related to frontend web paths."
   - name: "lang/go"
-    color: "00ADD8"
+    color: "16A085"
     description: "PR changes one or more Go files."
   - name: "lang/yaml"
     color: "CB171E"

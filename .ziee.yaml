@@ -36,7 +36,7 @@ labels:
     color: "95A5A6"
     description: "Automated PR created by a bot account."
   - name: "team/sre"
-    color: "5319E7"
+    color: "9B59B6"
     description: "PR originated from a member of the SRE team."
   - name: "hotfix"
     color: "D93F0B"

@@ -42,7 +42,7 @@ labels:
     color: "D35400"
     description: "High-priority critical fix bypassing standard queues."
   - name: "bug"
-    color: "D93F0B"
+    color: "E74C3C"
     description: "Identified bug fix requiring patch-level verification."
   - name: "enhancement"
     color: "A2EEEF"

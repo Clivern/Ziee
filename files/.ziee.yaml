@@ -68,84 +68,30 @@ merge_queue:
   # outcomes | all | none
   comments: outcomes
 
-  # Pull request triage only (not issues). Re-run on PR open, sync, and edit.
-  pr_triage:
-    ai:
-      enabled: false
-    rules:
-      - name: rate-limit
-        when:
-          - max_prs_opened: { count: 3, within: 24h }
-        labels:
-          add: [spam]
-        close: true
-        block_author: true
-        comment: "Too many pull requests in a short time. Please wait before opening another."
-      - name: spam-blocklist
-        when:
-          - author_blocked: true
-        labels:
-          add: [spam]
-        close: true
-        comment: "This account is blocked from opening pull requests here."
-      - name: spam
-        when:
-          - intention:
-              name: spam
-              description: >-
-                Unsolicited promo, phishing, crypto/SEO spam, nonsense,
-                or content unrelated to this repository.
-        labels:
-          add: [spam]
-        close: true
-        block_author: true
-        comment: "Closed as spam. If this was a mistake, contact a maintainer."
-      - name: size-s
-        when:
-          - max_files_changed: 20
-        labels:
-          add: [size/s]
-      - name: size-l
-        when:
-          - min_files_changed: 21
-        labels:
-          add: [size/l]
-          remove: [size/s]
-      - name: bot
-        when:
-          - author_in: [dependabot, ziee-bot]
-        labels:
-          add: [bot]
-      - name: first-contribution
-        when:
-          - first_contribution: true
-        labels:
-          add: [first-contribution]
-        comment: "Welcome — thanks for your first pull request! A maintainer will review it soon."
-      - name: hotfix
-        when:
-          - title: "hotfix"
-        labels:
-          add: [hotfix]
-
   # Commands are typed on the PR.
   commands:
+    # `@zieeai queue` — enter the first queue_rule whose queue_when matches
     queue:
       allow:
         - permission: write
         - self: true
+    # `@zieeai dequeue` — pull the PR out of the queue
     dequeue:
       allow:
         - permission: write
+    # `@zieeai requeue` — dequeue then queue again (fresh speculative checks)
     requeue:
       allow:
         - permission: write
+    # `@zieeai rebase` — rebase the PR onto latest main
     rebase:
       allow:
         - permission: write
+    # `@zieeai update` — merge latest main into the PR branch
     update:
       allow:
         - permission: write
+    # `@zieeai refresh` — re-evaluate queue_when after approvals or CI change. Triage runs again too.
     refresh:
       allow:
         - permission: write
@@ -170,21 +116,104 @@ merge_queue:
       checks_timeout: auto
       max_checks_retries: 2
 
+# Pull requests only (not issues). Re-run on PR open, sync, and edit.
+pr_triage:
+  enabled: false
+  comments: outcomes
+  ai:
+    enabled: false
+  commands:
+    # `@zieeai label bug security` — add GitHub labels named in the comment
+    label:
+      allow:
+        - permission: write
+    # `@zieeai assign clivern` — assign users named in the comment
+    assign:
+      allow:
+        - permission: write
+    # `@zieeai close` — close the PR (dequeues if it was in line)
+    close:
+      allow:
+        - permission: write
+    # `@zieeai spam` — label spam, close, and block the author
+    spam:
+      allow:
+        - permission: write
+  rules:
+    - name: rate-limit
+      when:
+        - max_prs_opened: { count: 3, within: 24h }
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "Too many pull requests in a short time. Please wait before opening another."
+    - name: spam-blocklist
+      when:
+        - author_blocked: true
+      labels:
+        add: [spam]
+      close: true
+      comment: "This account is blocked from opening pull requests here."
+    - name: spam
+      when:
+        - intention:
+            name: spam
+            description: >-
+              Unsolicited promo, phishing, crypto/SEO spam, nonsense,
+              or content unrelated to this repository.
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "Closed as spam. If this was a mistake, contact a maintainer."
+    - name: size-s
+      when:
+        - max_files_changed: 20
+      labels:
+        add: [size/s]
+    - name: size-l
+      when:
+        - min_files_changed: 21
+      labels:
+        add: [size/l]
+        remove: [size/s]
+    - name: bot
+      when:
+        - author_in: [dependabot, ziee-bot]
+      labels:
+        add: [bot]
+    - name: first-contribution
+      when:
+        - first_contribution: true
+      labels:
+        add: [first-contribution]
+      comment: "Welcome — thanks for your first pull request! A maintainer will review it soon."
+    - name: hotfix
+      when:
+        - title: "hotfix"
+      labels:
+        add: [hotfix]
+
 issue_triage:
   enabled: false
   comments: outcomes
   ai:
     enabled: false
   commands:
+    # `@zieeai label bug security` — add GitHub labels named in the comment
     label:
       allow:
         - permission: write
+    # `@zieeai assign clivern` — assign users named in the comment
     assign:
       allow:
         - permission: write
+    # `@zieeai close` — close the issue
     close:
       allow:
         - permission: write
+    # `@zieeai spam` — label spam, close, and block the author from further issues
     spam:
       allow:
         - permission: write
@@ -222,6 +251,19 @@ issue_triage:
       labels:
         add: [first-contribution]
       comment: "Welcome — thanks for opening your first issue here! A maintainer will take a look soon."
+
+# Conversational assistant on issues and pull requests.
+assistant:
+  history: 20
+  issues:
+    enabled: true
+    allow:
+      - self: true
+  pull_requests:
+    enabled: true
+    allow:
+      - permission: write
+      - self: true
 
 pr_reviews:
   enabled: false

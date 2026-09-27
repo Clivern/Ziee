@@ -39,15 +39,19 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "state/checking", file.MergeQueue.Labels.Checking)
 	assert.Equal(t, "state/dequeued", file.MergeQueue.Labels.Dequeued)
 
-	assert.True(t, file.MergeQueue.PRTriage.AI.Enabled)
+	assert.True(t, file.PRTriage.Enabled)
+	assert.Equal(t, "outcomes", file.PRTriage.Comments)
+	assert.True(t, file.PRTriage.AI.Enabled)
+	assert.Equal(t, []string{"sre", "core"}, file.PRTriage.Commands["label"].Allow[0].Teams)
+	assert.Equal(t, []string{"clivern"}, file.PRTriage.Commands["label"].Allow[1].Users)
 
-	assert.Equal(t, "rate-limit", file.MergeQueue.PRTriage.Rules[0].Name)
-	assert.Equal(t, 3, file.MergeQueue.PRTriage.Rules[0].When[2].MaxPrsOpened.Count)
-	assert.True(t, file.MergeQueue.PRTriage.Rules[0].BlockAuthor)
-	assert.Equal(t, "spam", file.MergeQueue.PRTriage.Rules[3].When[2].Intention.Name)
-	assert.True(t, file.MergeQueue.PRTriage.Rules[3].BlockAuthor)
+	assert.Equal(t, "rate-limit", file.PRTriage.Rules[0].Name)
+	assert.Equal(t, 3, file.PRTriage.Rules[0].When[2].MaxPrsOpened.Count)
+	assert.True(t, file.PRTriage.Rules[0].BlockAuthor)
+	assert.Equal(t, "spam", file.PRTriage.Rules[3].When[2].Intention.Name)
+	assert.True(t, file.PRTriage.Rules[3].BlockAuthor)
 
-	area := file.MergeQueue.PRTriage.Rules[4]
+	area := file.PRTriage.Rules[4]
 	assert.Equal(t, "area-api", area.Name)
 	assert.Equal(t, []string{"api/**", "pkg/**"}, area.When[0].Files)
 	assert.Equal(t, []string{"area/api"}, area.Labels.Add)
@@ -55,30 +59,30 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, []string{"maya"}, area.Reviewers)
 	assert.Equal(t, []string{"core"}, area.ReviewTeams)
 
-	sizeS := file.MergeQueue.PRTriage.Rules[9]
+	sizeS := file.PRTriage.Rules[9]
 	assert.Equal(t, 20, *sizeS.When[0].MaxFilesChanged)
 
-	sizeL := file.MergeQueue.PRTriage.Rules[10]
+	sizeL := file.PRTriage.Rules[10]
 	assert.Equal(t, 21, *sizeL.When[0].MinFilesChanged)
 	assert.Equal(t, []string{"size/s"}, sizeL.Labels.Remove)
 
-	bot := file.MergeQueue.PRTriage.Rules[11]
+	bot := file.PRTriage.Rules[11]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bot.When[0].AuthorIn)
 
-	firstPR := file.MergeQueue.PRTriage.Rules[12]
+	firstPR := file.PRTriage.Rules[12]
 	assert.Equal(t, "first-contribution", firstPR.Name)
 	assert.True(t, *firstPR.When[1].FirstContribution)
 
-	fromSre := file.MergeQueue.PRTriage.Rules[13]
+	fromSre := file.PRTriage.Rules[13]
 	assert.Equal(t, []string{"sre"}, fromSre.When[0].AuthorInTeam)
 
-	hotfixTitle := file.MergeQueue.PRTriage.Rules[14]
+	hotfixTitle := file.PRTriage.Rules[14]
 	assert.Equal(t, "hotfix", hotfixTitle.When[0].Title)
 
-	hotfixBody := file.MergeQueue.PRTriage.Rules[15]
+	hotfixBody := file.PRTriage.Rules[15]
 	assert.Equal(t, "hotfix", hotfixBody.When[0].Body)
 
-	bug := file.MergeQueue.PRTriage.Rules[16]
+	bug := file.PRTriage.Rules[16]
 	assert.Equal(t, []string{"dependabot", "ziee-bot"}, bug.When[0].AuthorNotIn)
 	assert.Equal(t, "bug", bug.When[1].Intention.Name)
 	assert.Equal(t, "A defect or unexpected behavior that needs a fix.", bug.When[1].Intention.Description)
@@ -106,6 +110,15 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "5m", defaultQ.BatchMaxWait)
 	assert.Equal(t, "ci-full", defaultQ.MergeWhen[0].Check)
 
+	assert.Equal(t, 20, file.Assistant.History)
+	assert.Equal(t, KnowledgeTag{"tag": "docs", "team": "sre"}, file.Assistant.Knowledge[0])
+	assert.True(t, file.Assistant.Issues.Enabled)
+	assert.Equal(t, []string{"sre", "core"}, file.Assistant.Issues.Allow[0].Teams)
+	assert.Equal(t, []string{"clivern"}, file.Assistant.Issues.Allow[1].Users)
+	assert.True(t, file.Assistant.Issues.Allow[2].Self)
+	assert.True(t, file.Assistant.PullRequests.Enabled)
+	assert.Equal(t, "write", file.Assistant.PullRequests.Allow[0].Permission)
+	assert.True(t, file.Assistant.PullRequests.Allow[3].Self)
 	assert.False(t, file.PRReviews.Enabled)
 	assert.True(t, file.IssueTriage.Enabled)
 	assert.Equal(t, "outcomes", file.IssueTriage.Comments)
@@ -130,13 +143,13 @@ func TestUnitParseRepoFile(t *testing.T) {
 	assert.Equal(t, "first-contribution", file.IssueTriage.Rules[5].Name)
 	assert.True(t, *file.IssueTriage.Rules[5].When[1].FirstContribution)
 	assert.Equal(t, []string{"sre"}, file.IssueTriage.Rules[13].When[0].AuthorNotInTeam)
-	assert.Equal(t, "first-contribution", file.MergeQueue.PRTriage.Rules[12].Name)
-	assert.True(t, *file.MergeQueue.PRTriage.Rules[12].When[1].FirstContribution)
-	assert.Equal(t, []string{"sre"}, file.MergeQueue.PRTriage.Rules[20].When[0].AuthorNotInTeam)
-	assert.Equal(t, []string{"**/*.go"}, file.MergeQueue.PRTriage.Rules[6].When[0].Files)
-	assert.Equal(t, []string{"lang/go"}, file.MergeQueue.PRTriage.Rules[6].Labels.Add)
-	assert.Equal(t, []string{"**/*.yml", "**/*.yaml"}, file.MergeQueue.PRTriage.Rules[7].When[0].Files)
-	assert.Equal(t, []string{"**/*.json"}, file.MergeQueue.PRTriage.Rules[8].When[0].Files)
+	assert.Equal(t, "first-contribution", file.PRTriage.Rules[12].Name)
+	assert.True(t, *file.PRTriage.Rules[12].When[1].FirstContribution)
+	assert.Equal(t, []string{"sre"}, file.PRTriage.Rules[20].When[0].AuthorNotInTeam)
+	assert.Equal(t, []string{"**/*.go"}, file.PRTriage.Rules[6].When[0].Files)
+	assert.Equal(t, []string{"lang/go"}, file.PRTriage.Rules[6].Labels.Add)
+	assert.Equal(t, []string{"**/*.yml", "**/*.yaml"}, file.PRTriage.Rules[7].When[0].Files)
+	assert.Equal(t, []string{"**/*.json"}, file.PRTriage.Rules[8].When[0].Files)
 
 	assert.False(t, file.Flows.Enabled)
 	assert.Equal(t, "outcomes", file.Flows.Comments)
@@ -159,35 +172,36 @@ func TestUnitParseWhenAllowBatchSize(t *testing.T) {
 version: 1.0.0
 merge_queue:
   enabled: true
-  pr_triage:
-    ai:
-      enabled: true
-      knowledge:
-        - tag: docs
-          team: sre
-        - tag: platform_monorepo
-    rules:
-      - name: size
-        when:
-          - max_files_changed: 3
-          - min_files_changed: 1
-          - author_not_in: [bot]
-          - body: "repro"
-          - intention: docs
-          - intention:
-              name: bug
-              description: "A defect that needs a fix."
-          - max_issues_opened:
-              count: 3
-              within: 24h
-          - author_blocked: true
-        labels:
-          add: [size/s]
   queue_rules:
     - name: default
       batch_size:
         min: 2
         max: 4
+pr_triage:
+  enabled: true
+  ai:
+    enabled: true
+    knowledge:
+      - tag: docs
+        team: sre
+      - tag: platform_monorepo
+  rules:
+    - name: size
+      when:
+        - max_files_changed: 3
+        - min_files_changed: 1
+        - author_not_in: [bot]
+        - body: "repro"
+        - intention: docs
+        - intention:
+            name: bug
+            description: "A defect that needs a fix."
+        - max_issues_opened:
+            count: 3
+            within: 24h
+        - author_blocked: true
+      labels:
+        add: [size/s]
 issue_triage:
   enabled: true
   commands:
@@ -200,9 +214,9 @@ issue_triage:
 	assert.Equal(t, []KnowledgeTag{
 		{"tag": "docs", "team": "sre"},
 		{"tag": "platform_monorepo"},
-	}, file.MergeQueue.PRTriage.AI.Knowledge)
+	}, file.PRTriage.AI.Knowledge)
 
-	when := file.MergeQueue.PRTriage.Rules[0].When
+	when := file.PRTriage.Rules[0].When
 	assert.Equal(t, 3, *when[0].MaxFilesChanged)
 	assert.Equal(t, 1, *when[1].MinFilesChanged)
 	assert.Equal(t, []string{"bot"}, when[2].AuthorNotIn)

@@ -30,15 +30,37 @@ Modes:
 
 ## Commands
 
-Comment on a pull request:
+Comment on a pull request to work the queue:
 
-- `@zieeai queue` — enter the first matching queue rule
+- `@zieeai queue` — enter the first queue rule whose `queue_when` matches
 - `@zieeai queue hotfix` — enter the hotfix line (SRE only)
 - `@zieeai dequeue` — leave the queue
-- `@zieeai requeue` — dequeue then queue again
-- `@zieeai rebase` — rebase onto latest `main`
-- `@zieeai update` — merge latest `main` into the PR branch
-- `@zieeai refresh` — re-run triage and re-evaluate `queue_when`
+- `@zieeai requeue` — dequeue, then queue again with fresh speculative checks
+- `@zieeai rebase` — rebase the pull request onto latest `main`
+- `@zieeai update` — merge latest `main` into the pull request branch
+- `@zieeai refresh` — re-evaluate `queue_when` after approvals or CI change. Triage runs again too.
+
+Comment on a pull request to triage it:
+
+- `@zieeai label bug security` — add the named labels
+- `@zieeai unlabel bot` — remove the named labels
+- `@zieeai assign clivern` — assign the named users
+- `@zieeai unassign clivern` — remove the named assignees
+- `@zieeai reviewers maya` — request the named reviewers
+- `@zieeai close` — close the pull request (dequeues it if it was in line)
+- `@zieeai reopen` — reopen the pull request
+- `@zieeai spam` — label spam, close, and block the author
+
+Comment on an issue:
+
+- `@zieeai label bug security` — add the named labels
+- `@zieeai unlabel bot` — remove the named labels
+- `@zieeai assign clivern` — assign the named users
+- `@zieeai unassign clivern` — remove the named assignees
+- `@zieeai close` — close the issue
+- `@zieeai reopen` — reopen the issue
+- `@zieeai spam` — label spam, close, and block the author from further issues
+- `@zieeai summarize` — summarize the issue
 
 ## Priority
 

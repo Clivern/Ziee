@@ -10,8 +10,10 @@ type File struct {
 	Teams       []Team      `yaml:"teams"`
 	Knowledge   []Knowledge `yaml:"knowledge"`
 	MergeQueue  MergeQueue  `yaml:"merge_queue"`
+	PRTriage    PRTriage    `yaml:"pr_triage"`
 	PRReviews   PRReviews   `yaml:"pr_reviews"`
 	IssueTriage IssueTriage `yaml:"issue_triage"`
+	Assistant   Assistant   `yaml:"assistant"`
 	Flows       Flows       `yaml:"flows"`
 }
 
@@ -34,7 +36,7 @@ type Knowledge struct {
 	Tags KnowledgeTag `yaml:"tags"`
 }
 
-// MergeQueue is the pull-request automation block.
+// MergeQueue is the speculative merge line.
 type MergeQueue struct {
 	Enabled              bool           `yaml:"enabled"`
 	Mode                 string         `yaml:"mode"`
@@ -42,7 +44,6 @@ type MergeQueue struct {
 	ResetOnExternalMerge string         `yaml:"reset_on_external_merge"`
 	Labels               QueueLabels    `yaml:"labels"`
 	Comments             string         `yaml:"comments"`
-	PRTriage             PRTriage       `yaml:"pr_triage"`
 	Commands             Commands       `yaml:"commands"`
 	PriorityRules        []PriorityRule `yaml:"priority_rules"`
 	QueueRules           []QueueRule    `yaml:"queue_rules"`
@@ -57,8 +58,11 @@ type QueueLabels struct {
 
 // PRTriage labels, assigns, and requests reviewers on pull requests.
 type PRTriage struct {
-	AI    AI     `yaml:"ai"`
-	Rules []Rule `yaml:"rules"`
+	Enabled  bool     `yaml:"enabled"`
+	Comments string   `yaml:"comments"`
+	AI       AI       `yaml:"ai"`
+	Commands Commands `yaml:"commands"`
+	Rules    []Rule   `yaml:"rules"`
 }
 
 // IssueTriage labels, assigns, and comments on GitHub issues.
@@ -73,6 +77,21 @@ type IssueTriage struct {
 // PRReviews is parsed and unused until the review engine exists.
 type PRReviews struct {
 	Enabled bool `yaml:"enabled"`
+}
+
+// Assistant is a conversational helper on issues and pull requests.
+// Parsed and unused until the assistant engine exists.
+type Assistant struct {
+	History      int             `yaml:"history"`
+	Knowledge    []KnowledgeTag  `yaml:"knowledge"`
+	Issues       AssistantTarget `yaml:"issues"`
+	PullRequests AssistantTarget `yaml:"pull_requests"`
+}
+
+// AssistantTarget is one place the assistant listens, with who may talk to it.
+type AssistantTarget struct {
+	Enabled bool  `yaml:"enabled"`
+	Allow   Allow `yaml:"allow,omitempty"`
 }
 
 // Flows dispatches workflows and webhooks after push, tag, or release.

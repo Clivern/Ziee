@@ -19,6 +19,10 @@ import (
 func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan
 
+	if !conf.PRTriage.Enabled {
+		return plan
+	}
+
 	if strings.ToLower(event.Account.Type) == "organization" {
 		event.Org = event.Account.Login
 	}
@@ -29,15 +33,15 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 		client.GetTeams(event.Org, event.Issue.Author),
 	)
 
-	intentions := GetIntentionsFromRules(conf.MergeQueue.PRTriage.Rules)
-	ai := conf.MergeQueue.PRTriage.AI
+	intentions := GetIntentionsFromRules(conf.PRTriage.Rules)
+	ai := conf.PRTriage.AI
 	if ai.Enabled && len(intentions) > 0 &&
-		!SkipAI(conf.MergeQueue.PRTriage.Rules, event.Issue, client) &&
+		!SkipAI(conf.PRTriage.Rules, event.Issue, client) &&
 		!SkipAIQuota(ai, event.Issue, client, true) {
 		event.Issue.Intention = client.EvaluateIssue(event.Issue, intentions)
 	}
 
-	for _, rule := range conf.MergeQueue.PRTriage.Rules {
+	for _, rule := range conf.PRTriage.Rules {
 		if !MatchClauses(rule.When, event.Issue, client) {
 			continue
 		}
@@ -91,7 +95,7 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 		}
 	}
 
-	body := OutcomeComment(conf.MergeQueue.Comments, plan.Actions)
+	body := OutcomeComment(conf.PRTriage.Comments, plan.Actions)
 	if !lo.IsEmpty(body) {
 		plan.Actions = append(plan.Actions, action.Action{
 			Kind: policy.Comment,

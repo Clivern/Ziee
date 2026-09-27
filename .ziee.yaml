@@ -120,239 +120,17 @@ merge_queue:
     checking: state/checking
     # kicked out of the queue if merge_when is not met
     dequeued: state/dequeued
-  # How chatty Ziee is on the PR. Labels still update either way.
+  # How chatty Ziee is about the queue. Labels still update either way.
   #   outcomes — only when something happened (queued, merged, failed, dequeued)
   #   all      — every state change, including speculative CI started
   #   none     — no comments; queue state is labels only
   comments: outcomes
-
-  # Pull request triage only (not issues). Re-run on PR open, sync, and edit.
-  # Every matching rule fires (not first-wins).
-  pr_triage:
-    # Classify intention once from title, body, and diff.
-    # enabled: false → skip classification; `intention:` matchers never match.
-    # max_prs_opened / except — same as issue_triage.ai (PR counter).
-    ai:
-      enabled: true
-      max_prs_opened: { count: 10, within: 24h }
-      except:
-        - or:
-            - author_in: [dependabot, ziee-bot]
-            - author_in_team: [sre, core]
-    # `when` matchers (all must match):
-    #   files, min_files_changed, max_files_changed, title,
-    #   author_in / author_not_in (user logins),
-    #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
-    #   first_contribution, author_blocked, draft, conflict, closed
-    #     (`name` / `name: true`, `-name` / `name: false`),
-    #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
-    # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams),
-    #   comment, close, block_author.
-    # Spam matchers: max_prs_opened, author_blocked, intention spam (same blocklist as issues).
-    rules:
-      # Flood / velocity
-      - name: rate-limit
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - author_not_in_team: [sre, core]
-          - max_prs_opened: { count: 3, within: 24h }
-        labels:
-          add: [spam]
-        close: true
-        block_author: true
-        comment: "Too many pull requests in a short time. Please wait before opening another."
-
-      # Known offenders (static list you maintain)
-      - name: blocked-authors
-        when:
-          - author_in: [known-spammer1, known-spammer2]
-        labels:
-          add: [spam]
-        close: true
-        block_author: true
-        comment: "This account is blocked from opening pull requests here."
-
-      # Authors on the spam blocklist (shared with issues)
-      - name: spam-blocklist
-        when:
-          - author_blocked: true
-        labels:
-          add: [spam]
-        close: true
-        comment: "This account is blocked from opening pull requests here."
-
-      # AI intention: spam (one hit blocks forever; later opens skip AI)
-      - name: spam
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - author_not_in_team: [sre, core]
-          - intention:
-              name: spam
-              description: >-
-                Unsolicited promo, phishing, crypto/SEO spam, nonsense,
-                or content unrelated to this repository. Not a real bug,
-                feature, or docs change.
-        labels:
-          add: [spam]
-        close: true
-        block_author: true
-        comment: "Closed as spam. If this was a mistake, contact a maintainer."
-
-      # Paths under api/ or pkg/
-      - name: area-api
-        when:
-          - files: [api/**, pkg/**]
-        labels:
-          add: [area/api]
-        assign: [clivern]
-        reviewers: [maya]
-        review_teams: [core]
-
-      # Paths under web/
-      - name: area-web
-        when:
-          - files: [web/**]
-        labels:
-          add: [area/web]
-        assign: [maya]
-        reviewers: [clivern]
-
-      # Go files
-      - name: lang-go
-        when:
-          - files: ["**/*.go"]
-        labels:
-          add: [lang/go]
-
-      # YAML files
-      - name: lang-yaml
-        when:
-          - files: ["**/*.yml", "**/*.yaml"]
-        labels:
-          add: [lang/yaml]
-
-      # JSON files
-      - name: lang-json
-        when:
-          - files: ["**/*.json"]
-        labels:
-          add: [lang/json]
-
-      # 20 files or fewer
-      - name: size-s
-        when:
-          - max_files_changed: 20
-        labels:
-          add: [size/s]
-
-      # 21 files or more; drops size/s if it was applied
-      - name: size-l
-        when:
-          - min_files_changed: 21
-        labels:
-          add: [size/l]
-          remove: [size/s]
-        assign: [clivern]
-
-      # Bot authors (user logins)
-      - name: bot
-        when:
-          - author_in: [dependabot, ziee-bot]
-        labels:
-          add: [bot]
-        assign: []
-        reviewers: []
-
-      # First pull request from a new contributor
-      - name: first-contribution
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - first_contribution: true
-        labels:
-          add: [first-contribution]
-        comment: "Welcome — thanks for your first pull request! A maintainer will review it soon."
-
-      # Author is a member of org team sre
-      - name: from-sre
-        when:
-          - author_in_team: [sre]
-        labels:
-          add: [team/sre]
-        review_teams: [sre]
-
-      # Title matches hotfix
-      - name: hotfix
-        when:
-          - title: "hotfix"
-        labels:
-          add: [hotfix]
-        assign: [clivern]
-        review_teams: [sre]
-
-      # Body matches hotfix
-      - name: hotfix
-        when:
-          - body: "hotfix"
-        labels:
-          add: [hotfix]
-        assign: [clivern]
-        review_teams: [sre]
-
-      # AI intention: bug
-      - name: bug
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - intention:
-              name: bug
-              description: "A defect or unexpected behavior that needs a fix."
-        labels:
-          add: [bug]
-        assign: [clivern]
-
-      # AI intention: enhancement
-      - name: enhancement
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - intention:
-              name: enhancement
-              description: "A new feature or improvement."
-        labels:
-          add: [enhancement]
-
-      # AI intention: docs
-      - name: docs
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - intention:
-              name: docs
-              description: "Documentation-only changes."
-        labels:
-          add: [docs]
-        reviewers: [maya]
-
-      # AI intention: security (no-op when ai.enabled is false)
-      - name: security
-        when:
-          - author_not_in: [dependabot, ziee-bot]
-          - intention:
-              name: security
-              description: "A vulnerability or security improvement."
-        labels:
-          add: [security]
-        assign: [clivern]
-        review_teams: [sre]
-
-      # Author is not a member of org team sre
-      - name: not-sre
-        when:
-          - author_not_in_team: [sre]
 
   # Commands are typed on the PR. `allow` is who may run them (any matching entry is enough):
   #   permission — GitHub repo role minimum (write = write / maintain / admin)
   #   teams      — org team slugs
   #   users      — GitHub logins
   #   self       — the PR author
-  # Omit `permission` so people without repo access can still interact; Ziee uses the app token.
   commands:
     # `@zieeai queue` or `@zieeai queue hotfix`
     # No name → first queue_rule whose queue_when matches and whose allow includes the commenter
@@ -379,51 +157,11 @@ merge_queue:
     update:
       allow:
         - permission: write
-    # `@zieeai refresh` — re-run triage and re-evaluate queue_when
+    # `@zieeai refresh` — re-evaluate queue_when after approvals or CI change. Triage runs again too.
     refresh:
       allow:
         - permission: write
         - teams: [sre, core]
-        - users: [clivern]
-    # `@zieeai label bug security` — add GitHub labels named in the comment
-    label:
-      allow:
-        - teams: [sre, core]
-        - users: [clivern]
-    # `@zieeai unlabel bot` — remove GitHub labels named in the comment
-    unlabel:
-      allow:
-        - teams: [sre, core]
-        - users: [clivern]
-    # `@zieeai assign clivern` — assign users named in the comment
-    assign:
-      allow:
-        - teams: [sre, core]
-        - users: [clivern]
-    # `@zieeai unassign clivern` — remove assignees named in the comment
-    unassign:
-      allow:
-        - teams: [sre, core]
-        - users: [clivern]
-    # `@zieeai reviewers maya` — request reviewers (user logins)
-    reviewers:
-      allow:
-        - teams: [sre, core]
-        - users: [clivern]
-    # `@zieeai close` — close the PR (dequeues if it was in line)
-    close:
-      allow:
-        - teams: [sre]
-        - users: [clivern]
-    # `@zieeai reopen` — reopen the PR
-    reopen:
-      allow:
-        - teams: [sre]
-        - users: [clivern]
-    # `@zieeai spam` — label spam, close, and block the author (not implemented yet)
-    spam:
-      allow:
-        - teams: [sre]
         - users: [clivern]
 
   # Same merge pipeline, different place in line. Not extra queues.
@@ -498,6 +236,288 @@ merge_queue:
       checks_timeout: auto
       max_checks_retries: 2
 
+
+pr_triage:
+  # Pull requests only (not issues). Re-run on PR open, sync, and edit.
+  # Every matching rule fires (not first-wins).
+  enabled: true
+  # How chatty Ziee is on the pull request. Labels still update either way.
+  #   outcomes — only when something happened (triaged, labeled, assigned, closed)
+  #     "Triaged this pull request: labeled `bug`, assigned @clivern."
+  #     "Labeled `security` as requested by @maya."
+  #     "Closed this pull request as requested by @clivern."
+  #   all — every state change, including no-ops
+  #     "Triage ran; no rules matched."
+  #     "Re-evaluated after edit; labels unchanged."
+  #   none — no comments; state is labels / assignees / reviewers only
+  comments: outcomes
+  # Classify intention once from title, body, and diff.
+  # enabled: false → skip classification; `intention:` matchers never match.
+  # max_prs_opened / except — same as issue_triage.ai (PR counter).
+  ai:
+    enabled: true
+    max_prs_opened: { count: 10, within: 24h }
+    except:
+      - or:
+          - author_in: [dependabot, ziee-bot]
+          - author_in_team: [sre, core]
+  # `when` matchers (all must match):
+  #   files, min_files_changed, max_files_changed, title,
+  #   author_in / author_not_in (user logins),
+  #   author_in_team / author_not_in_team (org team slugs or names in `teams:`),
+  #   first_contribution, author_blocked, draft, conflict, closed
+  #     (`name` / `name: true`, `-name` / `name: false`),
+  #   intention (string, or {name, description} for the classify prompt; requires ai.enabled).
+  # Actions: labels.add / labels.remove, assign (users), reviewers (users), review_teams (org teams),
+  #   comment, close, block_author.
+  # Spam matchers: max_prs_opened, author_blocked, intention spam (same blocklist as issues).
+  rules:
+    # Flood / velocity
+    - name: rate-limit
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - author_not_in_team: [sre, core]
+        - max_prs_opened: { count: 3, within: 24h }
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "Too many pull requests in a short time. Please wait before opening another."
+
+    # Known offenders (static list you maintain)
+    - name: blocked-authors
+      when:
+        - author_in: [known-spammer1, known-spammer2]
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "This account is blocked from opening pull requests here."
+
+    # Authors on the spam blocklist (shared with issues)
+    - name: spam-blocklist
+      when:
+        - author_blocked: true
+      labels:
+        add: [spam]
+      close: true
+      comment: "This account is blocked from opening pull requests here."
+
+    # AI intention: spam (one hit blocks forever; later opens skip AI)
+    - name: spam
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - author_not_in_team: [sre, core]
+        - intention:
+            name: spam
+            description: >-
+              Unsolicited promo, phishing, crypto/SEO spam, nonsense,
+              or content unrelated to this repository. Not a real bug,
+              feature, or docs change.
+      labels:
+        add: [spam]
+      close: true
+      block_author: true
+      comment: "Closed as spam. If this was a mistake, contact a maintainer."
+
+    # Paths under api/ or pkg/
+    - name: area-api
+      when:
+        - files: [api/**, pkg/**]
+      labels:
+        add: [area/api]
+      assign: [clivern]
+      reviewers: [maya]
+      review_teams: [core]
+
+    # Paths under web/
+    - name: area-web
+      when:
+        - files: [web/**]
+      labels:
+        add: [area/web]
+      assign: [maya]
+      reviewers: [clivern]
+
+    # Go files
+    - name: lang-go
+      when:
+        - files: ["**/*.go"]
+      labels:
+        add: [lang/go]
+
+    # YAML files
+    - name: lang-yaml
+      when:
+        - files: ["**/*.yml", "**/*.yaml"]
+      labels:
+        add: [lang/yaml]
+
+    # JSON files
+    - name: lang-json
+      when:
+        - files: ["**/*.json"]
+      labels:
+        add: [lang/json]
+
+    # 20 files or fewer
+    - name: size-s
+      when:
+        - max_files_changed: 20
+      labels:
+        add: [size/s]
+
+    # 21 files or more; drops size/s if it was applied
+    - name: size-l
+      when:
+        - min_files_changed: 21
+      labels:
+        add: [size/l]
+        remove: [size/s]
+      assign: [clivern]
+
+    # Bot authors (user logins)
+    - name: bot
+      when:
+        - author_in: [dependabot, ziee-bot]
+      labels:
+        add: [bot]
+      assign: []
+      reviewers: []
+
+    # First pull request from a new contributor
+    - name: first-contribution
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - first_contribution: true
+      labels:
+        add: [first-contribution]
+      comment: "Welcome — thanks for your first pull request! A maintainer will review it soon."
+
+    # Author is a member of org team sre
+    - name: from-sre
+      when:
+        - author_in_team: [sre]
+      labels:
+        add: [team/sre]
+      review_teams: [sre]
+
+    # Title matches hotfix
+    - name: hotfix
+      when:
+        - title: "hotfix"
+      labels:
+        add: [hotfix]
+      assign: [clivern]
+      review_teams: [sre]
+
+    # Body matches hotfix
+    - name: hotfix
+      when:
+        - body: "hotfix"
+      labels:
+        add: [hotfix]
+      assign: [clivern]
+      review_teams: [sre]
+
+    # AI intention: bug
+    - name: bug
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: bug
+            description: "A defect or unexpected behavior that needs a fix."
+      labels:
+        add: [bug]
+      assign: [clivern]
+
+    # AI intention: enhancement
+    - name: enhancement
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: enhancement
+            description: "A new feature or improvement."
+      labels:
+        add: [enhancement]
+
+    # AI intention: docs
+    - name: docs
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: docs
+            description: "Documentation-only changes."
+      labels:
+        add: [docs]
+      reviewers: [maya]
+
+    # AI intention: security (no-op when ai.enabled is false)
+    - name: security
+      when:
+        - author_not_in: [dependabot, ziee-bot]
+        - intention:
+            name: security
+            description: "A vulnerability or security improvement."
+      labels:
+        add: [security]
+      assign: [clivern]
+      review_teams: [sre]
+
+    # Author is not a member of org team sre
+    - name: not-sre
+      when:
+        - author_not_in_team: [sre]
+
+  # Commands are typed on the pull request. Ziee performs the action with the app token,
+  # so the commenter does not need repo write (or any GitHub permission on this repo).
+  # `allow` is who may run them (any matching entry is enough):
+  #   permission — GitHub repo role minimum (write = write / maintain / admin)
+  #   teams      — org team slugs
+  #   users      — GitHub logins
+  #   self       — the pull request author
+  # Omit `permission` so people without repo access can still interact.
+  commands:
+    # `@zieeai label bug security` — add GitHub labels named in the comment
+    label:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@zieeai unlabel bot` — remove GitHub labels named in the comment
+    unlabel:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@zieeai assign clivern` — assign users named in the comment
+    assign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@zieeai unassign clivern` — remove assignees named in the comment
+    unassign:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@zieeai reviewers maya` — request reviewers (user logins)
+    reviewers:
+      allow:
+        - teams: [sre, core]
+        - users: [clivern]
+    # `@zieeai close` — close the PR (dequeues if it was in line)
+    close:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@zieeai reopen` — reopen the PR
+    reopen:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
+    # `@zieeai spam` — label spam, close, and block the author (not implemented yet)
+    spam:
+      allow:
+        - teams: [sre]
+        - users: [clivern]
 
 issue_triage:
   # GitHub issues only (not PRs). Re-run on issue open and edit.
@@ -727,6 +747,46 @@ issue_triage:
 pr_reviews:
   # Whether to enable AI-assisted PR reviews
   enabled: false
+
+
+# Conversational assistant on issues and pull requests.
+# A comment whose first line is `@zieeai` plus a question, and whose first
+# word is not a command (`label`, `queue`, `close`, …), is a turn:
+#
+#   @zieeai how does the merge queue decide what lands next?
+#
+# Ziee replies on that issue or pull request. Both turns are kept for that
+# issue or PR, and the next question sees the earlier ones (up to `history`).
+# `@zieeai forget` clears that history.
+#
+# `allow` is who may talk to it (any matching entry is enough):
+#   permission — GitHub repo role minimum (write = write / maintain / admin)
+#   teams      — org team slugs
+#   users      — GitHub logins
+#   self       — the issue or pull request author
+# Omit `permission` on issues so people without repo access can still ask.
+assistant:
+  # Turns sent with the next question, oldest dropped first.
+  history: 20
+  # Knowledge tags retrieved into the prompt (same shape as triage `ai.knowledge`).
+  # Empty → no retrieval.
+  knowledge:
+    - tag: docs
+      team: sre
+  issues:
+    enabled: true
+    allow:
+      - teams: [sre, core]
+      - users: [clivern]
+      - self: true
+  pull_requests:
+    enabled: true
+    allow:
+      - permission: write
+      - teams: [sre, core]
+      - users: [clivern]
+      - self: true
+
 
 # After git facts change (push, tag, release). Not the merge queue.
 # Ziee dispatches; it does not run kubectl or Ansible.

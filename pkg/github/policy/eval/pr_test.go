@@ -15,19 +15,18 @@ import (
 
 func TestUnitEvaluatePROpenedSpam(t *testing.T) {
 	conf := &v1.File{
-		MergeQueue: v1.MergeQueue{
-			PRTriage: v1.PRTriage{
-				AI: v1.AI{Enabled: true},
-				Rules: []v1.Rule{
-					{
-						Name: "spam",
-						When: v1.Clauses{{
-							Intention: v1.Intention{Name: "spam"},
-						}},
-						Labels:      v1.Labels{Add: []string{"spam"}},
-						Close:       true,
-						BlockAuthor: true,
-					},
+		PRTriage: v1.PRTriage{
+			Enabled: true,
+			AI:      v1.AI{Enabled: true},
+			Rules: []v1.Rule{
+				{
+					Name: "spam",
+					When: v1.Clauses{{
+						Intention: v1.Intention{Name: "spam"},
+					}},
+					Labels:      v1.Labels{Add: []string{"spam"}},
+					Close:       true,
+					BlockAuthor: true,
 				},
 			},
 		},
@@ -49,24 +48,23 @@ func TestUnitEvaluatePROpenedSpam(t *testing.T) {
 func TestUnitEvaluatePROpenedSkipAINotRateLimit(t *testing.T) {
 	conf := &v1.File{
 		Teams: []v1.Team{{Name: "sre", Members: []string{"maya"}}},
-		MergeQueue: v1.MergeQueue{
-			PRTriage: v1.PRTriage{
-				AI: v1.AI{Enabled: true},
-				Rules: []v1.Rule{
-					{
-						Name: "rate-limit",
-						When: v1.Clauses{
-							{AuthorNotInTeam: []string{"sre"}},
-							{MaxPrsOpened: &v1.MaxIssuesOpened{Count: 3, Within: "24h"}},
-						},
-						Labels: v1.Labels{Add: []string{"spam"}},
-						Close:  true,
+		PRTriage: v1.PRTriage{
+			Enabled: true,
+			AI:      v1.AI{Enabled: true},
+			Rules: []v1.Rule{
+				{
+					Name: "rate-limit",
+					When: v1.Clauses{
+						{AuthorNotInTeam: []string{"sre"}},
+						{MaxPrsOpened: &v1.MaxIssuesOpened{Count: 3, Within: "24h"}},
 					},
-					{
-						Name:   "bug",
-						When:   v1.Clauses{{Intention: v1.Intention{Name: "bug"}}},
-						Labels: v1.Labels{Add: []string{"bug"}},
-					},
+					Labels: v1.Labels{Add: []string{"spam"}},
+					Close:  true,
+				},
+				{
+					Name:   "bug",
+					When:   v1.Clauses{{Intention: v1.Intention{Name: "bug"}}},
+					Labels: v1.Labels{Add: []string{"bug"}},
 				},
 			},
 		},
@@ -97,18 +95,17 @@ func TestUnitEvaluatePROpenedSkipAINotRateLimit(t *testing.T) {
 
 func TestUnitEvaluatePROpenedRateLimit(t *testing.T) {
 	conf := &v1.File{
-		MergeQueue: v1.MergeQueue{
-			PRTriage: v1.PRTriage{
-				Rules: []v1.Rule{
-					{
-						Name: "rate-limit",
-						When: v1.Clauses{{
-							MaxPrsOpened: &v1.MaxIssuesOpened{Count: 3, Within: "24h"},
-						}},
-						Labels:      v1.Labels{Add: []string{"spam"}},
-						Close:       true,
-						BlockAuthor: true,
-					},
+		PRTriage: v1.PRTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name: "rate-limit",
+					When: v1.Clauses{{
+						MaxPrsOpened: &v1.MaxIssuesOpened{Count: 3, Within: "24h"},
+					}},
+					Labels:      v1.Labels{Add: []string{"spam"}},
+					Close:       true,
+					BlockAuthor: true,
 				},
 			},
 		},
@@ -129,19 +126,18 @@ func TestUnitEvaluatePROpenedRateLimit(t *testing.T) {
 
 func TestUnitEvaluatePROpenedOr(t *testing.T) {
 	conf := &v1.File{
-		MergeQueue: v1.MergeQueue{
-			PRTriage: v1.PRTriage{
-				Rules: []v1.Rule{
-					{
-						Name: "trusted",
-						When: v1.Clauses{{
-							Or: v1.Clauses{
-								{AuthorInTeam: []string{"sre"}},
-								{AuthorIn: []string{"clivern"}},
-							},
-						}},
-						Labels: v1.Labels{Add: []string{"team/sre"}},
-					},
+		PRTriage: v1.PRTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name: "trusted",
+					When: v1.Clauses{{
+						Or: v1.Clauses{
+							{AuthorInTeam: []string{"sre"}},
+							{AuthorIn: []string{"clivern"}},
+						},
+					}},
+					Labels: v1.Labels{Add: []string{"team/sre"}},
 				},
 			},
 		},
@@ -165,14 +161,13 @@ func TestUnitEvaluatePROpenedOr(t *testing.T) {
 func TestUnitEvaluatePROpenedDraft(t *testing.T) {
 	draft := false
 	conf := &v1.File{
-		MergeQueue: v1.MergeQueue{
-			PRTriage: v1.PRTriage{
-				Rules: []v1.Rule{
-					{
-						Name:   "ready",
-						When:   v1.Clauses{{Draft: &draft}},
-						Labels: v1.Labels{Add: []string{"bot"}},
-					},
+		PRTriage: v1.PRTriage{
+			Enabled: true,
+			Rules: []v1.Rule{
+				{
+					Name:   "ready",
+					When:   v1.Clauses{{Draft: &draft}},
+					Labels: v1.Labels{Add: []string{"bot"}},
 				},
 			},
 		},

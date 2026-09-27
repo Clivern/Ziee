@@ -33,7 +33,7 @@ labels:
     color: "E67E22"
     description: "Large PR with 21 or more files changed."
   - name: "bot"
-    color: "EEEEEE"
+    color: "95A5A6"
     description: "Automated PR created by a bot account."
   - name: "team/sre"
     color: "5319E7"

@@ -15,7 +15,7 @@ labels:
     color: "2980B9"
     description: "Changes made inside the API or core PKG paths."
   - name: "area/web"
-    color: "C2E0C6"
+    color: "1ABC9C"
     description: "Changes related to frontend web paths."
   - name: "lang/go"
     color: "00ADD8"

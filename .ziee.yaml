@@ -51,7 +51,7 @@ labels:
     color: "2C3E50"
     description: "Documentation changes only."
   - name: "first-contribution"
-    color: "C5DEF5"
+    color: "BDC3C7"
     description: "Author's first issue or pull request on this repository."
   - name: "security"
     color: "E99695"

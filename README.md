@@ -3,8 +3,8 @@
     <h3 align="center">Ziee</h3>
     <p align="center">The Autonomous Merge Layer for Agent-Scale Delivery</p>
     <p align="center">
-        <a href="https://github.com/clivern/ziee/actions/workflows/ci.yml">
-            <img alt="CI" src="https://github.com/clivern/ziee/actions/workflows/ci.yml/badge.svg">
+        <a href="https://github.com/Clivern/Ziee/actions/workflows/ci.yml">
+            <img alt="CI" src="https://github.com/Clivern/Ziee/actions/workflows/ci.yml/badge.svg?branch=main">
         </a>
         <a href="https://github.com/clivern/ziee/releases">
             <img src="https://img.shields.io/badge/Version-v0.0.1-red.svg">

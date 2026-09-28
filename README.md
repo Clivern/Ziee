@@ -15,7 +15,7 @@
     </p>
 </p>
 
-Teams ship more than they used to. More branches, more reviews, more `PRs` hitting main at once — from people, bots, and agents sharing the same repos. The bottleneck moved to merge: someone still has to order the work, wait on `CI`, and land it by hand.
+Teams ship more than they used to. More branches, more reviews, more `PRs` hitting main at once - from people, bots, and agents sharing the same repos. The bottleneck moved to merge: someone still has to order the work, wait on `CI`, and land it by hand.
 
 `Ziee` is the merge layer for that pace. Pull requests get queued, checked, and merged without a human on the button, so delivery can keep climbing without the queue falling behind.
 

@@ -14,20 +14,20 @@ alwaysApply: false
 
 Call `SnapshotWorkingQueue` right after loading a working batch. It returns `[]PR` in queue order. Each entry stores:
 
-- `Id`, `GitHubPRId`, `Checksum`, `Status`
+- `Id`, `RemoteId`, `Checksum`, `Status`
 - `Front`: every PR ahead of it (same fields, no nested `Front`)
 
 Example for queue `[pr1, pr4, pr9]`:
 
 ```go
 []PR{
-  {Id: "…1", GitHubPRId: 1, Checksum: "sha1", Status: "queued", Front: []PR{}},
-  {Id: "…4", GitHubPRId: 4, Checksum: "sha4", Status: "queued", Front: []PR{
-    {Id: "…1", GitHubPRId: 1, Checksum: "sha1", Status: "queued"},
+  {Id: "…1", RemoteId: 1, Checksum: "sha1", Status: "queued", Front: []PR{}},
+  {Id: "…4", RemoteId: 4, Checksum: "sha4", Status: "queued", Front: []PR{
+    {Id: "…1", RemoteId: 1, Checksum: "sha1", Status: "queued"},
   }},
-  {Id: "…9", GitHubPRId: 9, Checksum: "sha9", Status: "queued", Front: []PR{
-    {Id: "…1", GitHubPRId: 1, Checksum: "sha1", Status: "queued"},
-    {Id: "…4", GitHubPRId: 4, Checksum: "sha4", Status: "queued"},
+  {Id: "…9", RemoteId: 9, Checksum: "sha9", Status: "queued", Front: []PR{
+    {Id: "…1", RemoteId: 1, Checksum: "sha1", Status: "queued"},
+    {Id: "…4", RemoteId: 4, Checksum: "sha4", Status: "queued"},
   }},
 }
 ```

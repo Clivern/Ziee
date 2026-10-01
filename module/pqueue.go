@@ -29,10 +29,10 @@ type PQueue struct {
 
 // AppendPRRequest is what you pass when appending a PR to a repo queue.
 type AppendPRRequest struct {
-	GitHubPRId int64  `json:"githubPrId"`
-	Priority   string `json:"priority"`
-	Checksum   string `json:"checksum"`
-	Meta       string `json:"meta"`
+	RemoteId int64  `json:"remoteId"`
+	Priority string `json:"priority"`
+	Checksum string `json:"checksum"`
+	Meta     string `json:"meta"`
 }
 
 // UpdatePRRequest patches selected fields on a merge-queue entry.
@@ -44,11 +44,11 @@ type UpdatePRRequest struct {
 
 // PR is one entry in a working-queue snapshot, including PRs ahead of it.
 type PR struct {
-	Id         db.Id
-	GitHubPRId int64
-	Checksum   string
-	Status     string
-	Front      []PR
+	Id       db.Id
+	RemoteId int64
+	Checksum string
+	Status   string
+	Front    []PR
 }
 
 // NewPQueue creates a merge-queue module with the given repository.
@@ -77,14 +77,14 @@ func (p *PQueue) Append(repoId db.Id, req *AppendPRRequest) (*db.PQueue, error) 
 	now := time.Now().UTC()
 
 	item := &db.PQueue{
-		RepoId:     repoId,
-		GitHubPRId: req.GitHubPRId,
-		Priority:   priority,
-		Rank:       rank,
-		Status:     db.PQueueStatusQueued,
-		Checksum:   req.Checksum,
-		Meta:       meta,
-		OpenedAt:   &now,
+		RepoId:   repoId,
+		RemoteId: req.RemoteId,
+		Priority: priority,
+		Rank:     rank,
+		Status:   db.PQueueStatusQueued,
+		Checksum: req.Checksum,
+		Meta:     meta,
+		OpenedAt: &now,
 	}
 
 	err = p.PQueueRepository.Create(item)
@@ -94,7 +94,7 @@ func (p *PQueue) Append(repoId db.Id, req *AppendPRRequest) (*db.PQueue, error) 
 
 	log.Info().
 		Str("repoId", repoId.String()).
-		Int64("githubPrId", req.GitHubPRId).
+		Int64("remoteId", req.RemoteId).
 		Int("rank", rank).
 		Msg("Pull request appended to merge queue")
 
@@ -102,8 +102,8 @@ func (p *PQueue) Append(repoId db.Id, req *AppendPRRequest) (*db.PQueue, error) 
 }
 
 // Update patches status, checksum, and/or merged_at for a queued PR.
-func (p *PQueue) Update(repoId db.Id, githubPRId int64, req *UpdatePRRequest) (*db.PQueue, error) {
-	item, err := p.PQueueRepository.GetByRepoIdAndGitHubPRId(repoId, githubPRId)
+func (p *PQueue) Update(repoId db.Id, remoteId int64, req *UpdatePRRequest) (*db.PQueue, error) {
+	item, err := p.PQueueRepository.GetByRepoIdAndRemoteId(repoId, remoteId)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedGetPQueue, err)
 	}
@@ -128,7 +128,7 @@ func (p *PQueue) Update(repoId db.Id, githubPRId int64, req *UpdatePRRequest) (*
 
 	log.Info().
 		Str("repoId", repoId.String()).
-		Int64("githubPrId", githubPRId).
+		Int64("remoteId", remoteId).
 		Str("status", item.Status).
 		Msg("Merge queue entry updated")
 
@@ -146,8 +146,8 @@ func (p *PQueue) ListQueued(repoId db.Id, limit int) ([]*db.PQueue, error) {
 }
 
 // Get returns one merge-queue entry so callers can compare checksums.
-func (p *PQueue) Get(repoId db.Id, githubPRId int64) (*db.PQueue, error) {
-	item, err := p.PQueueRepository.GetByRepoIdAndGitHubPRId(repoId, githubPRId)
+func (p *PQueue) Get(repoId db.Id, remoteId int64) (*db.PQueue, error) {
+	item, err := p.PQueueRepository.GetByRepoIdAndRemoteId(repoId, remoteId)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedGetPQueue, err)
 	}
@@ -218,25 +218,24 @@ func HasNewInFront(saved, live []PR) bool {
 }
 
 // SnapshotWorkingQueue builds the saved slice from a queue just loaded from DB.
-// Order matches ListQueued (priority, then rank).
 func SnapshotWorkingQueue(snapshot []*db.PQueue) []PR {
 	saved := make([]PR, 0, len(snapshot))
 	for i, pr := range snapshot {
 		front := make([]PR, 0, i)
 		for j := 0; j < i; j++ {
 			front = append(front, PR{
-				Id:         snapshot[j].Id,
-				GitHubPRId: snapshot[j].GitHubPRId,
-				Checksum:   snapshot[j].Checksum,
-				Status:     snapshot[j].Status,
+				Id:       snapshot[j].Id,
+				RemoteId: snapshot[j].RemoteId,
+				Checksum: snapshot[j].Checksum,
+				Status:   snapshot[j].Status,
 			})
 		}
 		saved = append(saved, PR{
-			Id:         pr.Id,
-			GitHubPRId: pr.GitHubPRId,
-			Checksum:   pr.Checksum,
-			Status:     pr.Status,
-			Front:      front,
+			Id:       pr.Id,
+			RemoteId: pr.RemoteId,
+			Checksum: pr.Checksum,
+			Status:   pr.Status,
+			Front:    front,
 		})
 	}
 

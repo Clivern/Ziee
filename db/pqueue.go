@@ -27,28 +27,26 @@ const (
 
 // PQueue is a pull request waiting in a repository merge queue.
 type PQueue struct {
-	Id         Id
-	RepoId     Id
-	GitHubPRId int64
-	Priority   string
-	Rank       int
-	Status     string
-	Checksum   string
-	Meta       string
-	OpenedAt   *time.Time
-	MergedAt   *time.Time
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	Id        Id
+	RepoId    Id
+	RemoteId  int64
+	Priority  string
+	Rank      int
+	Status    string
+	Checksum  string
+	Meta      string
+	OpenedAt  *time.Time
+	MergedAt  *time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // PQueueRepository is the interface for merge-queue PR persistence.
 type PQueueRepository interface {
 	Create(item *PQueue) error
 	GetById(id Id) (*PQueue, error)
-	GetByRepoIdAndGitHubPRId(repoId Id, githubPRId int64) (*PQueue, error)
+	GetByRepoIdAndRemoteId(repoId Id, remoteId int64) (*PQueue, error)
 	Update(item *PQueue) error
-	Delete(id Id) error
-	ListByRepoId(repoId Id) ([]*PQueue, error)
 	ListUnmergedByRepoId(repoId Id) ([]*PQueue, error)
 	ListQueuedByRepoId(repoId Id, limit int) ([]*PQueue, error)
 }
@@ -79,12 +77,12 @@ func (r *PQueueRepositoryPostgres) Create(item *PQueue) error {
 
 	return r.db.QueryRow(
 		`INSERT INTO pqueue
-		(id, repo_id, github_pr_id, priority, rank, status, checksum, meta, opened_at, merged_at)
+		(id, repo_id, remote_id, priority, rank, status, checksum, meta, opened_at, merged_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING created_at, updated_at`,
 		item.Id.String(),
 		item.RepoId.String(),
-		item.GitHubPRId,
+		item.RemoteId,
 		item.Priority,
 		item.Rank,
 		item.Status,
@@ -99,14 +97,14 @@ func (r *PQueueRepositoryPostgres) Create(item *PQueue) error {
 func (r *PQueueRepositoryPostgres) GetById(id Id) (*PQueue, error) {
 	item := &PQueue{}
 	err := r.db.QueryRow(
-		`SELECT id, repo_id, github_pr_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
+		`SELECT id, repo_id, remote_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
 		FROM pqueue
 		WHERE id = $1`,
 		id.String(),
 	).Scan(
 		&item.Id,
 		&item.RepoId,
-		&item.GitHubPRId,
+		&item.RemoteId,
 		&item.Priority,
 		&item.Rank,
 		&item.Status,
@@ -124,19 +122,19 @@ func (r *PQueueRepositoryPostgres) GetById(id Id) (*PQueue, error) {
 	return item, err
 }
 
-// GetByRepoIdAndGitHubPRId returns a merge-queue PR by repo and GitHub pull request id.
-func (r *PQueueRepositoryPostgres) GetByRepoIdAndGitHubPRId(repoId Id, githubPRId int64) (*PQueue, error) {
+// GetByRepoIdAndRemoteId returns a merge-queue PR by repo and remote id.
+func (r *PQueueRepositoryPostgres) GetByRepoIdAndRemoteId(repoId Id, remoteId int64) (*PQueue, error) {
 	item := &PQueue{}
 	err := r.db.QueryRow(
-		`SELECT id, repo_id, github_pr_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
+		`SELECT id, repo_id, remote_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
 		FROM pqueue
-		WHERE repo_id = $1 AND github_pr_id = $2`,
+		WHERE repo_id = $1 AND remote_id = $2`,
 		repoId.String(),
-		githubPRId,
+		remoteId,
 	).Scan(
 		&item.Id,
 		&item.RepoId,
-		&item.GitHubPRId,
+		&item.RemoteId,
 		&item.Priority,
 		&item.Rank,
 		&item.Status,
@@ -160,7 +158,7 @@ func (r *PQueueRepositoryPostgres) Update(item *PQueue) error {
 		`UPDATE pqueue
 		SET
 			repo_id = $1,
-			github_pr_id = $2,
+			remote_id = $2,
 			priority = $3,
 			rank = $4,
 			status = $5,
@@ -171,7 +169,7 @@ func (r *PQueueRepositoryPostgres) Update(item *PQueue) error {
 			updated_at = $10
 		WHERE id = $11`,
 		item.RepoId.String(),
-		item.GitHubPRId,
+		item.RemoteId,
 		item.Priority,
 		item.Rank,
 		item.Status,
@@ -186,62 +184,10 @@ func (r *PQueueRepositoryPostgres) Update(item *PQueue) error {
 	return err
 }
 
-// Delete removes a merge-queue PR row.
-func (r *PQueueRepositoryPostgres) Delete(id Id) error {
-	_, err := r.db.Exec(`DELETE FROM pqueue WHERE id = $1`, id.String())
-
-	return err
-}
-
-// ListByRepoId lists merge-queue PRs for a repo, high priority first then by rank.
-func (r *PQueueRepositoryPostgres) ListByRepoId(repoId Id) ([]*PQueue, error) {
-	rows, err := r.db.Query(
-		`SELECT id, repo_id, github_pr_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
-		FROM pqueue
-		WHERE repo_id = $1
-		ORDER BY
-			CASE priority
-				WHEN 'high' THEN 1
-				WHEN 'medium' THEN 2
-				WHEN 'low' THEN 3
-			END,
-			rank`,
-		repoId.String(),
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var list []*PQueue
-	for rows.Next() {
-		item := &PQueue{}
-		if err := rows.Scan(
-			&item.Id,
-			&item.RepoId,
-			&item.GitHubPRId,
-			&item.Priority,
-			&item.Rank,
-			&item.Status,
-			&item.Checksum,
-			&item.Meta,
-			&item.OpenedAt,
-			&item.MergedAt,
-			&item.CreatedAt,
-			&item.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		list = append(list, item)
-	}
-
-	return list, rows.Err()
-}
-
 // ListUnmergedByRepoId lists non-merged PRs for a repo, high priority first then by rank.
 func (r *PQueueRepositoryPostgres) ListUnmergedByRepoId(repoId Id) ([]*PQueue, error) {
 	rows, err := r.db.Query(
-		`SELECT id, repo_id, github_pr_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
+		`SELECT id, repo_id, remote_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
 		FROM pqueue
 		WHERE repo_id = $1 AND status != $2
 		ORDER BY
@@ -265,7 +211,7 @@ func (r *PQueueRepositoryPostgres) ListUnmergedByRepoId(repoId Id) ([]*PQueue, e
 		if err := rows.Scan(
 			&item.Id,
 			&item.RepoId,
-			&item.GitHubPRId,
+			&item.RemoteId,
 			&item.Priority,
 			&item.Rank,
 			&item.Status,
@@ -287,7 +233,7 @@ func (r *PQueueRepositoryPostgres) ListUnmergedByRepoId(repoId Id) ([]*PQueue, e
 // ListQueuedByRepoId returns the top queued PRs for a repo, high priority first then by rank.
 func (r *PQueueRepositoryPostgres) ListQueuedByRepoId(repoId Id, limit int) ([]*PQueue, error) {
 	rows, err := r.db.Query(
-		`SELECT id, repo_id, github_pr_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
+		`SELECT id, repo_id, remote_id, priority, rank, status, checksum, meta, opened_at, merged_at, created_at, updated_at
 		FROM pqueue
 		WHERE repo_id = $1 AND status = $2
 		ORDER BY
@@ -313,7 +259,7 @@ func (r *PQueueRepositoryPostgres) ListQueuedByRepoId(repoId Id, limit int) ([]*
 		if err := rows.Scan(
 			&item.Id,
 			&item.RepoId,
-			&item.GitHubPRId,
+			&item.RemoteId,
 			&item.Priority,
 			&item.Rank,
 			&item.Status,

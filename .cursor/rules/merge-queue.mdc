@@ -36,11 +36,17 @@ Do not persist stack checksums on the row; the snapshot is the source of truth f
 
 ## IsStillValid
 
-`IsStillValid(snapshot)` loads each snapshot PR from DB. Return false (recreate the batch) when **any** PR has:
+`IsStillValid(repoId, snapshot)` returns false (recreate the batch) when:
 
-1. A different `Checksum` than the snapshot
-2. Status `failed`
-3. Status `dequeued`
+1. Any snapshot PR has a different `Checksum` in DB, or status `failed` / `dequeued`
+2. After loading queued PRs from DB (`ListQueuedByRepoId`) into a live snapshot: for each saved PR that is **still present**, its live `Front` contains a PR that was **not** in its saved `Front` (someone cut in ahead). Missing saved PRs are skipped (e.g. already merged). New PRs only behind the batch do not affect anyone’s `Front`.
+
+Examples with saved `[A, B, C, D]`:
+
+- Live `[B, C, D, E, F]` — A gone → skip; B/C/D fronts only lost A → valid
+- Live `[A, B, C, D]` — fronts unchanged → valid
+- Live `[E, F, G, H, Y]` — none of A–D present → skip all → valid
+- Live `[A, X, B, C, D]` — B’s front gained X → invalid
 
 Otherwise the batch is still valid; keep processing.
 

@@ -184,9 +184,8 @@ func SnapshotWorkingQueue(snapshot []*db.PQueue) []PR {
 	return saved
 }
 
-// IsStillValid reports whether every PR in the snapshot still has the same
-// checksum in DB and has not moved to failed or dequeued.
-func (p *PQueue) IsStillValid(snapshot []PR) (bool, error) {
+// IsStillValid reports whether the working-batch snapshot is still current.
+func (p *PQueue) IsStillValid(repoId db.Id, snapshot []PR) (bool, error) {
 	// Check if the PRs in the snapshot still have the same checksum
 	// in DB and have not moved to failed or dequeued.
 	for _, pr := range snapshot {
@@ -202,5 +201,44 @@ func (p *PQueue) IsStillValid(snapshot []PR) (bool, error) {
 		}
 	}
 
+	// Check if the PRs in the snapshot still have the same front in DB.
+	live, err := p.PQueueRepository.ListQueuedByRepoId(repoId, 1000)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrFailedListPQueue, err)
+	}
+
+	fromDB := SnapshotWorkingQueue(live)
+	byId := make(map[db.Id]PR, len(fromDB))
+	for _, pr := range fromDB {
+		byId[pr.Id] = pr
+	}
+
+	for _, pr := range snapshot {
+		live, ok := byId[pr.Id]
+		if !ok {
+			continue
+		}
+
+		if HasNewInFront(pr.Front, live.Front) {
+			return false, nil
+		}
+	}
+
 	return true, nil
+}
+
+// HasNewInFront reports whether live Front gained a PR that was not in saved Front.
+func HasNewInFront(saved, live []PR) bool {
+	known := make(map[db.Id]struct{}, len(saved))
+	for _, pr := range saved {
+		known[pr.Id] = struct{}{}
+	}
+
+	for _, pr := range live {
+		if _, ok := known[pr.Id]; !ok {
+			return true
+		}
+	}
+
+	return false
 }

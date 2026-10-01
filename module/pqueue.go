@@ -158,32 +158,6 @@ func (p *PQueue) Get(repoId db.Id, githubPRId int64) (*db.PQueue, error) {
 	return item, nil
 }
 
-// SnapshotWorkingQueue builds the saved slice from a queue just loaded from DB.
-// Order matches ListQueued (priority, then rank).
-func SnapshotWorkingQueue(snapshot []*db.PQueue) []PR {
-	saved := make([]PR, 0, len(snapshot))
-	for i, pr := range snapshot {
-		front := make([]PR, 0, i)
-		for j := 0; j < i; j++ {
-			front = append(front, PR{
-				Id:         snapshot[j].Id,
-				GitHubPRId: snapshot[j].GitHubPRId,
-				Checksum:   snapshot[j].Checksum,
-				Status:     snapshot[j].Status,
-			})
-		}
-		saved = append(saved, PR{
-			Id:         pr.Id,
-			GitHubPRId: pr.GitHubPRId,
-			Checksum:   pr.Checksum,
-			Status:     pr.Status,
-			Front:      front,
-		})
-	}
-
-	return saved
-}
-
 // IsStillValid reports whether the working-batch snapshot is still current.
 func (p *PQueue) IsStillValid(repoId db.Id, snapshot []PR) (bool, error) {
 	// Check if the PRs in the snapshot still have the same checksum
@@ -241,4 +215,30 @@ func HasNewInFront(saved, live []PR) bool {
 	}
 
 	return false
+}
+
+// SnapshotWorkingQueue builds the saved slice from a queue just loaded from DB.
+// Order matches ListQueued (priority, then rank).
+func SnapshotWorkingQueue(snapshot []*db.PQueue) []PR {
+	saved := make([]PR, 0, len(snapshot))
+	for i, pr := range snapshot {
+		front := make([]PR, 0, i)
+		for j := 0; j < i; j++ {
+			front = append(front, PR{
+				Id:         snapshot[j].Id,
+				GitHubPRId: snapshot[j].GitHubPRId,
+				Checksum:   snapshot[j].Checksum,
+				Status:     snapshot[j].Status,
+			})
+		}
+		saved = append(saved, PR{
+			Id:         pr.Id,
+			GitHubPRId: pr.GitHubPRId,
+			Checksum:   pr.Checksum,
+			Status:     pr.Status,
+			Front:      front,
+		})
+	}
+
+	return saved
 }

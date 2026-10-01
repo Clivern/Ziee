@@ -17,7 +17,7 @@ func TestIntegrationHealthEndpoint(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/_health", nil)
 		w := httptest.NewRecorder()
 
-		HealthAction(w, req)
+		(&API{}).HealthAction(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, `{"status":"ok"}`, strings.TrimSpace(w.Body.String()))

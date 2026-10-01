@@ -17,7 +17,7 @@ import (
 )
 
 // CreateAccessKeyAction creates a workspace access key; raw key is returned only once.
-func CreateAccessKeyAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) CreateAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if wid == "" {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -37,12 +37,7 @@ func CreateAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	am := module.NewAccess(
-		db.NewAccessKeyRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-
-	key, err := am.CreateAccessKey(db.Id(wid), &req)
+	key, err := a.Access.CreateAccessKey(db.Id(wid), &req)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -70,7 +65,7 @@ func CreateAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListAccessKeysAction lists workspace access keys (metadata only, never the secret).
-func ListAccessKeysAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListAccessKeysAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if wid == "" {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -85,12 +80,7 @@ func ListAccessKeysAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	am := module.NewAccess(
-		db.NewAccessKeyRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-
-	result, err := am.ListAccessKeys(db.Id(wid), limit, offset)
+	result, err := a.Access.ListAccessKeys(db.Id(wid), limit, offset)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -117,7 +107,7 @@ func ListAccessKeysAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetAccessKeyAction returns one workspace access key (never the secret).
-func GetAccessKeyAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if wid == "" {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -134,12 +124,7 @@ func GetAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	am := module.NewAccess(
-		db.NewAccessKeyRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-
-	key, err := am.GetAccessKey(db.Id(wid), db.Id(keyId))
+	key, err := a.Access.GetAccessKey(db.Id(wid), db.Id(keyId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -163,7 +148,7 @@ func GetAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteAccessKeyAction deletes a workspace access key.
-func DeleteAccessKeyAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) DeleteAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if wid == "" {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -180,12 +165,7 @@ func DeleteAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	am := module.NewAccess(
-		db.NewAccessKeyRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-
-	err := am.DeleteAccessKey(db.Id(wid), db.Id(keyId))
+	err := a.Access.DeleteAccessKey(db.Id(wid), db.Id(keyId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):

@@ -19,7 +19,7 @@ import (
 )
 
 // CreateUserAPIKeyAction creates an API key; raw key is returned only once.
-func CreateUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) CreateUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -39,9 +39,7 @@ func CreateUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
-
-	apiKey, err := am.CreateAPIKey(&req, user)
+	apiKey, err := a.APIKey.CreateAPIKey(&req, user)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrInvalidExpiresAt):
@@ -70,7 +68,7 @@ func CreateUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListUserAPIKeysAction lists your API keys (metadata only, never the secret).
-func ListUserAPIKeysAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListUserAPIKeysAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -85,9 +83,7 @@ func ListUserAPIKeysAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
-
-	result, err := am.ListAPIKeys(user, limit, offset)
+	result, err := a.APIKey.ListAPIKeys(user, limit, offset)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -110,7 +106,7 @@ func ListUserAPIKeysAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUserAPIKeyAction returns one API key's metadata (never the key itself).
-func GetUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -132,9 +128,7 @@ func GetUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("Getting API key")
 
-	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
-
-	k, err := am.GetAPIKey(db.Id(apiKeyId), user)
+	k, err := a.APIKey.GetAPIKey(db.Id(apiKeyId), user)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrAPIKeyNotFound):
@@ -159,7 +153,7 @@ func GetUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteUserAPIKeyAction deletes one of your API keys.
-func DeleteUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) DeleteUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -181,9 +175,7 @@ func DeleteUserAPIKeyAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("Deleting API key")
 
-	am := module.NewAPIKey(db.NewAPIKeyRepository(db.GetDB()))
-
-	err := am.DeleteAPIKey(db.Id(apiKeyId), user)
+	err := a.APIKey.DeleteAPIKey(db.Id(apiKeyId), user)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrAPIKeyNotFound):

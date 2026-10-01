@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/middleware"
 	"github.com/clivern/ziee/module"
@@ -18,7 +17,7 @@ import (
 )
 
 // GetProfileAction returns the current user's profile.
-func GetProfileAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetProfileAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -31,9 +30,7 @@ func GetProfileAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("Getting profile")
 
-	pm := module.NewProfile(db.NewUserRepository(db.GetDB()))
-
-	profile, err := pm.GetProfile(user.Id)
+	profile, err := a.Profile.GetProfile(user.Id)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -64,7 +61,7 @@ func GetProfileAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateProfileAction updates the current user's profile.
-func UpdateProfileAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) UpdateProfileAction(w http.ResponseWriter, r *http.Request) {
 	var req module.UpdateProfileRequest
 
 	user, ok := middleware.GetUserFromContext(r.Context())
@@ -85,9 +82,7 @@ func UpdateProfileAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pm := module.NewProfile(db.NewUserRepository(db.GetDB()))
-
-	updated, err := pm.UpdateProfile(user.Id, &req)
+	updated, err := a.Profile.UpdateProfile(user.Id, &req)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrFailedUpdateProfile), errors.Is(err, module.ErrUserNotFound):

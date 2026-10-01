@@ -25,9 +25,7 @@ var serverCmd = &cobra.Command{
 			panic(err.Error())
 		}
 
-		r := core.SetupServer(Static)
-
-		err = core.RunServer(r)
+		err = core.RunServer(Static)
 		if err != nil {
 			panic(fmt.Sprintf("Server error: %s", err.Error()))
 		}

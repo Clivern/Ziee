@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/clivern/ziee/conf"
-	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/util"
@@ -17,7 +16,7 @@ import (
 )
 
 // SetupAction runs the initial platform setup.
-func SetupAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) SetupAction(w http.ResponseWriter, r *http.Request) {
 	var req module.SetupRequest
 	err := util.DecodeAndValidate(r, &req)
 	if err != nil {
@@ -29,12 +28,7 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 		Str("platformEmail", req.PlatformEmail).
 		Msg("New setup request")
 
-	sm := module.NewSetup(
-		db.NewConfigRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	err = sm.Install(&req)
+	err = a.Setup.Install(&req)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrPlatformAlreadyInstalled):
@@ -63,16 +57,11 @@ func SetupAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // SetupStatusAction returns whether the platform is already installed.
-func SetupStatusAction(w http.ResponseWriter, _ *http.Request) {
+func (a *API) SetupStatusAction(w http.ResponseWriter, _ *http.Request) {
 	log.Info().Msg("Setup status request")
 
-	sm := module.NewSetup(
-		db.NewConfigRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
 	util.WriteJSON(w, http.StatusOK, map[string]any{
-		"installed": sm.IsInstalled(),
+		"installed": a.Setup.IsInstalled(),
 		"edition":   conf.Edition(),
 	})
 }

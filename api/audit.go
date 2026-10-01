@@ -18,7 +18,7 @@ import (
 )
 
 // ListWorkspaceAuditsAction lists audit events for a workspace.
-func ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -30,12 +30,7 @@ func ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	am := module.NewAudit(
-		db.NewAuditEventRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-
-	result, err := am.ListAuditEvents(workspaceId, limit, offset)
+	result, err := a.Audit.ListAuditEvents(workspaceId, limit, offset)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -62,7 +57,7 @@ func ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetWorkspaceAuditAction returns one audit event by id.
-func GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -80,12 +75,7 @@ func GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	am := module.NewAudit(
-		db.NewAuditEventRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-	)
-
-	event, err := am.GetAuditEvent(workspaceId, db.Id(auditId))
+	event, err := a.Audit.GetAuditEvent(workspaceId, db.Id(auditId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):

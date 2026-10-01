@@ -13,7 +13,6 @@ import (
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/qdrant"
-	"github.com/clivern/ziee/pkg/storage"
 	"github.com/clivern/ziee/pkg/util"
 	"github.com/clivern/ziee/service/knowledge"
 
@@ -23,7 +22,7 @@ import (
 )
 
 // UploadDocumentAction uploads a .txt or .md document to a workspace.
-func UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -40,22 +39,7 @@ func UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	store, err := storage.New()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to initialize document storage")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "failed_process_request"),
-		})
-		return
-	}
-
-	dm := module.NewDocument(
-		db.NewDocumentRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		store,
-	)
-
-	doc, err := dm.UploadDocument(
+	doc, err := a.Document.UploadDocument(
 		r.Context(),
 		form,
 		db.Id(wid),
@@ -79,7 +63,7 @@ func UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListDocumentsAction returns documents for a workspace.
-func ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -90,22 +74,7 @@ func ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	store, err := storage.New()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to initialize document storage")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "failed_process_request"),
-		})
-		return
-	}
-
-	dm := module.NewDocument(
-		db.NewDocumentRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		store,
-	)
-
-	result, err := dm.ListDocuments(
+	result, err := a.Document.ListDocuments(
 		db.Id(wid),
 		limit,
 		offset,
@@ -136,7 +105,7 @@ func ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteDocumentAction deletes a workspace document.
-func DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -153,22 +122,7 @@ func DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	store, err := storage.New()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to initialize document storage")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "failed_process_request"),
-		})
-		return
-	}
-
-	dm := module.NewDocument(
-		db.NewDocumentRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		store,
-	)
-
-	err = dm.DeleteDocument(
+	err := a.Document.DeleteDocument(
 		r.Context(),
 		db.Id(wid),
 		db.Id(documentId),
@@ -196,7 +150,7 @@ func DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // SearchDocumentsAction searches workspace documents by semantic query.
-func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -213,15 +167,6 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 
 	limit := lo.Ternary(req.Limit == 0, conf.DefaultSearchLimit, req.Limit)
 
-	store, err := storage.New()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to initialize document storage")
-		util.WriteJSON(w, http.StatusInternalServerError, map[string]any{
-			"errorMessage": locale.TR(r, "failed_process_request"),
-		})
-		return
-	}
-
 	vdb, err := qdrant.New()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to initialize qdrant")
@@ -236,23 +181,20 @@ func SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents:     db.NewDocumentRepository(db.GetDB()),
-		Embed:         ai.NewEmbedClient(),
-		Vectors:       vdb,
-		Store:         store,
-		Usage:         db.NewUsageRepository(db.GetDB()),
-		Subscriptions: db.NewSubscriptionRepository(db.GetDB()),
-	})
-
-	dm := module.NewDocument(
-		db.NewDocumentRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		nil,
-	)
-	dm.Knowledge = ksvc
-	dm.UsageRepository = db.NewUsageRepository(db.GetDB())
-	dm.SubscriptionRepository = db.NewSubscriptionRepository(db.GetDB())
+	dm := &module.Document{
+		DocumentRepository:     a.Document.DocumentRepository,
+		WorkspaceRepository:    a.Document.WorkspaceRepository,
+		UsageRepository:        a.Usage,
+		SubscriptionRepository: a.Subscriptions,
+		Knowledge: knowledge.New(knowledge.Dependencies{
+			Documents:     a.Documents,
+			Embed:         ai.NewEmbedClient(),
+			Vectors:       vdb,
+			Store:         a.Store,
+			Usage:         a.Usage,
+			Subscriptions: a.Subscriptions,
+		}),
+	}
 
 	result, err := dm.SearchDocuments(
 		r.Context(),

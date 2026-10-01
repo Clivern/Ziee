@@ -7,7 +7,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/util"
@@ -17,7 +16,7 @@ import (
 )
 
 // GetMeAction returns the authenticated API key or access key principal.
-func GetMeAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetMeAction(w http.ResponseWriter, r *http.Request) {
 	apiKey := r.Header.Get("X-API-Key")
 	accessKey := r.Header.Get("X-Access-Key")
 
@@ -28,15 +27,9 @@ func GetMeAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mm := module.NewMe(
-		db.NewAPIKeyRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-		db.NewAccessKeyRepository(db.GetDB()),
-	)
-
 	// Check if the request is for an API key
 	if lo.IsNotEmpty(apiKey) {
-		me, err := mm.GetByAPIKey(apiKey)
+		me, err := a.Me.GetByAPIKey(apiKey)
 		if err != nil {
 			switch {
 			case errors.Is(err, module.ErrAPIKeyNotFound):
@@ -57,7 +50,7 @@ func GetMeAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the request is for an access key
-	me, err := mm.GetByAccessKey(accessKey)
+	me, err := a.Me.GetByAccessKey(accessKey)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrAccessKeyNotFound):

@@ -19,7 +19,7 @@ import (
 )
 
 // CreateWorkspaceAction creates a new workspace.
-func CreateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) CreateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 	var req module.CreateWorkspaceRequest
 	err := util.DecodeAndValidate(r, &req)
 	if err != nil {
@@ -39,14 +39,7 @@ func CreateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("New workspace request")
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	workspace, err := wm.CreateWorkspace(&req, user)
+	workspace, err := a.Workspace.CreateWorkspace(&req, user)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -67,7 +60,7 @@ func CreateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListWorkspacesAction returns workspaces the user is a member of (paginated).
-func ListWorkspacesAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListWorkspacesAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -82,14 +75,7 @@ func ListWorkspacesAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	result, err := wm.ListWorkspaces(user, limit, offset)
+	result, err := a.Workspace.ListWorkspaces(user, limit, offset)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -112,7 +98,7 @@ func ListWorkspacesAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetWorkspaceAction returns one workspace by Id.
-func GetWorkspaceAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -134,14 +120,7 @@ func GetWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("Getting workspace")
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	workspace, err := wm.GetWorkspace(db.Id(wid), user)
+	workspace, err := a.Workspace.GetWorkspace(db.Id(wid), user)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -166,7 +145,7 @@ func GetWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateWorkspaceAction updates a workspace.
-func UpdateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) UpdateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -195,14 +174,7 @@ func UpdateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	workspace, err := wm.UpdateWorkspace(db.Id(wid), &req, user)
+	workspace, err := a.Workspace.UpdateWorkspace(db.Id(wid), &req, user)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -232,7 +204,7 @@ func UpdateWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteWorkspaceAction deletes a workspace.
-func DeleteWorkspaceAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) DeleteWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 	wid := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(wid) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -245,14 +217,7 @@ func DeleteWorkspaceAction(w http.ResponseWriter, r *http.Request) {
 		Str("workspaceId", wid).
 		Msg("Deleting workspace")
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	err := wm.DeleteWorkspace(db.Id(wid))
+	err := a.Workspace.DeleteWorkspace(db.Id(wid))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):

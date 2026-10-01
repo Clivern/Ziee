@@ -11,7 +11,6 @@ import (
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/middleware"
 	"github.com/clivern/ziee/module"
-	"github.com/clivern/ziee/pkg/resend"
 	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/go-chi/chi/v5"
@@ -20,7 +19,7 @@ import (
 )
 
 // CreateInviteAction creates a new user invite.
-func CreateInviteAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) CreateInviteAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -49,16 +48,7 @@ func CreateInviteAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	im := module.NewInvite(
-		db.NewUserInviteRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-		db.NewConfigRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		resend.NewMailer(),
-	)
-
-	invite, err := im.CreateInvite(db.Id(workspaceId), &req, user)
+	invite, err := a.Invite.CreateInvite(db.Id(workspaceId), &req, user)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -97,7 +87,7 @@ func CreateInviteAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListInvitesAction returns invites for a workspace.
-func ListInvitesAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListInvitesAction(w http.ResponseWriter, r *http.Request) {
 	workspaceId := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(workspaceId) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -110,16 +100,7 @@ func ListInvitesAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	im := module.NewInvite(
-		db.NewUserInviteRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-		db.NewConfigRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		resend.NewMailer(),
-	)
-
-	result, err := im.ListInvites(db.Id(workspaceId), limit, offset)
+	result, err := a.Invite.ListInvites(db.Id(workspaceId), limit, offset)
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -146,7 +127,7 @@ func ListInvitesAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetInviteAction returns one invite by Id.
-func GetInviteAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetInviteAction(w http.ResponseWriter, r *http.Request) {
 	workspaceId := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(workspaceId) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -168,16 +149,7 @@ func GetInviteAction(w http.ResponseWriter, r *http.Request) {
 		Str("workspaceId", workspaceId).
 		Msg("Getting invite")
 
-	im := module.NewInvite(
-		db.NewUserInviteRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-		db.NewConfigRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		resend.NewMailer(),
-	)
-
-	invite, err := im.GetInvite(db.Id(workspaceId), db.Id(inviteId))
+	invite, err := a.Invite.GetInvite(db.Id(workspaceId), db.Id(inviteId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):
@@ -205,7 +177,7 @@ func GetInviteAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteInviteAction deletes an invite by Id.
-func DeleteInviteAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) DeleteInviteAction(w http.ResponseWriter, r *http.Request) {
 	workspaceId := chi.URLParam(r, "workspaceId")
 	if lo.IsEmpty(workspaceId) {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -227,16 +199,7 @@ func DeleteInviteAction(w http.ResponseWriter, r *http.Request) {
 		Str("workspaceId", workspaceId).
 		Msg("Deleting invite")
 
-	im := module.NewInvite(
-		db.NewUserInviteRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-		db.NewConfigRepository(db.GetDB()),
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		resend.NewMailer(),
-	)
-
-	err := im.DeleteInvite(db.Id(workspaceId), db.Id(inviteId))
+	err := a.Invite.DeleteInvite(db.Id(workspaceId), db.Id(inviteId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrWorkspaceNotFound):

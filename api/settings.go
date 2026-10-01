@@ -6,10 +6,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/middleware"
-	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
@@ -22,7 +20,7 @@ type UpdateSettingsRequest struct {
 }
 
 // UpdateSettingsAction updates app settings (admin only).
-func UpdateSettingsAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) UpdateSettingsAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -42,9 +40,7 @@ func UpdateSettingsAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mod := module.NewSettings(db.NewConfigRepository(db.GetDB()))
-
-	err = mod.Update(req.PlatformEmail, req.MaintenanceMode)
+	err = a.Settings.Update(req.PlatformEmail, req.MaintenanceMode)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -66,7 +62,7 @@ func UpdateSettingsAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetSettingsAction returns current app settings.
-func GetSettingsAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GetSettingsAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -79,9 +75,7 @@ func GetSettingsAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("Getting settings")
 
-	mod := module.NewSettings(db.NewConfigRepository(db.GetDB()))
-
-	settings, err := mod.GetSettings()
+	settings, err := a.Settings.GetSettings()
 	if err != nil {
 		log.Error().
 			Err(err).

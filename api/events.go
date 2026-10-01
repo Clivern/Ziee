@@ -124,10 +124,7 @@ func Installation(_ context.Context, d webhook.Delivery) {
 	var payload webhook.InstallationEvent
 	json.Unmarshal(d.Body, &payload)
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	if payload.Action == "deleted" {
 		err := i.Delete(payload.Installation.ID)
@@ -184,10 +181,7 @@ func InstallationRepositories(_ context.Context, d webhook.Delivery) {
 	var payload webhook.InstallationRepositoriesEvent
 	json.Unmarshal(d.Body, &payload)
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
@@ -214,11 +208,7 @@ func InstallationRepositories(_ context.Context, d webhook.Delivery) {
 		removed[n] = repo.ID
 	}
 
-	r := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
+	r := Instance.Repository
 
 	err = r.Update(
 		installation.WorkspaceId,
@@ -254,10 +244,7 @@ func Issues(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
@@ -268,11 +255,7 @@ func Issues(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	r := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
+	r := Instance.Repository
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
 	if err != nil {
@@ -337,10 +320,7 @@ func IssueComment(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
@@ -351,11 +331,7 @@ func IssueComment(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	r := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
+	r := Instance.Repository
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
 	if err != nil {
@@ -423,10 +399,7 @@ func PullRequestComment(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
@@ -437,11 +410,7 @@ func PullRequestComment(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	r := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
+	r := Instance.Repository
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
 	if err != nil {
@@ -502,10 +471,7 @@ func PullRequests(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
@@ -516,11 +482,7 @@ func PullRequests(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	r := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
+	r := Instance.Repository
 
 	path, err := r.GetConfigPath(payload.Repository.ID)
 	if err != nil {
@@ -581,10 +543,7 @@ func DetectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	i := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
+	i := Instance.Installation
 
 	installation, err := i.GetByGitHubId(payload.Installation.ID)
 	if err != nil {
@@ -595,11 +554,7 @@ func DetectConfChanges(_ context.Context, d webhook.Delivery) {
 		return
 	}
 
-	r := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
+	r := Instance.Repository
 
 	err = r.SetConfigPath(payload.Repository.ID, path)
 	if err != nil {

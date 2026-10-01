@@ -12,7 +12,7 @@ import (
 )
 
 // HealthAction returns a simple health check (status ok).
-func HealthAction(w http.ResponseWriter, _ *http.Request) {
+func (a *API) HealthAction(w http.ResponseWriter, _ *http.Request) {
 	log.Debug().Msg("Health check")
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{

@@ -13,7 +13,7 @@ import (
 )
 
 // ReadyAction returns whether the app is ready (e.g. DB reachable).
-func ReadyAction(w http.ResponseWriter, _ *http.Request) {
+func (a *API) ReadyAction(w http.ResponseWriter, _ *http.Request) {
 	log.Debug().Msg("Readiness check")
 
 	err := db.GetDB().Ping()

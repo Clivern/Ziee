@@ -19,7 +19,7 @@ import (
 )
 
 // ListWorkspaceMembersAction returns workspace members for managers.
-func ListWorkspaceMembersAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListWorkspaceMembersAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -43,14 +43,7 @@ func ListWorkspaceMembersAction(w http.ResponseWriter, r *http.Request) {
 
 	limit, offset := util.ParsePagination(r)
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	result, err := wm.ListWorkspaceMembers(
+	result, err := a.Workspace.ListWorkspaceMembers(
 		db.Id(wid),
 		limit,
 		offset,
@@ -85,7 +78,7 @@ func ListWorkspaceMembersAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateWorkspaceMemberRoleAction updates a workspace member role.
-func UpdateWorkspaceMemberRoleAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) UpdateWorkspaceMemberRoleAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -124,14 +117,7 @@ func UpdateWorkspaceMemberRoleAction(w http.ResponseWriter, r *http.Request) {
 		Str("role", req.Role).
 		Msg("Updating workspace member role")
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	member, err := wm.UpdateWorkspaceMemberRole(
+	member, err := a.Workspace.UpdateWorkspaceMemberRole(
 		db.Id(wid),
 		db.Id(memberUserId),
 		req.Role,
@@ -164,7 +150,7 @@ func UpdateWorkspaceMemberRoleAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteWorkspaceMemberAction removes a user from a workspace.
-func DeleteWorkspaceMemberAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) DeleteWorkspaceMemberAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -195,14 +181,7 @@ func DeleteWorkspaceMemberAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("Removing workspace member")
 
-	wm := module.NewWorkspace(
-		db.NewWorkspaceRepository(db.GetDB()),
-		db.NewWorkspaceUserRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
-		db.NewUserRepository(db.GetDB()),
-	)
-
-	err := wm.DeleteWorkspaceMember(
+	err := a.Workspace.DeleteWorkspaceMember(
 		db.Id(wid),
 		db.Id(memberUserId),
 	)

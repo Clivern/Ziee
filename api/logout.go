@@ -6,17 +6,15 @@ package api
 import (
 	"net/http"
 
-	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/locale"
 	"github.com/clivern/ziee/middleware"
-	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/rs/zerolog/log"
 )
 
 // LogoutAction logs the user out and revokes their session.
-func LogoutAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) LogoutAction(w http.ResponseWriter, r *http.Request) {
 	util.DeleteCookie(w, "_ziee_session")
 
 	user, ok := middleware.GetUserFromContext(r.Context())
@@ -32,13 +30,7 @@ func LogoutAction(w http.ResponseWriter, r *http.Request) {
 		Str("userId", user.Id.String()).
 		Msg("New logout request")
 
-	am := module.NewAuth(
-		db.NewUserRepository(db.GetDB()),
-		db.NewSessionRepository(db.GetDB()),
-		db.NewConfigRepository(db.GetDB()),
-	)
-
-	err := am.Logout(user.Id)
+	err := a.Auth.Logout(user.Id)
 	if err != nil {
 		log.Error().
 			Str("userId", user.Id.String()).

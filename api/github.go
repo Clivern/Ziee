@@ -21,7 +21,7 @@ import (
 )
 
 // GitHubWebhookAction receives GitHub App webhook deliveries.
-func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 
 	delivery, err := webhook.ParseDelivery(r)
@@ -59,7 +59,7 @@ func GitHubWebhookAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListGitHubInstallationsAction lists pending GitHub App installations for the signed-in GitHub user.
-func ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -68,12 +68,7 @@ func ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	im := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
-
-	installations, err := im.ListPending(lo.FromPtr(user.ProviderUserId))
+	installations, err := a.Installation.ListPending(lo.FromPtr(user.ProviderUserId))
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -91,7 +86,7 @@ func ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // AttachGitHubInstallationAction attaches a pending GitHub App installation to a workspace.
-func AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Request) {
+func (a *API) AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Request) {
 	user, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || user == nil {
 		util.WriteJSON(w, http.StatusUnauthorized, map[string]any{
@@ -115,12 +110,7 @@ func AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	im := module.NewInstallation(
-		db.NewGitHubInstallationRepository(db.GetDB()),
-		db.NewRepositoriesRepository(db.GetDB()),
-	)
-
-	err = im.Attach(r.Context(), db.Id(id), db.Id(req.WorkspaceId), lo.FromPtr(user.ProviderUserId))
+	err = a.Installation.Attach(r.Context(), db.Id(id), db.Id(req.WorkspaceId), lo.FromPtr(user.ProviderUserId))
 	if err != nil {
 		switch {
 		case errors.Is(err, module.ErrInstallationNotFound):

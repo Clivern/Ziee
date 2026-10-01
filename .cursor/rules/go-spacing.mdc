@@ -1,9 +1,6 @@
 ---
-description: Go inline spacing — blank lines between logical steps
-globs: **/*.go
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Go Inline Spacing
 
 Separate logical steps with a blank line so code does not stick together. Match `api/knowledge.go`.

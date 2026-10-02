@@ -9,7 +9,11 @@ import (
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
+	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/broker"
+	"github.com/clivern/ziee/pkg/qdrant"
+	"github.com/clivern/ziee/pkg/storage"
+	"github.com/clivern/ziee/service/knowledge"
 
 	"github.com/rs/zerolog/log"
 )
@@ -31,20 +35,16 @@ type Registration struct {
 // Registrations is a list of all registered handlers.
 var Registrations []Registration
 
-// Knowledge indexes and deletes workspace documents.
-type Knowledge interface {
-	Index(ctx context.Context, documentId db.Id) error
-	Delete(ctx context.Context, documentId db.Id, internalId string) error
-}
-
 // Worker holds shared modules and repositories for queue handlers.
 type Worker struct {
-	Knowledge     Knowledge
+	Knowledge     *knowledge.Service
 	Tasks         db.AsyncTaskRepository
 	Repository    *module.Repository
 	PQueue        *module.PQueue
 	Usage         db.UsageRepository
 	Subscriptions db.SubscriptionRepository
+
+	vectors *qdrant.Client
 }
 
 type handlers struct {
@@ -52,26 +52,51 @@ type handlers struct {
 }
 
 // New wires repositories and modules once for the worker process.
-func New(knowledge Knowledge) *Worker {
+func New() *Worker {
 	conn := db.GetDB()
+
+	store, err := storage.New()
+	if err != nil {
+		panic(err)
+	}
+
+	vdb, err := qdrant.New()
+	if err != nil {
+		panic(err)
+	}
 
 	repos := db.NewRepositoriesRepository(conn)
 	repoMeta := db.NewRepositoryMetaRepository(conn)
 	spam := db.NewRepositorySpamUserRepository(conn)
+	usage := db.NewUsageRepository(conn)
+	subscriptions := db.NewSubscriptionRepository(conn)
 
 	w := &Worker{
-		Knowledge:     knowledge,
+		Knowledge: knowledge.New(knowledge.Dependencies{
+			Documents:     db.NewDocumentRepository(db.GetDB(true)),
+			Embed:         ai.NewEmbedClient(),
+			Vectors:       vdb,
+			Store:         store,
+			Usage:         usage,
+			Subscriptions: subscriptions,
+		}),
 		Tasks:         db.NewAsyncTaskRepository(conn),
 		Repository:    module.NewRepository(repos, repoMeta, spam),
 		PQueue:        module.NewPQueue(db.NewPQueueRepository(conn)),
-		Usage:         db.NewUsageRepository(conn),
-		Subscriptions: db.NewSubscriptionRepository(conn),
+		Usage:         usage,
+		Subscriptions: subscriptions,
+		vectors:       vdb,
 	}
 
 	Instance = w
 	w.register()
 
 	return w
+}
+
+// Close releases worker-owned resources.
+func (w *Worker) Close() error {
+	return w.vectors.Close()
 }
 
 func (w *Worker) register() {

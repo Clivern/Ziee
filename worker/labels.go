@@ -29,11 +29,11 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 
 	taskId := db.Id(payload["taskId"])
 
-	h.tasks.MarkRunning(taskId)
+	h.Tasks.MarkRunning(taskId)
 
 	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -53,7 +53,7 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 
 	check, err := app.Get().CreateCheckRun(ctx, installationId, owner, repo, conf.ConfigSyncCheckName, sha)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -65,7 +65,7 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 			"Config sync failed",
 			err.Error(),
 		)
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 			"Config sync failed",
 			err.Error(),
 		)
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -89,7 +89,7 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 			"Config sync failed",
 			err.Error(),
 		)
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -116,7 +116,7 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 				"Config sync failed",
 				err.Error(),
 			)
-			h.tasks.Fail(taskId, err.Error())
+			h.Tasks.Fail(taskId, err.Error())
 			return err
 		}
 
@@ -136,13 +136,13 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 		fmt.Sprintf("Created %d labels from `%s`.", created, path),
 	)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	result, err := json.Marshal(map[string]int{"created": created})
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -153,5 +153,5 @@ func (h *handlers) HandleRepositoryLabels(ctx context.Context, msg *broker.Msg) 
 		Int("defined", len(file.Labels)).
 		Msg("Repository labels synced")
 
-	return h.tasks.Complete(taskId, string(result))
+	return h.Tasks.Complete(taskId, string(result))
 }

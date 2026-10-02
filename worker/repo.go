@@ -28,17 +28,17 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 
 	taskId := db.Id(payload["taskId"])
 
-	h.tasks.MarkRunning(taskId)
+	h.Tasks.MarkRunning(taskId)
 
 	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	githubId, err := strconv.ParseInt(payload["githubId"], 10, 64)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -59,17 +59,17 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		[]string{".ziee.yaml", ".ziee.yml"},
 	)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 	if lo.IsNotEmpty(path) {
 		err = repos.SetConfigPath(githubId, path)
 		if err != nil {
-			h.tasks.Fail(taskId, err.Error())
+			h.Tasks.Fail(taskId, err.Error())
 			return err
 		}
 
-		return h.tasks.Complete(taskId, "")
+		return h.Tasks.Complete(taskId, "")
 	}
 
 	issue, err := app.Get().CreateIssue(
@@ -81,7 +81,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		conf.SetupIssueBody,
 	)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -90,13 +90,13 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		"number": int64(issue.Number),
 	})
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -108,7 +108,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		Body:    conf.SetupPullRequestBody,
 	})
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -117,15 +117,15 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		"number": int64(pr.Number),
 	})
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
-	return h.tasks.Complete(taskId, "")
+	return h.Tasks.Complete(taskId, "")
 }

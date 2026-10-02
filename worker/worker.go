@@ -8,12 +8,16 @@ import (
 	"errors"
 
 	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 
 	"github.com/rs/zerolog/log"
 )
 
 var ErrInvalidPayload = errors.New("invalid worker payload")
+
+// Instance is the process-wide worker wired at startup.
+var Instance *Worker
 
 // Handler processes an inbound NATS message.
 type Handler func(context.Context, *broker.Msg) error
@@ -33,20 +37,45 @@ type Knowledge interface {
 	Delete(ctx context.Context, documentId db.Id, internalId string) error
 }
 
-// Dependencies are the services required by worker handlers.
-type Dependencies struct {
-	Knowledge Knowledge
-	Tasks     db.AsyncTaskRepository
+// Worker holds shared modules and repositories for queue handlers.
+type Worker struct {
+	Knowledge     Knowledge
+	Tasks         db.AsyncTaskRepository
+	Repository    *module.Repository
+	PQueue        *module.PQueue
+	Usage         db.UsageRepository
+	Subscriptions db.SubscriptionRepository
 }
 
 type handlers struct {
-	knowledge Knowledge
-	tasks     db.AsyncTaskRepository
+	*Worker
 }
 
-// Register attaches all worker handlers.
-func Register(deps Dependencies) {
-	h := &handlers{knowledge: deps.Knowledge, tasks: deps.Tasks}
+// New wires repositories and modules once for the worker process.
+func New(knowledge Knowledge) *Worker {
+	conn := db.GetDB()
+
+	repos := db.NewRepositoriesRepository(conn)
+	repoMeta := db.NewRepositoryMetaRepository(conn)
+	spam := db.NewRepositorySpamUserRepository(conn)
+
+	w := &Worker{
+		Knowledge:     knowledge,
+		Tasks:         db.NewAsyncTaskRepository(conn),
+		Repository:    module.NewRepository(repos, repoMeta, spam),
+		PQueue:        module.NewPQueue(db.NewPQueueRepository(conn)),
+		Usage:         db.NewUsageRepository(conn),
+		Subscriptions: db.NewSubscriptionRepository(conn),
+	}
+
+	Instance = w
+	w.register()
+
+	return w
+}
+
+func (w *Worker) register() {
+	h := &handlers{Worker: w}
 
 	On(db.AsyncTaskTypeDocIndex, h.HandleDocumentIndex)
 	On(db.AsyncTaskTypeDocDelete, h.HandleDocumentDelete)

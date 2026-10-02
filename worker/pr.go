@@ -32,18 +32,18 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 
 	taskId := db.Id(payload["taskId"])
 
-	h.tasks.MarkRunning(taskId)
+	h.Tasks.MarkRunning(taskId)
 
 	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	var pull webhook.PullRequestEvent
 	err = json.Unmarshal([]byte(payload["body"]), &pull)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -55,19 +55,19 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 
 	path, err := repos.GetConfigPath(pull.Repository.ID)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	data, err := app.Get().GetFile(ctx, installationId, payload["owner"], payload["repo"], path)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	file, err := spec.Parse(data)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -79,7 +79,7 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 		pull.PullRequest.Number,
 	)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -137,7 +137,7 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 		Number: pull.PullRequest.Number,
 	}, plan)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -151,11 +151,11 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 		"actions":    plan.Actions,
 	})
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
-	return h.tasks.Complete(taskId, string(result))
+	return h.Tasks.Complete(taskId, string(result))
 }
 
 // HandleGitHubPullRequestComment evaluates an `@bot` command from a pull request comment.
@@ -168,18 +168,18 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 
 	taskId := db.Id(payload["taskId"])
 
-	h.tasks.MarkRunning(taskId)
+	h.Tasks.MarkRunning(taskId)
 
 	installationId, err := strconv.ParseInt(payload["installationId"], 10, 64)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	var comment webhook.IssueCommentEvent
 	err = json.Unmarshal([]byte(payload["body"]), &comment)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -209,19 +209,19 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 
 	path, err := repos.GetConfigPath(comment.Repository.ID)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	data, err := app.Get().GetFile(ctx, installationId, payload["owner"], payload["repo"], path)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
 	file, err := spec.Parse(data)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -279,7 +279,7 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 		Number: comment.Issue.Number,
 	}, plan)
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
@@ -295,9 +295,9 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 		"actions":    plan.Actions,
 	})
 	if err != nil {
-		h.tasks.Fail(taskId, err.Error())
+		h.Tasks.Fail(taskId, err.Error())
 		return err
 	}
 
-	return h.tasks.Complete(taskId, string(result))
+	return h.Tasks.Complete(taskId, string(result))
 }

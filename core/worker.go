@@ -83,10 +83,7 @@ func RunWorker() error {
 
 	nats := client.Config().NATS
 
-	worker.Register(worker.Dependencies{
-		Knowledge: ksvc,
-		Tasks:     db.NewAsyncTaskRepository(db.GetDB(false)),
-	})
+	worker.New(ksvc)
 
 	err = worker.Bind(client, nats.Queue)
 	if err != nil {

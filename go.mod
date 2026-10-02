@@ -3,7 +3,7 @@ module github.com/clivern/ziee
 go 1.27.1
 
 require (
-	github.com/OpenRouterTeam/go-sdk v0.9.19
+	github.com/OpenRouterTeam/go-sdk v0.9.20
 	github.com/aws/aws-sdk-go-v2 v1.47.1
 	github.com/aws/aws-sdk-go-v2/config v1.33.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.6
@@ -27,7 +27,6 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
-	github.com/stripe/stripe-go/v86 v86.4.2
 	github.com/stripe/stripe-go/v87 v87.0.0
 	github.com/tmc/langchaingo v0.1.14
 	golang.org/x/crypto v0.57.0
@@ -92,6 +91,7 @@ require (
 	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect

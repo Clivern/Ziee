@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	stripesdk "github.com/stripe/stripe-go/v86"
+	stripesdk "github.com/stripe/stripe-go/v87"
 )
 
 // PortalOptions is input for creating a billing portal session.

@@ -6,8 +6,8 @@ package stripe
 import (
 	"fmt"
 
-	stripesdk "github.com/stripe/stripe-go/v86"
-	"github.com/stripe/stripe-go/v86/webhook"
+	stripesdk "github.com/stripe/stripe-go/v87"
+	"github.com/stripe/stripe-go/v87/webhook"
 )
 
 // ConstructWebhookEvent validates and parses a Stripe webhook payload.

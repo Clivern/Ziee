@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy"
@@ -47,13 +46,7 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 		return err
 	}
 
-	repos := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
-
-	path, err := repos.GetConfigPath(pull.Repository.ID)
+	path, err := h.Repository.GetConfigPath(pull.Repository.ID)
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err
@@ -201,13 +194,7 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 			Msg("Failed to react to pull request command comment")
 	}
 
-	repos := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
-
-	path, err := repos.GetConfigPath(comment.Repository.ID)
+	path, err := h.Repository.GetConfigPath(comment.Repository.ID)
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err

@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy"
@@ -47,13 +46,7 @@ func (h *handlers) HandleGitHubIssue(ctx context.Context, msg *broker.Msg) error
 		return err
 	}
 
-	repos := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
-
-	path, err := repos.GetConfigPath(issue.Repository.ID)
+	path, err := h.Repository.GetConfigPath(issue.Repository.ID)
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err
@@ -186,13 +179,7 @@ func (h *handlers) HandleGitHubIssueComment(ctx context.Context, msg *broker.Msg
 			Msg("Failed to react to command comment")
 	}
 
-	repos := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
-
-	path, err := repos.GetConfigPath(comment.Repository.ID)
+	path, err := h.Repository.GetConfigPath(comment.Repository.ID)
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err

@@ -22,6 +22,7 @@ const (
 	AsyncTaskTypeGitHubPullRequestComment = "ziee.github.pull_request_comment"
 	AsyncTaskTypeGitHubPullRequest        = "ziee.github.pull_request"
 	AsyncTaskTypeRepoLabels               = "ziee.repo.labels"
+	AsyncTaskTypeRepoMerge                = "ziee.repo.merge"
 )
 
 // AsyncTask is a single row in the async_tasks table.

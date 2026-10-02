@@ -46,7 +46,7 @@ func NewIssueClient(ctx context.Context, installationId, githubRepoId int64, own
 		githubRepoId:   githubRepoId,
 		owner:          owner,
 		repo:           repo,
-		repos: Instance.Repository,
+		repos:          Instance.Repository,
 	}
 }
 

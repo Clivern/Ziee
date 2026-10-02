@@ -12,12 +12,8 @@ import (
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
-	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
-	"github.com/clivern/ziee/pkg/qdrant"
-	"github.com/clivern/ziee/pkg/storage"
-	"github.com/clivern/ziee/service/knowledge"
 	"github.com/clivern/ziee/worker"
 
 	"github.com/rs/zerolog/log"
@@ -44,35 +40,16 @@ func RunWorker() error {
 		return fmt.Errorf("failed to initialize github app: %w", err)
 	}
 
-	store, err := storage.New()
-	if err != nil {
-		return fmt.Errorf("failed to initialize document storage: %w", err)
-	}
-
-	vdb, err := qdrant.New()
-	if err != nil {
-		return fmt.Errorf("failed to initialize qdrant: %w", err)
-	}
+	w := worker.New()
 
 	defer func() {
-		err := vdb.Close()
+		err := w.Close()
 		if err != nil {
 			log.Error().
 				Err(err).
-				Msg("Error closing qdrant client")
+				Msg("Error closing worker resources")
 		}
 	}()
-
-	ksvc := knowledge.New(knowledge.Dependencies{
-		Documents: db.NewDocumentRepository(
-			db.GetDB(true),
-		),
-		Embed:         ai.NewEmbedClient(),
-		Vectors:       vdb,
-		Store:         store,
-		Usage:         db.NewUsageRepository(db.GetDB(false)),
-		Subscriptions: db.NewSubscriptionRepository(db.GetDB(false)),
-	})
 
 	client, err := broker.New()
 	if err != nil {
@@ -82,8 +59,6 @@ func RunWorker() error {
 	defer client.Close()
 
 	nats := client.Config().NATS
-
-	worker.New(ksvc)
 
 	err = worker.Bind(client, nats.Queue)
 	if err != nil {

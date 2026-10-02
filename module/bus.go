@@ -82,6 +82,28 @@ func EnqueueTask(taskType string, payload map[string]string, workspaceId db.Id) 
 	return GetBus().Flush()
 }
 
+// EnqueueRepoMergeTask schedules a repository merge run unless one is already or pending.
+func EnqueueRepoMergeTask(repoId, workspaceId db.Id) error {
+	active, err := db.NewAsyncTaskRepository(db.GetDB()).HasActiveByPayload(
+		db.AsyncTaskTypeRepoMerge,
+		"repositoryId",
+		repoId.String(),
+	)
+	if err != nil {
+		return err
+	}
+	if active {
+		log.Info().
+			Str("repositoryId", repoId.String()).
+			Msg("Repository merge task already active, skip enqueue")
+		return nil
+	}
+
+	return EnqueueTask(db.AsyncTaskTypeRepoMerge, map[string]string{
+		"repositoryId": repoId.String(),
+	}, workspaceId)
+}
+
 // RepublishPendingTasks publishes pending async tasks to NATS again.
 func RepublishPendingTasks() (int, error) {
 	tasks, err := db.NewAsyncTaskRepository(db.GetDB()).ListByStatus(db.AsyncTaskStatusPending)

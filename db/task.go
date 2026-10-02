@@ -51,6 +51,7 @@ type AsyncTaskRepository interface {
 	Fail(id Id, message string) error
 	CountByStatus(status string) (int64, error)
 	ListByStatus(status string) ([]*AsyncTask, error)
+	HasActiveByPayload(taskType, key, value string) (bool, error)
 }
 
 type AsyncTaskRepositoryPostgres struct {
@@ -192,6 +193,28 @@ func (r *AsyncTaskRepositoryPostgres) ListByStatus(status string) ([]*AsyncTask,
 	}
 
 	return list, rows.Err()
+}
+
+// HasActiveByPayload reports whether a pending or running task of the given
+// type already has payload->>key equal to value.
+func (r *AsyncTaskRepositoryPostgres) HasActiveByPayload(taskType, key, value string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(
+		`SELECT EXISTS (
+			SELECT 1
+			FROM async_tasks
+			WHERE type = $1
+			  AND status IN ($2, $3)
+			  AND payload->>$4 = $5
+		)`,
+		taskType,
+		AsyncTaskStatusPending,
+		AsyncTaskStatusRunning,
+		key,
+		value,
+	).Scan(&exists)
+
+	return exists, err
 }
 
 // AsyncTaskMeta is a single row in the async_tasks_meta table.

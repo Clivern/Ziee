@@ -267,3 +267,52 @@ func TestUnitEvaluatePRComment(t *testing.T) {
 
 	assert.Empty(t, plan.Actions)
 }
+
+func TestUnitEvaluatePRUpdated(t *testing.T) {
+	first := true
+	conf := &v1.File{
+		PRTriage: v1.PRTriage{
+			Enabled:  true,
+			Comments: policy.CommentsOutcomes,
+			Rules: []v1.Rule{
+				{
+					Name:   "area-api",
+					When:   v1.Clauses{{Files: []string{"api/**"}}},
+					Labels: v1.Labels{Add: []string{"area/api"}},
+					Assign: []string{"clivern"},
+				},
+				{
+					Name:    "first",
+					When:    v1.Clauses{{FirstContribution: &first}},
+					Comment: "Welcome",
+				},
+			},
+		},
+	}
+
+	plan := EvaluatePRUpdated(conf, Event{
+		Issue: Issue{
+			Author:    "maya",
+			Files:     []string{"api/health.go"},
+			Labels:    []string{"area/api"},
+			Assignees: []string{"clivern"},
+		},
+		Actor: Actor{Login: "maya"},
+	}, &stubClient{first: true})
+
+	assert.Empty(t, plan.Actions)
+
+	plan = EvaluatePRUpdated(conf, Event{
+		Issue: Issue{
+			Author: "maya",
+			Files:  []string{"api/health.go"},
+		},
+		Actor: Actor{Login: "maya"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"area/api"}},
+		{Kind: policy.Assign, Users: []string{"clivern"}},
+		{Kind: policy.Comment, Body: "Triaged this pull request: labeled `area/api`, assigned @clivern."},
+	}, plan.Actions)
+}

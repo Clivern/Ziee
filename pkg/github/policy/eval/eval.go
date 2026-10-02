@@ -27,6 +27,8 @@ func Run(conf *v1.File, event Event, client Client) action.Plan {
 		return EvaluatePRComment(conf, event, client)
 	case policy.KindPullRequestOpened:
 		return EvaluatePROpened(conf, event, client)
+	case policy.KindPullRequestEdited, policy.KindPullRequestSynchronize:
+		return EvaluatePRUpdated(conf, event, client)
 	default:
 		return action.Plan{}
 	}

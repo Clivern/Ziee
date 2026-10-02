@@ -106,6 +106,132 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 	return plan
 }
 
+// EvaluatePRUpdated re-evaluates a pull request after sync or edit.
+func EvaluatePRUpdated(conf *v1.File, event Event, client Client) action.Plan {
+	var plan action.Plan
+
+	if !conf.PRTriage.Enabled || IsAppActor(event.Actor.Login) {
+		return plan
+	}
+
+	if strings.ToLower(event.Account.Type) == "organization" {
+		event.Org = event.Account.Login
+	}
+
+	event.Issue.Teams = MergeTeams(
+		event.Issue.Teams,
+		GetTeamsFromFile(conf.Teams, event.Issue.Author),
+		client.GetTeams(event.Org, event.Issue.Author),
+	)
+
+	intentions := GetIntentionsFromRules(conf.PRTriage.Rules)
+	ai := conf.PRTriage.AI
+	if ai.Enabled && len(intentions) > 0 &&
+		!SkipAI(conf.PRTriage.Rules, event.Issue, client) &&
+		!SkipAIQuota(ai, event.Issue, client, true) {
+		event.Issue.Intention = client.EvaluateIssue(event.Issue, intentions)
+	}
+
+	for _, rule := range conf.PRTriage.Rules {
+		if !MatchClauses(rule.When, event.Issue, client) {
+			continue
+		}
+		if len(rule.Labels.Add) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:   policy.AddLabels,
+				Labels: rule.Labels.Add,
+			})
+		}
+		if len(rule.Labels.Remove) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:   policy.RemoveLabels,
+				Labels: rule.Labels.Remove,
+			})
+		}
+		if len(rule.Assign) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.Assign,
+				Users: rule.Assign,
+			})
+		}
+		if len(rule.Reviewers) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.RequestReviewers,
+				Users: rule.Reviewers,
+			})
+		}
+		if len(rule.ReviewTeams) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.RequestReviewTeams,
+				Users: rule.ReviewTeams,
+			})
+		}
+		if rule.Close {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind: policy.Close,
+			})
+		}
+		if rule.BlockAuthor {
+			client.BlockAuthor(event.Issue)
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.BlockAuthor,
+				Users: []string{event.Issue.Author},
+			})
+		}
+	}
+
+	plan.Actions = ReconcilePRActions(plan.Actions, event.Issue)
+
+	body := OutcomeComment(conf.PRTriage.Comments, "pull request", plan.Actions)
+	if !lo.IsEmpty(body) {
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind: policy.Comment,
+			Body: body,
+		})
+	}
+
+	return plan
+}
+
+// ReconcilePRActions drops no-op actions against the current pull request state.
+func ReconcilePRActions(actions []action.Action, issue Issue) []action.Action {
+	var out []action.Action
+
+	for _, a := range actions {
+		switch a.Kind {
+		case policy.AddLabels:
+			labels := lo.Filter(a.Labels, func(label string, _ int) bool {
+				return !ContainsFold(issue.Labels, label)
+			})
+			if len(labels) > 0 {
+				out = append(out, action.Action{Kind: policy.AddLabels, Labels: labels})
+			}
+		case policy.RemoveLabels:
+			labels := lo.Filter(a.Labels, func(label string, _ int) bool {
+				return ContainsFold(issue.Labels, label)
+			})
+			if len(labels) > 0 {
+				out = append(out, action.Action{Kind: policy.RemoveLabels, Labels: labels})
+			}
+		case policy.Assign:
+			users := lo.Filter(a.Users, func(user string, _ int) bool {
+				return !ContainsFold(issue.Assignees, user)
+			})
+			if len(users) > 0 {
+				out = append(out, action.Action{Kind: policy.Assign, Users: users})
+			}
+		case policy.Close:
+			if !issue.Closed {
+				out = append(out, a)
+			}
+		case policy.RequestReviewers, policy.RequestReviewTeams, policy.BlockAuthor:
+			out = append(out, a)
+		}
+	}
+
+	return out
+}
+
 // EvaluatePRComment evaluates a pull request comment as a Ziee command.
 func EvaluatePRComment(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan

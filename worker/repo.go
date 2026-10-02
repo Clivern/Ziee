@@ -11,7 +11,6 @@ import (
 
 	"github.com/clivern/ziee/conf"
 	"github.com/clivern/ziee/db"
-	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 
@@ -45,12 +44,6 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 	owner, _, _ := strings.Cut(payload["fullName"], "/")
 	repo := payload["name"]
 
-	repos := module.NewRepository(
-		db.NewRepositoriesRepository(db.GetDB()),
-		db.NewRepositoryMetaRepository(db.GetDB()),
-		db.NewRepositorySpamUserRepository(db.GetDB()),
-	)
-
 	path, err := app.Get().FileExists(
 		ctx,
 		installationId,
@@ -63,7 +56,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 	if lo.IsNotEmpty(path) {
-		err = repos.SetConfigPath(githubId, path)
+		err = h.Repository.SetConfigPath(githubId, path)
 		if err != nil {
 			h.Tasks.Fail(taskId, err.Error())
 			return err
@@ -94,7 +87,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
+	err = h.Repository.UpsertMeta(githubId, db.RepositoryMetaSetupIssue, string(meta))
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err
@@ -121,7 +114,7 @@ func (h *handlers) HandleRepositoryBootstrap(ctx context.Context, msg *broker.Ms
 		return err
 	}
 
-	err = repos.UpsertMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
+	err = h.Repository.UpsertMeta(githubId, db.RepositoryMetaSetupPR, string(prMeta))
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err

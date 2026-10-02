@@ -513,7 +513,7 @@ pr_triage:
       allow:
         - teams: [sre]
         - users: [clivern]
-    # `@zieeai spam` — label spam, close, and block the author (not implemented yet)
+    # `@zieeai spam` — label spam, close, and block the author
     spam:
       allow:
         - teams: [sre]

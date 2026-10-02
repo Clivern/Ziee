@@ -107,8 +107,100 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 }
 
 // EvaluatePRComment evaluates a pull request comment as a Ziee command.
-func EvaluatePRComment(_ *v1.File, _ Event, _ Client) action.Plan {
-	return action.Plan{}
+func EvaluatePRComment(conf *v1.File, event Event, client Client) action.Plan {
+	var plan action.Plan
+
+	if !conf.PRTriage.Enabled || IsAppActor(event.Actor.Login) {
+		return plan
+	}
+
+	cmd := ParseCommand(event.Comment)
+	if lo.IsEmpty(cmd.Verb) {
+		return plan
+	}
+
+	command, ok := conf.PRTriage.Commands[cmd.Verb]
+	if !ok {
+		return plan
+	}
+
+	if strings.ToLower(event.Account.Type) == "organization" {
+		event.Org = event.Account.Login
+	}
+
+	event.Actor.Permission = client.GetPermission(event.Actor.Login)
+	event.Actor.Teams = MergeTeams(
+		event.Actor.Teams,
+		GetTeamsFromFile(conf.Teams, event.Actor.Login),
+		client.GetTeams(event.Org, event.Actor.Login),
+	)
+
+	if !MatchAllow(command.Allow, event.Actor, event.Issue) {
+		return plan
+	}
+
+	switch cmd.Verb {
+	case "label":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:   policy.AddLabels,
+				Labels: cmd.Args,
+			})
+		}
+	case "unlabel":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:   policy.RemoveLabels,
+				Labels: cmd.Args,
+			})
+		}
+	case "assign":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.Assign,
+				Users: cmd.Args,
+			})
+		}
+	case "unassign":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.Unassign,
+				Users: cmd.Args,
+			})
+		}
+	case "reviewers":
+		if len(cmd.Args) > 0 {
+			plan.Actions = append(plan.Actions, action.Action{
+				Kind:  policy.RequestReviewers,
+				Users: cmd.Args,
+			})
+		}
+	case "close":
+		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+	case "reopen":
+		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Reopen})
+	case "spam":
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind:   policy.AddLabels,
+			Labels: []string{"spam"},
+		})
+		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+		client.BlockAuthor(event.Issue)
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind:  policy.BlockAuthor,
+			Users: []string{event.Issue.Author},
+		})
+	}
+
+	body := CommandOutcomeComment(conf.PRTriage.Comments, "pull request", event.Actor.Login, plan.Actions)
+	if !lo.IsEmpty(body) {
+		plan.Actions = append(plan.Actions, action.Action{
+			Kind: policy.Comment,
+			Body: body,
+		})
+	}
+
+	return plan
 }
 
 // MatchAnyFile reports whether any file matches any glob-like pattern.

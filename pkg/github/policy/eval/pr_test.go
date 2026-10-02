@@ -10,6 +10,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	v1 "github.com/clivern/ziee/pkg/github/policy/spec/v1"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -192,4 +193,77 @@ func TestUnitMatchFile(t *testing.T) {
 	assert.True(t, MatchFile("api/**", "api/health.go"))
 	assert.True(t, MatchFile("**/*.go", "pkg/util/hash.go"))
 	assert.False(t, MatchFile("web/**", "api/health.go"))
+}
+
+func TestUnitEvaluatePRComment(t *testing.T) {
+	viper.Set("app.oauth.github.bot_name", "zieeai")
+
+	conf := &v1.File{
+		PRTriage: v1.PRTriage{
+			Enabled:  true,
+			Comments: policy.CommentsOutcomes,
+			Commands: v1.Commands{
+				"label":     {Allow: v1.Allow{{Users: []string{"maya"}}}},
+				"reviewers": {Allow: v1.Allow{{Users: []string{"maya"}}}},
+				"close":     {Allow: v1.Allow{{Users: []string{"clivern"}}}},
+				"spam":      {Allow: v1.Allow{{Users: []string{"clivern"}}}},
+			},
+		},
+	}
+
+	plan := EvaluatePRComment(conf, Event{
+		Comment: "@zieeai label bug",
+		Actor:   Actor{Login: "maya"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"bug"}},
+		{Kind: policy.Comment, Body: "Labeled `bug` as requested by @maya."},
+	}, plan.Actions)
+
+	plan = EvaluatePRComment(conf, Event{
+		Comment: "@zieeai reviewers clivern",
+		Actor:   Actor{Login: "maya"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.RequestReviewers, Users: []string{"clivern"}},
+		{Kind: policy.Comment, Body: "Requested review from @clivern as requested by @maya."},
+	}, plan.Actions)
+
+	plan = EvaluatePRComment(conf, Event{
+		Comment: "@zieeai close",
+		Actor:   Actor{Login: "clivern"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Equal(t, []action.Action{
+		{Kind: policy.Close},
+		{Kind: policy.Comment, Body: "Closed this pull request as requested by @clivern."},
+	}, plan.Actions)
+
+	client := &stubClient{}
+	plan = EvaluatePRComment(conf, Event{
+		Comment: "@zieeai spam",
+		Actor:   Actor{Login: "clivern"},
+		Issue:   Issue{Author: "spammer"},
+	}, client)
+
+	assert.Equal(t, "spammer", client.blockedLogin)
+	assert.Equal(t, []action.Action{
+		{Kind: policy.AddLabels, Labels: []string{"spam"}},
+		{Kind: policy.Close},
+		{Kind: policy.BlockAuthor, Users: []string{"spammer"}},
+		{Kind: policy.Comment, Body: "Labeled `spam`, closed this pull request, blocked the author as requested by @clivern."},
+	}, plan.Actions)
+
+	plan = EvaluatePRComment(conf, Event{
+		Comment: "@zieeai label bug",
+		Actor:   Actor{Login: "guest"},
+		Issue:   Issue{Author: "guest"},
+	}, &stubClient{})
+
+	assert.Empty(t, plan.Actions)
 }

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/github/app"
@@ -47,11 +46,7 @@ func NewIssueClient(ctx context.Context, installationId, githubRepoId int64, own
 		githubRepoId:   githubRepoId,
 		owner:          owner,
 		repo:           repo,
-		repos: module.NewRepository(
-			db.NewRepositoriesRepository(db.GetDB()),
-			db.NewRepositoryMetaRepository(db.GetDB()),
-			db.NewRepositorySpamUserRepository(db.GetDB()),
-		),
+		repos: Instance.Repository,
 	}
 }
 
@@ -109,8 +104,8 @@ func (c IssueClient) EvaluateIssue(issue eval.Issue, intentions []v1.Intention) 
 
 	// record usage
 	usage.IncrementAIUsage(
-		db.NewUsageRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
+		Instance.Usage,
+		Instance.Subscriptions,
 		c.repos.WorkspaceId(c.githubRepoId),
 		aiUsage.TotalTokens,
 		aiUsage.Cost,
@@ -237,8 +232,8 @@ func (c IssueClient) SummarizeIssue(issue eval.Issue) string {
 	}
 
 	usage.IncrementAIUsage(
-		db.NewUsageRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
+		Instance.Usage,
+		Instance.Subscriptions,
 		c.repos.WorkspaceId(c.githubRepoId),
 		aiUsage.TotalTokens,
 		aiUsage.Cost,
@@ -255,11 +250,7 @@ func NewPullRequestClient(ctx context.Context, installationId, githubRepoId int6
 		githubRepoId:   githubRepoId,
 		owner:          owner,
 		repo:           repo,
-		repos: module.NewRepository(
-			db.NewRepositoriesRepository(db.GetDB()),
-			db.NewRepositoryMetaRepository(db.GetDB()),
-			db.NewRepositorySpamUserRepository(db.GetDB()),
-		),
+		repos:          Instance.Repository,
 	}
 }
 
@@ -317,8 +308,8 @@ func (c PullRequestClient) EvaluateIssue(issue eval.Issue, intentions []v1.Inten
 
 	// record usage
 	usage.IncrementAIUsage(
-		db.NewUsageRepository(db.GetDB()),
-		db.NewSubscriptionRepository(db.GetDB()),
+		Instance.Usage,
+		Instance.Subscriptions,
 		c.repos.WorkspaceId(c.githubRepoId),
 		aiUsage.TotalTokens,
 		aiUsage.Cost,

@@ -85,6 +85,7 @@ func (w *Worker) register() {
 	On(db.AsyncTaskTypeGitHubPullRequestComment, h.HandleGitHubPullRequestComment)
 	On(db.AsyncTaskTypeGitHubPullRequest, h.HandleGitHubPullRequest)
 	On(db.AsyncTaskTypeRepoLabels, h.HandleRepositoryLabels)
+	On(db.AsyncTaskTypeRepoMerge, h.HandleRepositoryMerge)
 }
 
 // On registers a queue worker handler for subject.

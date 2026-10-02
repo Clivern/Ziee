@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ziee — The Autonomous Merge Layer for Agent-Scale Delivery</title>
+  <meta name="description" content="Ziee is the merge layer for agent-scale delivery. Pull requests get queued, checked, and merged without a human on the button." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --hover: #f1f0ed;
+      --ink: #37352f;
+      --ink-soft: #6b6966;
+      --line: #e3e2e0;
+      --green: #0f7b6c;
+      --amber: #9a7b16;
+      --sky: #2f80ed;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      height: 100svh;
+      display: grid;
+      align-items: center;
+      width: min(1180px, calc(100% - 2.5rem));
+      margin: 0 auto;
+      gap: 2.5rem;
+      padding: 1.5rem 0;
+    }
+
+    @media (min-width: 960px) {
+      .page {
+        grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+        gap: 3rem;
+      }
+    }
+
+    @media (max-width: 959px) {
+      body { overflow: auto; }
+      .page { height: auto; min-height: 100svh; }
+      .stage { justify-self: start; }
+    }
+
+    .copy { max-width: 36rem; }
+
+    .brand {
+      display: block;
+      margin: 0 0 1.5rem;
+      width: clamp(7rem, 18vw, 11rem);
+      height: auto;
+      color: var(--ink);
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      max-width: 18ch;
+      font-size: clamp(1.6rem, 3.8vw, 2.35rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .lead {
+      margin: 0 0 1rem;
+      max-width: 36rem;
+      color: var(--ink-soft);
+      font-size: clamp(0.98rem, 1.6vw, 1.08rem);
+      line-height: 1.55;
+    }
+
+    .lead + .btn {
+      margin-top: 0.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.75rem;
+      padding: 0 1.2rem;
+      border-radius: 0.4rem;
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+    }
+
+    .btn:hover {
+      background: #2f2d29;
+      transform: translateY(-1px);
+    }
+
+    .stage {
+      width: min(100%, 420px);
+      justify-self: end;
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 12px 36px rgba(55, 53, 47, 0.05);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--line);
+      background: var(--hover);
+    }
+
+    .panel-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .live::before {
+      content: "";
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: var(--green);
+      animation: ping 1.7s ease-out infinite;
+    }
+
+    .rows { padding: 0.35rem; }
+
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.55rem;
+      align-items: center;
+      padding: 0.6rem 0.65rem;
+      border-radius: 0.5rem;
+      transition: background 0.25s var(--ease), opacity 0.35s ease, transform 0.45s var(--ease);
+    }
+
+    .row + .row { margin-top: 0.1rem; }
+    .row.active { background: var(--hover); }
+    .row.gone {
+      opacity: 0;
+      transform: translateX(14px);
+      pointer-events: none;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.3rem;
+      padding: 0 0.4rem;
+      border-radius: 0.3rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .pill.bug { background: #fdecea; color: #c0392b; border-color: #f5c6c2; }
+    .pill.enhancement { background: #eaf2fd; color: #1b4f9c; border-color: #c9dbf5; }
+    .pill.docs { background: #eef1f4; color: #3d4a57; border-color: #d7dde3; }
+    .pill.spam { background: var(--hover); color: var(--ink-soft); border-color: var(--line); }
+    .pill.area { background: #e8f6f3; color: var(--green); border-color: #c5e8e1; }
+    .pill.size { background: #f8f1e0; color: var(--amber); border-color: #ead9a8; }
+
+    .row-main {
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-sub {
+      display: block;
+      margin-top: 0.1rem;
+      font-size: 0.68rem;
+      color: var(--ink-soft);
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+
+    .badge.checking { color: var(--amber); }
+    .badge.triaged { color: var(--sky); }
+    .badge.merging { color: var(--ink); }
+    .badge.merged { color: var(--green); }
+
+    .merge {
+      display: grid;
+      gap: 0.3rem;
+      padding: 0.45rem;
+    }
+
+    .pr-row {
+      display: grid;
+      grid-template-columns: 1fr 26px;
+      gap: 0.3rem;
+      align-items: stretch;
+      min-height: 2.9rem;
+      transition: opacity 0.35s ease;
+    }
+
+    .pr-row.merged { opacity: 0.4; }
+
+    .pr-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.45rem;
+      align-items: center;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid var(--line);
+      border-radius: 0.5rem;
+      background: #fff;
+      transition: border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .pr-row.checking .pr-card {
+      border-color: #ead9a8;
+      background: #fffdf5;
+    }
+
+    .pr-row.merging .pr-card {
+      border-color: var(--ink);
+      background: var(--bg);
+    }
+
+    .pr-row.merged .pr-card {
+      border-color: #c9e8e1;
+      background: #f3faf8;
+    }
+
+    .connector {
+      display: flex;
+      justify-content: center;
+    }
+
+    .connector svg {
+      width: 26px;
+      height: 100%;
+    }
+
+    .branch {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2;
+      stroke-linecap: round;
+      transition: stroke 0.25s ease;
+    }
+
+    .pr-row.checking .branch { stroke: var(--amber); }
+    .pr-row.merging .branch {
+      stroke: var(--ink);
+      stroke-dasharray: 4 5;
+      animation: dash 0.55s linear infinite;
+    }
+    .pr-row.merged .branch {
+      stroke: var(--green);
+      stroke-dasharray: none;
+      animation: none;
+    }
+
+    .packet {
+      fill: var(--ink);
+      opacity: 0;
+    }
+
+    .pr-row.merging .packet {
+      opacity: 1;
+      animation: ride 0.8s var(--ease) infinite;
+    }
+
+    .trunk {
+      display: grid;
+      grid-template-columns: 1fr 26px;
+      gap: 0.3rem;
+      align-items: center;
+      padding-top: 0.25rem;
+    }
+
+    .trunk-line {
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, transparent, var(--line) 25%, var(--ink));
+    }
+
+    .merge:has(.pr-row.merging) .trunk-line {
+      background: linear-gradient(90deg, transparent, #c9e8e1 20%, var(--green));
+    }
+
+    .main-chip {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .main-chip i {
+      width: 0.35rem;
+      height: 0.35rem;
+      border-radius: 50%;
+      background: #6fcf97;
+      animation: ping 1.7s ease-out infinite;
+    }
+
+    @keyframes dash { to { stroke-dashoffset: -18; } }
+    @keyframes ride {
+      0% { transform: translate(10px, 2px); opacity: 0; }
+      25% { opacity: 1; }
+      100% { transform: translate(10px, 36px); opacity: 0.15; }
+    }
+    @keyframes ping {
+      0% { box-shadow: 0 0 0 0 rgba(15, 123, 108, 0.4); }
+      100% { box-shadow: 0 0 0 8px rgba(15, 123, 108, 0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="copy">
+      <svg class="brand" xmlns="http://www.w3.org/2000/svg" viewBox="66 30 368 404" fill="currentColor" role="img" aria-label="Ziee">
+        <circle cx="249.8" cy="82" r="46" />
+        <circle cx="249.8" cy="190" r="46" />
+        <path d="m334.64 261.9c-12.44-12.44-11.39-12-29-12h-111.64c-17.62 0-16.57-.43-29 12l-59.52 59.53a161.1 161.1 0 0 0 60.34 65.93c15.25-15.24 61-60.95 68.57-68.57 6.25-6.24 9-8.66 12.39-9.7a9.87 9.87 0 0 1 3-.56 9.71 9.71 0 0 1 3 .56c3.39 1 6.15 3.46 12.39 9.7l68.57 68.57a161.06 161.06 0 0 0 60.35-65.93z" />
+      </svg>
+      <h1>The autonomous merge layer for agent-scale delivery</h1>
+      <p class="lead">
+        Teams ship more than they used to. More branches, more reviews, more PRs hitting main at once — from people, bots, and agents sharing the same repos. The bottleneck moved to merge: someone still has to order the work, wait on CI, and land it by hand.
+      </p>
+      <p class="lead">
+        Ziee is the merge layer for that pace. Pull requests get queued, checked, and merged without a human on the button, so delivery can keep climbing without the queue falling behind.
+      </p>
+      <a class="btn" href="https://github.com/clivern/ziee" target="_blank" rel="noopener">View on GitHub</a>
+    </section>
+
+    <aside class="stage" aria-hidden="true">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Issue triage</span>
+          <span class="live">live</span>
+        </div>
+        <div class="rows" id="triage"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Merge queue</span>
+          <span class="live">shipping</span>
+        </div>
+        <div class="merge" id="merge">
+          <div class="pr-row" data-pr="0">
+            <div class="pr-card">
+              <span class="pill area">area/api</span>
+              <span>
+                <span class="row-main">#482 fix auth race</span>
+                <span class="row-sub">checks green</span>
+              </span>
+              <span class="badge" data-badge>queued</span>
+            </div>
+            <div class="connector">
+              <svg viewBox="0 0 26 48" preserveAspectRatio="none">
+                <path class="branch" d="M13 3 V44" />
+                <circle class="packet" r="2.5" cx="13" cy="3" />
+              </svg>
+            </div>
+          </div>
+          <div class="pr-row" data-pr="1">
+            <div class="pr-card">
+              <span class="pill size">size/s</span>
+              <span>
+                <span class="row-main">#491 polish nav</span>
+                <span class="row-sub">checks green</span>
+              </span>
+              <span class="badge" data-badge>queued</span>
+            </div>
+            <div class="connector">
+              <svg viewBox="0 0 26 48" preserveAspectRatio="none">
+                <path class="branch" d="M13 3 V44" />
+                <circle class="packet" r="2.5" cx="13" cy="3" />
+              </svg>
+            </div>
+          </div>
+          <div class="pr-row" data-pr="2">
+            <div class="pr-card">
+              <span class="pill enhancement">enhancement</span>
+              <span>
+                <span class="row-main">#503 bot sync</span>
+                <span class="row-sub">checks green</span>
+              </span>
+              <span class="badge" data-badge>queued</span>
+            </div>
+            <div class="connector">
+              <svg viewBox="0 0 26 48" preserveAspectRatio="none">
+                <path class="branch" d="M13 3 V44" />
+                <circle class="packet" r="2.5" cx="13" cy="3" />
+              </svg>
+            </div>
+          </div>
+          <div class="trunk">
+            <div class="trunk-line"></div>
+            <div class="main-chip"><i></i>main</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const triageEl = document.getElementById("triage");
+    const triageItems = [
+      { title: "issue #118", sub: "login timeout on staging", pill: "bug" },
+      { title: "issue #119", sub: "add webhook retries", pill: "enhancement" },
+      { title: "issue #120", sub: "docs for merge queue", pill: "docs" },
+      { title: "issue #121", sub: "crypto airdrop spam", pill: "spam" },
+    ];
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function renderTriage() {
+      triageEl.innerHTML = triageItems.map((item) => `
+        <div class="row">
+          <span class="pill ${item.pill}">${item.pill}</span>
+          <span>
+            <span class="row-main">${item.title}</span>
+            <span class="row-sub">${item.sub}</span>
+          </span>
+          <span class="badge" data-tbadge>open</span>
+        </div>
+      `).join("");
+    }
+
+    async function runTriage() {
+      renderTriage();
+      const rows = [...triageEl.querySelectorAll(".row")];
+      for (const row of rows) {
+        const badge = row.querySelector("[data-tbadge]");
+        const pill = row.querySelector(".pill").textContent;
+        row.classList.add("active");
+        badge.textContent = "triaging";
+        badge.className = "badge checking";
+        await sleep(600);
+        badge.textContent = pill === "spam" ? "closed" : "triaged";
+        badge.className = "badge " + (pill === "spam" ? "merging" : "triaged");
+        await sleep(380);
+        row.classList.remove("active");
+        if (pill === "spam") {
+          row.classList.add("gone");
+          await sleep(300);
+        }
+      }
+      await sleep(900);
+      runTriage();
+    }
+
+    async function runMerge() {
+      const rows = [...document.querySelectorAll("#merge .pr-row")];
+      for (const row of rows) {
+        row.className = "pr-row";
+        const badge = row.querySelector("[data-badge]");
+        badge.textContent = "queued";
+        badge.className = "badge";
+      }
+
+      for (const row of rows) {
+        const badge = row.querySelector("[data-badge]");
+        row.classList.add("checking");
+        badge.textContent = "checking";
+        badge.className = "badge checking";
+        await sleep(650);
+        row.classList.remove("checking");
+        row.classList.add("merging");
+        badge.textContent = "merging";
+        badge.className = "badge merging";
+        await sleep(850);
+        row.classList.remove("merging");
+        row.classList.add("merged");
+        badge.textContent = "merged";
+        badge.className = "badge merged";
+        await sleep(320);
+      }
+
+      await sleep(1100);
+      runMerge();
+    }
+
+    runTriage();
+    runMerge();
+  </script>
+</body>
+</html>

@@ -42,6 +42,15 @@ type UpdatePRRequest struct {
 	MergedAt *time.Time `json:"mergedAt"`
 }
 
+// EnsurePRRequest is what you pass when recording a PR seen via webhook.
+type EnsurePRRequest struct {
+	RemoteId int64
+	Status   string
+	Meta     string
+	OpenedAt *time.Time
+	MergedAt *time.Time
+}
+
 // PR is one entry in a working-queue snapshot, including PRs ahead of it.
 type PR struct {
 	Id       db.Id
@@ -54,6 +63,100 @@ type PR struct {
 // NewPQueue creates a merge-queue module with the given repository.
 func NewPQueue(items db.PQueueRepository) *PQueue {
 	return &PQueue{PQueueRepository: items}
+}
+
+// LifecycleStatus maps a GitHub pull request webhook into a pqueue status.
+func LifecycleStatus(action string, draft, merged bool, state string) string {
+	if merged {
+		return db.PQueueStatusMerged
+	}
+
+	switch action {
+	case "closed":
+		return db.PQueueStatusClosed
+	case "reopened":
+		return db.PQueueStatusReopened
+	case "converted_to_draft":
+		return db.PQueueStatusDraft
+	case "ready_for_review":
+		return db.PQueueStatusOpened
+	}
+
+	if draft {
+		return db.PQueueStatusDraft
+	}
+
+	if state == "closed" {
+		return db.PQueueStatusClosed
+	}
+
+	return db.PQueueStatusOpened
+}
+
+// Ensure stores a pull request if missing, and syncs status when present.
+func (p *PQueue) Ensure(repoId db.Id, req *EnsurePRRequest) (*db.PQueue, error) {
+	item, err := p.PQueueRepository.GetByRepoIdAndRemoteId(repoId, req.RemoteId)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrFailedGetPQueue, err)
+	}
+
+	status := lo.Ternary(lo.IsNotEmpty(req.Status), req.Status, db.PQueueStatusOpened)
+
+	if item != nil {
+		if item.Status == status && req.MergedAt == nil {
+			return item, nil
+		}
+
+		item.Status = status
+		if req.MergedAt != nil {
+			item.MergedAt = req.MergedAt
+		}
+
+		err = p.PQueueRepository.Update(item)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrFailedUpdatePQueue, err)
+		}
+
+		log.Info().
+			Str("repoId", repoId.String()).
+			Int64("remoteId", req.RemoteId).
+			Str("status", status).
+			Msg("Pull request status synced")
+
+		return item, nil
+	}
+
+	meta := lo.Ternary(lo.IsNotEmpty(req.Meta), req.Meta, "{}")
+	openedAt := req.OpenedAt
+	if openedAt == nil {
+		now := time.Now().UTC()
+		openedAt = &now
+	}
+
+	item = &db.PQueue{
+		RepoId:   repoId,
+		RemoteId: req.RemoteId,
+		Priority: db.PQueuePriorityMedium,
+		Rank:     0,
+		Status:   status,
+		Checksum: "",
+		Meta:     meta,
+		OpenedAt: openedAt,
+		MergedAt: req.MergedAt,
+	}
+
+	err = p.PQueueRepository.Create(item)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrFailedCreatePQueue, err)
+	}
+
+	log.Info().
+		Str("repoId", repoId.String()).
+		Int64("remoteId", req.RemoteId).
+		Str("status", status).
+		Msg("Pull request stored")
+
+	return item, nil
 }
 
 // Append adds a pull request to the end of a repository queue.
@@ -74,9 +177,38 @@ func (p *PQueue) Append(repoId db.Id, req *AppendPRRequest) (*db.PQueue, error) 
 
 	priority := lo.Ternary(lo.IsNotEmpty(req.Priority), req.Priority, db.PQueuePriorityMedium)
 	meta := lo.Ternary(lo.IsNotEmpty(req.Meta), req.Meta, "{}")
+
+	item, err := p.PQueueRepository.GetByRepoIdAndRemoteId(repoId, req.RemoteId)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrFailedGetPQueue, err)
+	}
+
+	if item != nil {
+		item.Priority = priority
+		item.Rank = rank
+		item.Status = db.PQueueStatusQueued
+		item.Checksum = req.Checksum
+		if lo.IsNotEmpty(req.Meta) {
+			item.Meta = meta
+		}
+
+		err = p.PQueueRepository.Update(item)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrFailedUpdatePQueue, err)
+		}
+
+		log.Info().
+			Str("repoId", repoId.String()).
+			Int64("remoteId", req.RemoteId).
+			Int("rank", rank).
+			Msg("Pull request promoted to merge queue")
+
+		return item, nil
+	}
+
 	now := time.Now().UTC()
 
-	item := &db.PQueue{
+	item = &db.PQueue{
 		RepoId:   repoId,
 		RemoteId: req.RemoteId,
 		Priority: priority,

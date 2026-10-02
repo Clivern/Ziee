@@ -3,6 +3,8 @@
 
 package webhook
 
+import "time"
+
 // IssueEvent is a GitHub issues webhook payload.
 type IssueEvent struct {
 	Action       string            `json:"action"`
@@ -41,12 +43,14 @@ type IssuePayload struct {
 	Number            int             `json:"number"`
 	Title             string          `json:"title"`
 	Body              string          `json:"body"`
+	Draft             bool            `json:"draft"`
 	State             string          `json:"state"`
 	User              UserPayload     `json:"user"`
 	AuthorAssociation string          `json:"author_association"`
 	Labels            []NamePayload   `json:"labels"`
 	Assignees         []UserPayload   `json:"assignees"`
 	PullRequest       *PullRequestRef `json:"pull_request"`
+	CreatedAt         time.Time       `json:"created_at"`
 }
 
 // PullRequestRef is present on issue payloads that are pull requests.

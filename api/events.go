@@ -465,9 +465,10 @@ func PullRequests(_ context.Context, d webhook.Delivery) {
 	var payload webhook.PullRequestEvent
 	json.Unmarshal(d.Body, &payload)
 
-	switch payload.Action {
-	case "opened", "edited", "labeled", "unlabeled":
-	default:
+	if !lo.Contains([]string{
+		"opened", "edited", "labeled", "unlabeled",
+		"closed", "reopened", "converted_to_draft", "ready_for_review",
+	}, payload.Action) {
 		return
 	}
 

@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/clivern/ziee/db"
+	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
 	"github.com/clivern/ziee/pkg/github/policy"
@@ -41,6 +43,33 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 
 	var pull webhook.PullRequestEvent
 	err = json.Unmarshal([]byte(payload["body"]), &pull)
+	if err != nil {
+		h.Tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	repo, err := h.Repository.RepoRepository.GetByGitHubId(pull.Repository.ID)
+	if err != nil {
+		h.Tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	var openedAt *time.Time
+	if !pull.PullRequest.CreatedAt.IsZero() {
+		openedAt = &pull.PullRequest.CreatedAt
+	}
+
+	_, err = h.PQueue.Ensure(repo.Id, &module.EnsurePRRequest{
+		RemoteId: int64(pull.PullRequest.Number),
+		Status: module.LifecycleStatus(
+			payload["action"],
+			pull.PullRequest.Draft,
+			pull.PullRequest.Merged,
+			pull.PullRequest.State,
+		),
+		OpenedAt: openedAt,
+		MergedAt: pull.PullRequest.MergedAt,
+	})
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err
@@ -171,6 +200,32 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 
 	var comment webhook.IssueCommentEvent
 	err = json.Unmarshal([]byte(payload["body"]), &comment)
+	if err != nil {
+		h.Tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	repo, err := h.Repository.RepoRepository.GetByGitHubId(comment.Repository.ID)
+	if err != nil {
+		h.Tasks.Fail(taskId, err.Error())
+		return err
+	}
+
+	var openedAt *time.Time
+	if !comment.Issue.CreatedAt.IsZero() {
+		openedAt = &comment.Issue.CreatedAt
+	}
+
+	_, err = h.PQueue.Ensure(repo.Id, &module.EnsurePRRequest{
+		RemoteId: int64(comment.Issue.Number),
+		Status: module.LifecycleStatus(
+			"",
+			comment.Issue.Draft,
+			false,
+			comment.Issue.State,
+		),
+		OpenedAt: openedAt,
+	})
 	if err != nil {
 		h.Tasks.Fail(taskId, err.Error())
 		return err

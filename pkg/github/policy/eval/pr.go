@@ -95,7 +95,7 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 		}
 	}
 
-	body := OutcomeComment(conf.PRTriage.Comments, plan.Actions)
+	body := OutcomeComment(conf.PRTriage.Comments, "pull request", plan.Actions)
 	if !lo.IsEmpty(body) {
 		plan.Actions = append(plan.Actions, action.Action{
 			Kind: policy.Comment,

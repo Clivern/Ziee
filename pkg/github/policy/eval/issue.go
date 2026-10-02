@@ -82,7 +82,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 		}
 	}
 
-	body := OutcomeComment(conf.IssueTriage.Comments, plan.Actions)
+	body := OutcomeComment(conf.IssueTriage.Comments, "issue", plan.Actions)
 	if !lo.IsEmpty(body) {
 		plan.Actions = append(plan.Actions, action.Action{
 			Kind: policy.Comment,
@@ -206,7 +206,7 @@ func EvaluateIssueComment(conf *v1.File, event Event, client Client) action.Plan
 	}
 
 	if cmd.Verb != "summarize" {
-		body := CommandOutcomeComment(conf.IssueTriage.Comments, event.Actor.Login, plan.Actions)
+		body := CommandOutcomeComment(conf.IssueTriage.Comments, "issue", event.Actor.Login, plan.Actions)
 		if !lo.IsEmpty(body) {
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind: policy.Comment,

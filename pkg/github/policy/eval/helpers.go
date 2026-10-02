@@ -81,12 +81,12 @@ func MergeTeams(groups ...[]string) []string {
 }
 
 // OutcomeComment returns the triage outcome body for comments mode.
-func OutcomeComment(mode string, actions []action.Action) string {
+func OutcomeComment(mode, subject string, actions []action.Action) string {
 	if mode != policy.CommentsAll && mode != policy.CommentsOutcomes {
 		return ""
 	}
 
-	var add, remove, assign, unassign []string
+	var add, remove, assign, unassign, reviewers []string
 	var closed, reopened, commented bool
 
 	for _, a := range actions {
@@ -99,6 +99,8 @@ func OutcomeComment(mode string, actions []action.Action) string {
 			assign = append(assign, a.Users...)
 		case policy.Unassign:
 			unassign = append(unassign, a.Users...)
+		case policy.RequestReviewers, policy.RequestReviewTeams:
+			reviewers = append(reviewers, a.Users...)
 		case policy.Close:
 			closed = true
 		case policy.Reopen:
@@ -113,15 +115,16 @@ func OutcomeComment(mode string, actions []action.Action) string {
 		JoinClause("removed", "`", "`", remove),
 		JoinClause("assigned", "@", "", assign),
 		JoinClause("unassigned", "@", "", unassign),
-		lo.Ternary(closed, "closed this issue", ""),
-		lo.Ternary(reopened, "reopened this issue", ""),
+		JoinClause("requested review from", "@", "", reviewers),
+		lo.Ternary(closed, "closed this "+subject, ""),
+		lo.Ternary(reopened, "reopened this "+subject, ""),
 	})
 
 	if len(parts) > 0 {
-		return "Triaged this issue: " + strings.Join(parts, ", ") + "."
+		return "Triaged this " + subject + ": " + strings.Join(parts, ", ") + "."
 	}
 	if commented {
-		return "Triaged this issue."
+		return "Triaged this " + subject + "."
 	}
 	if mode == policy.CommentsAll {
 		return "Triage ran; no rules matched."
@@ -131,12 +134,12 @@ func OutcomeComment(mode string, actions []action.Action) string {
 }
 
 // CommandOutcomeComment returns the command acknowledgement for comments mode.
-func CommandOutcomeComment(mode, actor string, actions []action.Action) string {
+func CommandOutcomeComment(mode, subject, actor string, actions []action.Action) string {
 	if mode != policy.CommentsAll && mode != policy.CommentsOutcomes {
 		return ""
 	}
 
-	var add, remove, assign, unassign []string
+	var add, remove, assign, unassign, reviewers []string
 	var closed, reopened, blocked bool
 
 	for _, a := range actions {
@@ -149,6 +152,8 @@ func CommandOutcomeComment(mode, actor string, actions []action.Action) string {
 			assign = append(assign, a.Users...)
 		case policy.Unassign:
 			unassign = append(unassign, a.Users...)
+		case policy.RequestReviewers, policy.RequestReviewTeams:
+			reviewers = append(reviewers, a.Users...)
 		case policy.Close:
 			closed = true
 		case policy.Reopen:
@@ -160,11 +165,12 @@ func CommandOutcomeComment(mode, actor string, actions []action.Action) string {
 	}
 
 	by := " as requested by @" + actor + "."
-	if closed && len(add)+len(remove)+len(assign)+len(unassign)+lo.Ternary(reopened, 1, 0)+lo.Ternary(blocked, 1, 0) == 0 {
-		return "Closed this issue" + by
+	extra := len(reviewers) + lo.Ternary(reopened, 1, 0) + lo.Ternary(blocked, 1, 0)
+	if closed && len(add)+len(remove)+len(assign)+len(unassign)+extra == 0 {
+		return "Closed this " + subject + by
 	}
-	if reopened && len(add)+len(remove)+len(assign)+len(unassign)+lo.Ternary(closed, 1, 0)+lo.Ternary(blocked, 1, 0) == 0 {
-		return "Reopened this issue" + by
+	if reopened && len(add)+len(remove)+len(assign)+len(unassign)+len(reviewers)+lo.Ternary(closed, 1, 0)+lo.Ternary(blocked, 1, 0) == 0 {
+		return "Reopened this " + subject + by
 	}
 
 	parts := lo.Compact([]string{
@@ -172,8 +178,9 @@ func CommandOutcomeComment(mode, actor string, actions []action.Action) string {
 		JoinClause("Removed", "`", "`", remove),
 		JoinClause("Assigned", "@", "", assign),
 		JoinClause("Unassigned", "@", "", unassign),
-		lo.Ternary(closed, "closed this issue", ""),
-		lo.Ternary(reopened, "reopened this issue", ""),
+		JoinClause("Requested review from", "@", "", reviewers),
+		lo.Ternary(closed, "closed this "+subject, ""),
+		lo.Ternary(reopened, "reopened this "+subject, ""),
 		lo.Ternary(blocked, "blocked the author", ""),
 	})
 	if len(parts) == 0 {

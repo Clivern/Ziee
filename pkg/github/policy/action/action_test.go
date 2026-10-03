@@ -28,6 +28,8 @@ func TestUnitApply(t *testing.T) {
 		{Kind: policy.RequestReviewers, Users: []string{"maya"}},
 		{Kind: policy.RequestReviewTeams, Users: []string{"sre"}},
 		{Kind: policy.BlockAuthor, Users: []string{"spammer"}},
+		{Kind: policy.Queue, Priority: "high", Rule: "hotfix"},
+		{Kind: policy.Dequeue},
 	}})
 
 	assert.NoError(t, err)
@@ -43,6 +45,8 @@ func TestUnitApply(t *testing.T) {
 		{Kind: policy.RequestReviewers, Users: []string{"maya"}},
 		{Kind: policy.RequestReviewTeams, Users: []string{"sre"}},
 		{Kind: policy.BlockAuthor, Users: []string{"spammer"}},
+		{Kind: policy.Queue, Priority: "high", Rule: "hotfix"},
+		{Kind: policy.Dequeue},
 	}, client.got)
 }
 
@@ -115,4 +119,12 @@ func (s *stubClient) RequestReviewTeams(ctx context.Context, repo Repo, teams []
 
 func (s *stubClient) BlockAuthor(ctx context.Context, repo Repo, users []string) error {
 	return s.record(repo, Action{Kind: policy.BlockAuthor, Users: users})
+}
+
+func (s *stubClient) Queue(ctx context.Context, repo Repo, priority, rule string) error {
+	return s.record(repo, Action{Kind: policy.Queue, Priority: priority, Rule: rule})
+}
+
+func (s *stubClient) Dequeue(ctx context.Context, repo Repo) error {
+	return s.record(repo, Action{Kind: policy.Dequeue})
 }

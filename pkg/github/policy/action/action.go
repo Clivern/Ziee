@@ -35,6 +35,10 @@ func Apply(ctx context.Context, client Client, repo Repo, plan Plan) error {
 			err = client.RequestReviewTeams(ctx, repo, item.Users)
 		case policy.BlockAuthor:
 			err = client.BlockAuthor(ctx, repo, item.Users)
+		case policy.Queue:
+			err = client.Queue(ctx, repo, item.Priority, item.Rule)
+		case policy.Dequeue:
+			err = client.Dequeue(ctx, repo)
 		}
 
 		if err != nil {

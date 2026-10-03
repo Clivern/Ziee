@@ -190,6 +190,36 @@ func CommandOutcomeComment(mode, subject, actor string, actions []action.Action)
 	return strings.Join(parts, ", ") + by
 }
 
+// MergeQueueOutcomeComment returns the merge-queue command acknowledgement.
+func MergeQueueOutcomeComment(mode, actor string, actions []action.Action) string {
+	if mode != policy.CommentsAll && mode != policy.CommentsOutcomes {
+		return ""
+	}
+
+	var queued, dequeued bool
+	for _, a := range actions {
+		switch a.Kind {
+		case policy.Queue:
+			queued = true
+		case policy.Dequeue:
+			dequeued = true
+		}
+	}
+
+	by := " as requested by @" + actor + "."
+	if queued && dequeued {
+		return "Requeued this pull request" + by
+	}
+	if queued {
+		return "Queued this pull request" + by
+	}
+	if dequeued {
+		return "Dequeued this pull request" + by
+	}
+
+	return ""
+}
+
 // IsAppActor reports whether login is the configured GitHub App bot.
 func IsAppActor(login string) bool {
 	bot := strings.ToLower(app.GetConfig().BotName)

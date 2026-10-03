@@ -236,12 +236,22 @@ func ReconcilePRActions(actions []action.Action, issue Issue) []action.Action {
 func EvaluatePRComment(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan
 
-	if !conf.PRTriage.Enabled || IsAppActor(event.Actor.Login) {
+	if IsAppActor(event.Actor.Login) {
 		return plan
 	}
 
 	cmd := ParseCommand(event.Comment)
 	if lo.IsEmpty(cmd.Verb) {
+		return plan
+	}
+
+	if conf.MergeQueue.Enabled {
+		if _, ok := conf.MergeQueue.Commands[cmd.Verb]; ok {
+			return EvaluateMergeQueueComment(conf, event, client)
+		}
+	}
+
+	if !conf.PRTriage.Enabled {
 		return plan
 	}
 
@@ -303,6 +313,9 @@ func EvaluatePRComment(conf *v1.File, event Event, client Client) action.Plan {
 		}
 	case "close":
 		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+		if conf.MergeQueue.Enabled {
+			plan.Actions = append(plan.Actions, dequeueActions(conf)...)
+		}
 	case "reopen":
 		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Reopen})
 	case "spam":
@@ -316,6 +329,9 @@ func EvaluatePRComment(conf *v1.File, event Event, client Client) action.Plan {
 			Kind:  policy.BlockAuthor,
 			Users: []string{event.Issue.Author},
 		})
+		if conf.MergeQueue.Enabled {
+			plan.Actions = append(plan.Actions, dequeueActions(conf)...)
+		}
 	}
 
 	body := CommandOutcomeComment(conf.PRTriage.Comments, "pull request", event.Actor.Login, plan.Actions)

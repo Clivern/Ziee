@@ -5,10 +5,13 @@ package action
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/github/app"
+
+	"github.com/samber/lo"
 )
 
 type githubClient struct {
@@ -16,19 +19,23 @@ type githubClient struct {
 	githubRepoId   int64
 	authorId       int64
 	repos          *module.Repository
+	pqueue         *module.PQueue
 }
 
 // NewClient returns a GitHub client that performs planned triage actions.
 func NewClient(installationId, githubRepoId, authorId int64) Client {
+	conn := db.GetDB()
+
 	return githubClient{
 		installationId: installationId,
 		githubRepoId:   githubRepoId,
 		authorId:       authorId,
 		repos: module.NewRepository(
-			db.NewRepositoriesRepository(db.GetDB()),
-			db.NewRepositoryMetaRepository(db.GetDB()),
-			db.NewRepositorySpamUserRepository(db.GetDB()),
+			db.NewRepositoriesRepository(conn),
+			db.NewRepositoryMetaRepository(conn),
+			db.NewRepositorySpamUserRepository(conn),
 		),
+		pqueue: module.NewPQueue(db.NewPQueueRepository(conn)),
 	}
 }
 
@@ -84,4 +91,44 @@ func (a githubClient) BlockAuthor(ctx context.Context, repo Repo, users []string
 	a.repos.BlockAuthor(a.githubRepoId, users[0], a.authorId)
 
 	return nil
+}
+
+// Queue adds the pull request to the merge queue and schedules a merge run.
+func (a githubClient) Queue(ctx context.Context, repo Repo, priority, rule string) error {
+	item, err := a.repos.RepoRepository.GetByGitHubId(a.githubRepoId)
+	if err != nil {
+		return err
+	}
+
+	meta := "{}"
+	if lo.IsNotEmpty(rule) {
+		raw, err := json.Marshal(map[string]string{"rule": rule})
+		if err != nil {
+			return err
+		}
+		meta = string(raw)
+	}
+
+	_, err = a.pqueue.Append(item.Id, &module.AppendPRRequest{
+		RemoteId: int64(repo.Number),
+		Priority: priority,
+		Meta:     meta,
+	})
+	if err != nil {
+		return err
+	}
+
+	return module.EnqueueRepoMergeTask(item.Id, item.WorkspaceId)
+}
+
+// Dequeue removes the pull request from the merge queue.
+func (a githubClient) Dequeue(ctx context.Context, repo Repo) error {
+	item, err := a.repos.RepoRepository.GetByGitHubId(a.githubRepoId)
+	if err != nil {
+		return err
+	}
+
+	_, err = a.pqueue.Dequeue(item.Id, int64(repo.Number))
+
+	return err
 }

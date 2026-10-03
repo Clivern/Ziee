@@ -7,10 +7,12 @@ import "context"
 
 // Action is one GitHub change to apply.
 type Action struct {
-	Kind   string   `json:"kind,omitempty"`
-	Labels []string `json:"labels,omitempty"`
-	Users  []string `json:"users,omitempty"`
-	Body   string   `json:"body,omitempty"`
+	Kind     string   `json:"kind,omitempty"`
+	Labels   []string `json:"labels,omitempty"`
+	Users    []string `json:"users,omitempty"`
+	Body     string   `json:"body,omitempty"`
+	Priority string   `json:"priority,omitempty"`
+	Rule     string   `json:"rule,omitempty"`
 }
 
 // Plan is the ordered list of actions for one event.
@@ -37,4 +39,6 @@ type Client interface {
 	RequestReviewers(ctx context.Context, repo Repo, users []string) error
 	RequestReviewTeams(ctx context.Context, repo Repo, teams []string) error
 	BlockAuthor(ctx context.Context, repo Repo, users []string) error
+	Queue(ctx context.Context, repo Repo, priority, rule string) error
+	Dequeue(ctx context.Context, repo Repo) error
 }

@@ -50,6 +50,7 @@
     .orbit {
       position: absolute;
       inset: -8% -12% -8% -5%;
+      opacity: 0.38;
       animation: drift 22s ease-in-out infinite;
     }
 
@@ -199,8 +200,8 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 48% 42% at 38% 48%, rgba(247, 246, 243, 0.94) 0%, rgba(247, 246, 243, 0.78) 45%, rgba(247, 246, 243, 0.32) 72%, transparent 100%),
-        linear-gradient(90deg, rgba(247, 246, 243, 0.72) 0%, rgba(247, 246, 243, 0.18) 52%, rgba(247, 246, 243, 0.28) 100%);
+        radial-gradient(ellipse 58% 52% at 40% 48%, rgba(247, 246, 243, 0.96) 0%, rgba(247, 246, 243, 0.88) 48%, rgba(247, 246, 243, 0.55) 74%, rgba(247, 246, 243, 0.28) 100%),
+        linear-gradient(90deg, rgba(247, 246, 243, 0.82) 0%, rgba(247, 246, 243, 0.45) 50%, rgba(247, 246, 243, 0.55) 100%);
     }
 
     .page {
@@ -307,10 +308,10 @@
     .site-footer a:hover { color: var(--ink); }
 
     @media (max-width: 720px) {
-      .orbit { opacity: 0.85; }
+      .orbit { opacity: 0.28; }
       .veil {
         background:
-          radial-gradient(ellipse 70% 55% at 40% 45%, rgba(247, 246, 243, 0.95) 0%, rgba(247, 246, 243, 0.82) 50%, rgba(247, 246, 243, 0.45) 75%, transparent 100%);
+          radial-gradient(ellipse 75% 60% at 40% 45%, rgba(247, 246, 243, 0.97) 0%, rgba(247, 246, 243, 0.9) 52%, rgba(247, 246, 243, 0.6) 78%, rgba(247, 246, 243, 0.35) 100%);
       }
       .site-footer { position: static; }
       .page { padding-bottom: 2rem; }

@@ -103,6 +103,12 @@ func (p *PQueue) Ensure(repoId db.Id, req *EnsurePRRequest) (*db.PQueue, error) 
 	status := lo.Ternary(lo.IsNotEmpty(req.Status), req.Status, db.PQueueStatusOpened)
 
 	if item != nil {
+		if isActiveQueueStatus(item.Status) && !isTerminalLifecycleStatus(status) {
+			if req.MergedAt == nil {
+				return item, nil
+			}
+		}
+
 		if item.Status == status && req.MergedAt == nil {
 			return item, nil
 		}
@@ -267,6 +273,36 @@ func (p *PQueue) Update(repoId db.Id, remoteId int64, req *UpdatePRRequest) (*db
 	return item, nil
 }
 
+// Dequeue marks a queued or checking pull request as dequeued.
+func (p *PQueue) Dequeue(repoId db.Id, remoteId int64) (*db.PQueue, error) {
+	item, err := p.PQueueRepository.GetByRepoIdAndRemoteId(repoId, remoteId)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrFailedGetPQueue, err)
+	}
+	if item == nil {
+		return nil, ErrPQueueNotFound
+	}
+
+	if item.Status != db.PQueueStatusQueued && item.Status != db.PQueueStatusChecking {
+		return item, nil
+	}
+
+	item.Status = db.PQueueStatusDequeued
+	item.Rank = 0
+
+	err = p.PQueueRepository.Update(item)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrFailedUpdatePQueue, err)
+	}
+
+	log.Info().
+		Str("repoId", repoId.String()).
+		Int64("remoteId", remoteId).
+		Msg("Pull request dequeued from merge queue")
+
+	return item, nil
+}
+
 // ListQueued returns the top limit queued PRs for a repository.
 func (p *PQueue) ListQueued(repoId db.Id, limit int) ([]*db.PQueue, error) {
 	items, err := p.PQueueRepository.ListQueuedByRepoId(repoId, limit)
@@ -372,4 +408,14 @@ func SnapshotWorkingQueue(snapshot []*db.PQueue) []PR {
 	}
 
 	return saved
+}
+
+func isActiveQueueStatus(status string) bool {
+	return status == db.PQueueStatusQueued || status == db.PQueueStatusChecking
+}
+
+func isTerminalLifecycleStatus(status string) bool {
+	return status == db.PQueueStatusMerged ||
+		status == db.PQueueStatusClosed ||
+		status == db.PQueueStatusDraft
 }

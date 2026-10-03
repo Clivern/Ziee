@@ -49,7 +49,7 @@
 
     .orbit {
       position: absolute;
-      inset: -8% -5%;
+      inset: -8% -12% -8% -5%;
       animation: drift 22s ease-in-out infinite;
     }
 
@@ -143,20 +143,64 @@
     .spark.e { animation-delay: 1.8s; fill: var(--coral); }
 
     .label {
-      fill: rgba(55, 53, 47, 0.28);
-      font-size: 11px;
+      fill: rgba(55, 53, 47, 0.34);
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       font-family: inherit;
     }
 
+    .chip {
+      fill: rgba(255, 255, 255, 0.78);
+      stroke: rgba(55, 53, 47, 0.14);
+      stroke-width: 1;
+    }
+
+    .chip.coral {
+      fill: rgba(253, 236, 234, 0.88);
+      stroke: rgba(196, 90, 69, 0.28);
+    }
+
+    .chip.teal {
+      fill: rgba(232, 246, 243, 0.88);
+      stroke: rgba(15, 123, 108, 0.28);
+    }
+
+    .chip.ink {
+      fill: rgba(55, 53, 47, 0.88);
+      stroke: none;
+    }
+
+    .chip-text {
+      fill: rgba(55, 53, 47, 0.55);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: inherit;
+    }
+
+    .chip-text.ink { fill: rgba(247, 246, 243, 0.92); }
+    .chip-text.coral { fill: rgba(143, 58, 42, 0.85); }
+    .chip-text.teal { fill: rgba(15, 123, 108, 0.85); }
+
+    .rail.faint {
+      stroke: rgba(55, 53, 47, 0.08);
+      stroke-width: 1.1;
+    }
+
+    .dash.slow {
+      animation-duration: 3.4s;
+      stroke: rgba(55, 53, 47, 0.2);
+    }
+
     .veil {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 48% 42% at 42% 48%, rgba(247, 246, 243, 0.94) 0%, rgba(247, 246, 243, 0.78) 45%, rgba(247, 246, 243, 0.35) 72%, transparent 100%),
-        linear-gradient(90deg, rgba(247, 246, 243, 0.75) 0%, rgba(247, 246, 243, 0.2) 55%, rgba(247, 246, 243, 0.55) 100%);
+        radial-gradient(ellipse 48% 42% at 38% 48%, rgba(247, 246, 243, 0.94) 0%, rgba(247, 246, 243, 0.78) 45%, rgba(247, 246, 243, 0.32) 72%, transparent 100%),
+        linear-gradient(90deg, rgba(247, 246, 243, 0.72) 0%, rgba(247, 246, 243, 0.18) 52%, rgba(247, 246, 243, 0.28) 100%);
     }
 
     .page {
@@ -302,70 +346,287 @@
 <body>
   <div class="backdrop" aria-hidden="true">
     <div class="orbit">
-      <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
-        <text class="label" x="110" y="168">agents</text>
-        <text class="label" x="980" y="210">main</text>
+      <svg viewBox="0 0 1480 900" preserveAspectRatio="xMidYMid slice">
+        <!-- faint lattice -->
+        <path class="rail faint" d="M40 140 C180 110, 280 190, 420 160 S680 90, 860 140 S1100 210, 1280 160 S1380 120, 1420 140" />
+        <path class="rail faint" d="M20 240 C160 280, 300 200, 460 230 S740 300, 920 250 S1140 180, 1320 230 S1400 270, 1460 250" />
+        <path class="rail faint" d="M30 700 C190 740, 330 650, 500 690 S780 760, 980 700 S1180 620, 1360 670" />
+        <path class="rail faint" d="M70 800 C250 760, 420 840, 620 790 S920 720, 1120 780 S1300 840, 1420 800" />
 
-        <!-- distant lattice -->
-        <path class="rail" d="M80 220 C260 180, 360 300, 520 280 S780 180, 980 240 S1220 320, 1340 280" />
-        <path class="rail soft" d="M60 520 C240 480, 340 620, 540 590 S820 470, 1040 540 S1260 620, 1360 560" />
-        <path class="rail accent" d="M40 360 C220 420, 360 250, 560 320 S860 430, 1080 340 S1280 250, 1380 310" />
+        <!-- primary lanes -->
+        <path class="rail" d="M60 200 C210 160, 340 250, 500 220 C660 190, 780 140, 940 175 C1080 205, 1180 250, 1280 235 C1340 225, 1385 218, 1440 230" />
+        <path class="rail accent" d="M50 300 C200 340, 340 250, 500 290 C660 330, 780 380, 960 330 C1120 290, 1220 250, 1300 275 C1365 295, 1405 305, 1460 295" />
+        <path class="rail soft" d="M40 400 C190 360, 330 450, 500 420 C670 390, 800 340, 980 380 C1140 415, 1240 460, 1320 440 C1385 425, 1425 418, 1470 435" />
+        <path class="rail" d="M70 500 C220 540, 360 450, 530 490 C700 530, 840 590, 1020 540 C1180 500, 1280 470, 1340 495 C1395 515, 1430 528, 1475 515" />
+        <path class="rail soft" d="M55 600 C210 560, 350 650, 520 620 C690 590, 830 530, 1010 575 C1170 615, 1270 660, 1340 640 C1395 622, 1430 615, 1475 630" />
+        <path class="rail accent" d="M80 700 C240 740, 390 650, 560 690 C730 730, 870 780, 1050 730 C1210 690, 1310 650, 1370 685 C1420 710, 1450 722, 1490 710" />
 
-        <!-- merge spines -->
-        <path class="rail" d="M180 300 C320 260, 420 360, 560 340 C700 318, 760 260, 900 280 C1040 300, 1120 360, 1260 330" />
-        <path class="rail soft" d="M160 450 C300 500, 420 390, 580 430 C740 470, 820 520, 980 470 C1120 430, 1200 470, 1320 450" />
-        <path class="rail accent" d="M200 610 C340 560, 460 650, 620 610 C780 570, 860 500, 1020 540 C1160 575, 1240 610, 1350 580" />
+        <!-- cross merges / forks -->
+        <path class="rail faint" d="M260 210 C310 260, 350 300, 390 340" />
+        <path class="rail" d="M480 230 C520 270, 540 310, 560 360" />
+        <path class="rail soft" d="M720 160 C760 220, 790 280, 820 340" />
+        <path class="rail accent" d="M900 190 C940 250, 970 310, 1000 360" />
+        <path class="rail" d="M340 410 C390 450, 430 490, 470 530" />
+        <path class="rail soft" d="M640 400 C690 450, 740 510, 790 560" />
+        <path class="rail accent" d="M860 400 C910 460, 960 530, 1010 590" />
+        <path class="rail" d="M420 610 C470 560, 520 510, 580 470" />
+        <path class="rail soft" d="M760 640 C820 590, 880 540, 950 500" />
+        <path class="rail faint" d="M1100 360 C1140 410, 1180 470, 1220 520" />
+        <path class="rail" d="M1080 560 C1130 510, 1180 460, 1240 430" />
+        <path class="rail accent" d="M300 690 C360 640, 430 590, 500 560" />
 
-        <!-- flowing dashes -->
-        <path class="dash coral" d="M180 300 C320 260, 420 360, 560 340 C700 318, 760 260, 900 280 C1040 300, 1120 360, 1260 330" />
-        <path class="dash teal" d="M160 450 C300 500, 420 390, 580 430 C740 470, 820 520, 980 470 C1120 430, 1200 470, 1320 450" />
-        <path class="dash" d="M200 610 C340 560, 460 650, 620 610 C780 570, 860 500, 1020 540 C1160 575, 1240 610, 1350 580" />
+        <!-- flowing dashes on main lanes -->
+        <path class="dash coral" d="M60 200 C210 160, 340 250, 500 220 C660 190, 780 140, 940 175 C1080 205, 1180 250, 1280 235 C1340 225, 1385 218, 1440 230" />
+        <path class="dash teal" d="M50 300 C200 340, 340 250, 500 290 C660 330, 780 380, 960 330 C1120 290, 1220 250, 1300 275 C1365 295, 1405 305, 1460 295" />
+        <path class="dash" d="M40 400 C190 360, 330 450, 500 420 C670 390, 800 340, 980 380 C1140 415, 1240 460, 1320 440 C1385 425, 1425 418, 1470 435" />
+        <path class="dash slow" d="M70 500 C220 540, 360 450, 530 490 C700 530, 840 590, 1020 540 C1180 500, 1280 470, 1340 495 C1395 515, 1430 528, 1475 515" />
+        <path class="dash teal" d="M55 600 C210 560, 350 650, 520 620 C690 590, 830 530, 1010 575 C1170 615, 1270 660, 1340 640 C1395 622, 1430 615, 1475 630" />
+        <path class="dash coral" d="M80 700 C240 740, 390 650, 560 690 C730 730, 870 780, 1050 730 C1210 690, 1310 650, 1370 685 C1420 710, 1450 722, 1490 710" />
+        <path class="dash slow" d="M420 610 C470 560, 520 510, 580 470" />
+        <path class="dash" d="M860 400 C910 460, 960 530, 1010 590" />
 
-        <!-- branch forks -->
-        <path class="rail" d="M420 340 C470 280, 510 240, 560 210" />
-        <path class="rail soft" d="M700 430 C760 390, 820 350, 880 320" />
-        <path class="rail accent" d="M860 540 C920 500, 980 470, 1040 450" />
+        <!-- chips: tickets / sandbox / lanes -->
+        <g transform="translate(92 178)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
+        </g>
+        <g transform="translate(250 142)">
+          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
+          <text class="chip-text" x="27" y="14" text-anchor="middle">bots</text>
+        </g>
+        <g transform="translate(430 198)">
+          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
+          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
+        </g>
+        <g transform="translate(700 118)">
+          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
+          <text class="chip-text" x="27" y="14" text-anchor="middle">ci</text>
+        </g>
+        <g transform="translate(960 152)">
+          <rect class="chip coral" x="0" y="0" width="42" height="20" rx="6" />
+          <text class="chip-text coral" x="21" y="14" text-anchor="middle">pr</text>
+        </g>
+        <g transform="translate(860 212)">
+          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
+          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
+        </g>
+        <g transform="translate(980 198)">
+          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
+          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
+        </g>
+        <g transform="translate(1100 208)">
+          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
+          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
+        </g>
 
-        <!-- nodes -->
-        <circle class="halo" cx="560" cy="340" r="14" />
-        <circle class="halo teal" cx="980" cy="470" r="16" />
-        <circle class="node" cx="180" cy="300" r="5" />
-        <circle class="node coral" cx="320" cy="270" r="4" />
-        <circle class="node" cx="420" cy="350" r="5" />
-        <circle class="node live" cx="560" cy="340" r="6" />
-        <circle class="node teal" cx="700" cy="320" r="4" />
-        <circle class="node" cx="900" cy="280" r="5" />
-        <circle class="node coral" cx="1040" cy="320" r="4" />
-        <circle class="node live" cx="1260" cy="330" r="7" />
+        <g transform="translate(110 278)">
+          <rect class="chip" x="0" y="0" width="62" height="20" rx="6" />
+          <text class="chip-text" x="31" y="14" text-anchor="middle">agents</text>
+        </g>
+        <g transform="translate(330 248)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
+        </g>
+        <g transform="translate(560 268)">
+          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
+          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
+        </g>
+        <g transform="translate(820 352)">
+          <rect class="chip" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text" x="29" y="14" text-anchor="middle">queue</text>
+        </g>
+        <g transform="translate(760 248)">
+          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
+          <text class="chip-text" x="27" y="14" text-anchor="middle">checks</text>
+        </g>
+        <g transform="translate(880 268)">
+          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
+          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
+        </g>
+        <g transform="translate(1000 288)">
+          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
+          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
+        </g>
+        <g transform="translate(1120 292)">
+          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
+          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
+        </g>
 
-        <circle class="node" cx="160" cy="450" r="5" />
-        <circle class="node teal" cx="300" cy="490" r="4" />
-        <circle class="node" cx="580" cy="430" r="5" />
-        <circle class="node live" cx="980" cy="470" r="6" />
-        <circle class="node coral" cx="1120" cy="440" r="4" />
-        <circle class="node live" cx="1320" cy="450" r="7" />
+        <g transform="translate(100 378)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
+        </g>
+        <g transform="translate(360 398)">
+          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
+          <text class="chip-text" x="27" y="14" text-anchor="middle">review</text>
+        </g>
+        <g transform="translate(620 368)">
+          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
+          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
+        </g>
+        <g transform="translate(900 358)">
+          <rect class="chip" x="0" y="0" width="42" height="20" rx="6" />
+          <text class="chip-text" x="21" y="14" text-anchor="middle">pr</text>
+        </g>
+        <g transform="translate(1240 360)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">merge</text>
+        </g>
 
-        <circle class="node" cx="200" cy="610" r="5" />
-        <circle class="node coral" cx="460" cy="640" r="4" />
-        <circle class="node" cx="620" cy="610" r="5" />
-        <circle class="node teal" cx="860" cy="520" r="4" />
-        <circle class="node live" cx="1350" cy="580" r="6" />
+        <g transform="translate(140 478)">
+          <rect class="chip" x="0" y="0" width="62" height="20" rx="6" />
+          <text class="chip-text" x="31" y="14" text-anchor="middle">agents</text>
+        </g>
+        <g transform="translate(400 468)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
+        </g>
+        <g transform="translate(680 508)">
+          <rect class="chip" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text" x="29" y="14" text-anchor="middle">queue</text>
+        </g>
+        <g transform="translate(960 518)">
+          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
+          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
+        </g>
+        <g transform="translate(870 468)">
+          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
+          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
+        </g>
+        <g transform="translate(995 492)">
+          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
+          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
+        </g>
+        <g transform="translate(1120 502)">
+          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
+          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
+        </g>
 
-        <!-- traveling sparks along paths -->
-        <circle class="spark a" cx="220" cy="295" r="2.4">
-          <animateMotion dur="5.5s" repeatCount="indefinite" path="M0 0 C100 -30, 180 50, 300 35 C420 18, 500 -40, 640 -15 C780 10, 860 55, 980 30" />
+        <g transform="translate(160 578)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
+        </g>
+        <g transform="translate(430 598)">
+          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
+          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
+        </g>
+        <g transform="translate(740 548)">
+          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
+          <text class="chip-text" x="27" y="14" text-anchor="middle">ci</text>
+        </g>
+        <g transform="translate(760 552)">
+          <rect class="chip" x="0" y="0" width="42" height="20" rx="6" />
+          <text class="chip-text" x="21" y="14" text-anchor="middle">pr</text>
+        </g>
+        <g transform="translate(880 618)">
+          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
+          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
+        </g>
+        <g transform="translate(1005 608)">
+          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
+          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
+        </g>
+        <g transform="translate(1130 618)">
+          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
+          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
+        </g>
+
+        <g transform="translate(200 678)">
+          <rect class="chip" x="0" y="0" width="62" height="20" rx="6" />
+          <text class="chip-text" x="31" y="14" text-anchor="middle">agents</text>
+        </g>
+        <g transform="translate(480 668)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
+        </g>
+        <g transform="translate(820 712)">
+          <rect class="chip" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text" x="29" y="14" text-anchor="middle">queue</text>
+        </g>
+        <g transform="translate(1240 668)">
+          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
+          <text class="chip-text coral" x="29" y="14" text-anchor="middle">merge</text>
+        </g>
+
+        <!-- nodes / halos -->
+        <circle class="halo" cx="500" cy="220" r="13" />
+        <circle class="halo teal" cx="960" cy="330" r="15" />
+        <circle class="halo" cx="1020" cy="540" r="14" />
+
+        <circle class="node coral" cx="120" cy="195" r="4" />
+        <circle class="node" cx="280" cy="175" r="4" />
+        <circle class="node live" cx="500" cy="220" r="6" />
+        <circle class="node teal" cx="760" cy="155" r="4" />
+        <circle class="node" cx="980" cy="180" r="5" />
+        <circle class="node live" cx="1340" cy="220" r="7" />
+
+        <circle class="node" cx="140" cy="310" r="4" />
+        <circle class="node coral" cx="360" cy="270" r="4" />
+        <circle class="node teal" cx="590" cy="300" r="5" />
+        <circle class="node live" cx="960" cy="330" r="6" />
+        <circle class="node" cx="1200" cy="270" r="4" />
+        <circle class="node live" cx="1380" cy="290" r="7" />
+
+        <circle class="node coral" cx="130" cy="390" r="4" />
+        <circle class="node" cx="390" cy="425" r="4" />
+        <circle class="node teal" cx="650" cy="400" r="5" />
+        <circle class="node" cx="930" cy="375" r="4" />
+        <circle class="node live" cx="1390" cy="420" r="6" />
+
+        <circle class="node" cx="170" cy="515" r="4" />
+        <circle class="node coral" cx="430" cy="485" r="4" />
+        <circle class="node" cx="710" cy="540" r="5" />
+        <circle class="node live" cx="1020" cy="540" r="6" />
+        <circle class="node teal" cx="820" cy="575" r="4" />
+        <circle class="node live" cx="1410" cy="510" r="7" />
+
+        <circle class="node coral" cx="190" cy="590" r="4" />
+        <circle class="node teal" cx="460" cy="625" r="4" />
+        <circle class="node" cx="770" cy="555" r="4" />
+        <circle class="node live" cx="1400" cy="620" r="6" />
+
+        <circle class="node" cx="230" cy="710" r="4" />
+        <circle class="node coral" cx="510" cy="695" r="4" />
+        <circle class="node" cx="850" cy="745" r="4" />
+        <circle class="node live" cx="1430" cy="700" r="7" />
+
+        <circle class="node teal" cx="1055" cy="175" r="4" />
+        <circle class="node coral" cx="1165" cy="195" r="5" />
+        <circle class="node teal" cx="1075" cy="270" r="4" />
+        <circle class="node coral" cx="1185" cy="280" r="5" />
+        <circle class="node teal" cx="1070" cy="475" r="4" />
+        <circle class="node coral" cx="1185" cy="490" r="5" />
+        <circle class="node teal" cx="1080" cy="590" r="4" />
+        <circle class="node coral" cx="1195" cy="605" r="5" />
+        <circle class="node teal" cx="1345" cy="430" r="4" />
+        <circle class="node coral" cx="1260" cy="370" r="4" />
+        <circle class="node teal" cx="1275" cy="680" r="4" />
+        <circle class="node coral" cx="1300" cy="680" r="4" />
+
+        <!-- traveling sparks -->
+        <circle class="spark a" r="2.3">
+          <animateMotion dur="6s" repeatCount="indefinite" path="M90 200 C210 160, 340 250, 500 220 C660 190, 780 140, 940 175 C1080 205, 1180 250, 1320 225" />
         </circle>
-        <circle class="spark b" cx="180" cy="455" r="2.2">
-          <animateMotion dur="6.2s" begin="1s" repeatCount="indefinite" path="M0 0 C120 40, 220 -40, 360 -10 C500 25, 600 70, 760 20 C900 -20, 980 15, 1100 0" />
+        <circle class="spark b" r="2.1">
+          <animateMotion dur="5.4s" begin="0.8s" repeatCount="indefinite" path="M80 305 C200 340, 340 250, 500 290 C660 330, 780 380, 960 330 C1120 290, 1220 250, 1360 285" />
         </circle>
-        <circle class="spark c" cx="240" cy="600" r="2.2">
-          <animateMotion dur="7s" begin="2s" repeatCount="indefinite" path="M0 0 C110 -40, 220 35, 360 0 C500 -35, 620 -90, 760 -55 C900 -20, 980 15, 1080 -10" />
+        <circle class="spark c" r="2.1">
+          <animateMotion dur="6.8s" begin="1.4s" repeatCount="indefinite" path="M70 405 C190 360, 330 450, 500 420 C670 390, 800 340, 980 380 C1140 415, 1240 460, 1360 430" />
         </circle>
-        <circle class="spark d" cx="430" cy="330" r="1.8">
-          <animateMotion dur="4.8s" begin="0.4s" repeatCount="indefinite" path="M0 0 C40 -45, 80 -85, 130 -120" />
+        <circle class="spark d" r="1.9">
+          <animateMotion dur="7.2s" begin="0.5s" repeatCount="indefinite" path="M100 505 C220 540, 360 450, 530 490 C700 530, 840 590, 1020 540 C1180 500, 1280 470, 1380 505" />
         </circle>
-        <circle class="spark e" cx="720" cy="425" r="1.8">
-          <animateMotion dur="5.2s" begin="1.6s" repeatCount="indefinite" path="M0 0 C50 -35, 110 -75, 170 -105" />
+        <circle class="spark e" r="2">
+          <animateMotion dur="6.4s" begin="1.8s" repeatCount="indefinite" path="M90 605 C210 560, 350 650, 520 620 C690 590, 830 530, 1010 575 C1170 615, 1270 660, 1380 625" />
+        </circle>
+        <circle class="spark a" r="1.8">
+          <animateMotion dur="5.8s" begin="2.2s" repeatCount="indefinite" path="M110 705 C240 740, 390 650, 560 690 C730 730, 870 780, 1050 730 C1210 690, 1310 650, 1400 695" />
+        </circle>
+        <circle class="spark b" r="1.7">
+          <animateMotion dur="4.6s" begin="1.1s" repeatCount="indefinite" path="M430 605 C480 555, 530 505, 590 465" />
+        </circle>
+        <circle class="spark c" r="1.7">
+          <animateMotion dur="5s" begin="2.6s" repeatCount="indefinite" path="M870 405 C920 465, 970 535, 1020 595" />
         </circle>
       </svg>
     </div>

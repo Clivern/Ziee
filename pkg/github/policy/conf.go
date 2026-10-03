@@ -31,4 +31,6 @@ const (
 	BlockAuthor        = "block_author"
 	RequestReviewers   = "request_reviewers"
 	RequestReviewTeams = "request_review_teams"
+	Queue              = "queue"
+	Dequeue            = "dequeue"
 )

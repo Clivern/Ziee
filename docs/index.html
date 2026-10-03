@@ -6,7 +6,7 @@
   <title>Ziee — The Autonomous Merge Layer for Agent-Scale Delivery</title>
   <meta name="description" content="Ziee is the merge layer for agent-scale delivery. Pull requests get queued, checked, and merged without a human on the button." />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="logo.png" />
   <meta name="theme-color" content="#37352f" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,17 +41,14 @@
       z-index: 0;
       overflow: hidden;
       pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 55% at 78% 42%, rgba(196, 90, 69, 0.08), transparent 60%),
-        radial-gradient(ellipse 55% 50% at 18% 70%, rgba(15, 123, 108, 0.07), transparent 55%),
-        var(--bg);
+      background: var(--bg);
     }
 
     .orbit {
       position: absolute;
-      inset: -8% -12% -8% -5%;
-      opacity: 0.38;
-      animation: drift 22s ease-in-out infinite;
+      inset: -6% -4%;
+      opacity: 0.78;
+      animation: drift 24s ease-in-out infinite;
     }
 
     .orbit svg {
@@ -60,148 +57,89 @@
       display: block;
     }
 
-    .rail {
+    .synapse {
       fill: none;
+      stroke: rgba(55, 53, 47, 0.22);
+      stroke-width: 1.2;
+      stroke-linecap: round;
+    }
+
+    .synapse.soft {
+      stroke: rgba(15, 123, 108, 0.32);
+    }
+
+    .synapse.coral {
+      stroke: rgba(196, 90, 69, 0.38);
+    }
+
+    .synapse.teal {
+      stroke: rgba(15, 123, 108, 0.38);
+    }
+
+    .synapse.faint {
       stroke: rgba(55, 53, 47, 0.12);
-      stroke-width: 1.4;
-      stroke-linecap: round;
+      stroke-width: 1;
     }
 
-    .rail.accent {
-      stroke: rgba(196, 90, 69, 0.28);
-      stroke-width: 1.6;
-    }
-
-    .rail.soft {
-      stroke: rgba(15, 123, 108, 0.22);
-    }
-
-    .dash {
-      fill: none;
-      stroke: rgba(55, 53, 47, 0.28);
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-dasharray: 5 10;
-      animation: dash-flow 2.4s linear infinite;
-    }
-
-    .dash.coral {
-      stroke: rgba(196, 90, 69, 0.55);
-      animation-duration: 1.8s;
-    }
-
-    .dash.teal {
-      stroke: rgba(15, 123, 108, 0.5);
-      animation-duration: 2.8s;
-      animation-direction: reverse;
-    }
-
-    .node {
+    .neuron {
       fill: #fff;
-      stroke: rgba(55, 53, 47, 0.18);
+      stroke: rgba(55, 53, 47, 0.32);
       stroke-width: 1.2;
     }
 
-    .node.live {
-      fill: var(--ink);
+    .neuron.input {
+      fill: rgba(55, 53, 47, 0.88);
       stroke: none;
     }
 
-    .node.coral {
+    .neuron.output {
       fill: var(--coral);
       stroke: none;
     }
 
-    .node.teal {
+    .neuron.active {
+      fill: var(--ink);
+      stroke: none;
+    }
+
+    .neuron.teal {
       fill: var(--green);
+      stroke: none;
+    }
+
+    .neuron.coral {
+      fill: var(--coral);
       stroke: none;
     }
 
     .halo {
       fill: none;
-      stroke: rgba(196, 90, 69, 0.22);
+      stroke: rgba(196, 90, 69, 0.35);
       stroke-width: 1;
       transform-origin: center;
       transform-box: fill-box;
-      animation: pulse-ring 3.6s ease-out infinite;
+      animation: pulse-ring 3.8s ease-out infinite;
     }
 
     .halo.teal {
-      stroke: rgba(15, 123, 108, 0.22);
-      animation-delay: 1.2s;
+      stroke: rgba(15, 123, 108, 0.35);
+      animation-delay: 1.3s;
     }
 
-    .spark {
+    .signal {
       fill: var(--ink);
-      opacity: 0.55;
-      animation: spark 4.5s var(--ease) infinite;
+      opacity: 0;
     }
 
-    .spark.a { animation-delay: 0s; }
-    .spark.b { animation-delay: 1.1s; fill: var(--coral); }
-    .spark.c { animation-delay: 2.2s; fill: var(--green); }
-    .spark.d { animation-delay: 0.7s; }
-    .spark.e { animation-delay: 1.8s; fill: var(--coral); }
-
-    .label {
-      fill: rgba(55, 53, 47, 0.34);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-family: inherit;
-    }
-
-    .chip {
-      fill: rgba(255, 255, 255, 0.78);
-      stroke: rgba(55, 53, 47, 0.14);
-      stroke-width: 1;
-    }
-
-    .chip.coral {
-      fill: rgba(253, 236, 234, 0.88);
-      stroke: rgba(196, 90, 69, 0.28);
-    }
-
-    .chip.teal {
-      fill: rgba(232, 246, 243, 0.88);
-      stroke: rgba(15, 123, 108, 0.28);
-    }
-
-    .chip.ink {
-      fill: rgba(55, 53, 47, 0.88);
-      stroke: none;
-    }
-
-    .chip-text {
-      fill: rgba(55, 53, 47, 0.55);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      font-family: inherit;
-    }
-
-    .chip-text.ink { fill: rgba(247, 246, 243, 0.92); }
-    .chip-text.coral { fill: rgba(143, 58, 42, 0.85); }
-    .chip-text.teal { fill: rgba(15, 123, 108, 0.85); }
-
-    .rail.faint {
-      stroke: rgba(55, 53, 47, 0.08);
-      stroke-width: 1.1;
-    }
-
-    .dash.slow {
-      animation-duration: 3.4s;
-      stroke: rgba(55, 53, 47, 0.2);
-    }
+    .signal.coral { fill: var(--coral); }
+    .signal.teal { fill: var(--green); }
 
     .veil {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 58% 52% at 40% 48%, rgba(247, 246, 243, 0.96) 0%, rgba(247, 246, 243, 0.88) 48%, rgba(247, 246, 243, 0.55) 74%, rgba(247, 246, 243, 0.28) 100%),
-        linear-gradient(90deg, rgba(247, 246, 243, 0.82) 0%, rgba(247, 246, 243, 0.45) 50%, rgba(247, 246, 243, 0.55) 100%);
+        radial-gradient(ellipse 52% 46% at 38% 48%, rgba(247, 246, 243, 0.88) 0%, rgba(247, 246, 243, 0.62) 48%, rgba(247, 246, 243, 0.28) 74%, rgba(247, 246, 243, 0.08) 100%),
+        linear-gradient(90deg, rgba(247, 246, 243, 0.55) 0%, rgba(247, 246, 243, 0.18) 52%, rgba(247, 246, 243, 0.28) 100%);
     }
 
     .page {
@@ -308,10 +246,10 @@
     .site-footer a:hover { color: var(--ink); }
 
     @media (max-width: 720px) {
-      .orbit { opacity: 0.28; }
+      .orbit { opacity: 0.58; }
       .veil {
         background:
-          radial-gradient(ellipse 75% 60% at 40% 45%, rgba(247, 246, 243, 0.97) 0%, rgba(247, 246, 243, 0.9) 52%, rgba(247, 246, 243, 0.6) 78%, rgba(247, 246, 243, 0.35) 100%);
+          radial-gradient(ellipse 72% 58% at 40% 45%, rgba(247, 246, 243, 0.9) 0%, rgba(247, 246, 243, 0.72) 52%, rgba(247, 246, 243, 0.4) 78%, rgba(247, 246, 243, 0.16) 100%);
       }
       .site-footer { position: static; }
       .page { padding-bottom: 2rem; }
@@ -319,23 +257,13 @@
 
     @keyframes drift {
       0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-      50% { transform: translate3d(-1.5%, -1.2%, 0) scale(1.02); }
-    }
-
-    @keyframes dash-flow {
-      to { stroke-dashoffset: -60; }
+      50% { transform: translate3d(-1.2%, -1%, 0) scale(1.02); }
     }
 
     @keyframes pulse-ring {
-      0% { transform: scale(0.85); opacity: 0.7; }
-      70% { transform: scale(1.55); opacity: 0; }
-      100% { transform: scale(1.55); opacity: 0; }
-    }
-
-    @keyframes spark {
-      0% { opacity: 0; transform: translate(0, 0); }
-      15% { opacity: 0.7; }
-      100% { opacity: 0; transform: translate(42px, 0); }
+      0% { transform: scale(0.85); opacity: 0.65; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
 
     @keyframes hero-gradient-shift {
@@ -347,287 +275,377 @@
 <body>
   <div class="backdrop" aria-hidden="true">
     <div class="orbit">
-      <svg viewBox="0 0 1480 900" preserveAspectRatio="xMidYMid slice">
-        <!-- faint lattice -->
-        <path class="rail faint" d="M40 140 C180 110, 280 190, 420 160 S680 90, 860 140 S1100 210, 1280 160 S1380 120, 1420 140" />
-        <path class="rail faint" d="M20 240 C160 280, 300 200, 460 230 S740 300, 920 250 S1140 180, 1320 230 S1400 270, 1460 250" />
-        <path class="rail faint" d="M30 700 C190 740, 330 650, 500 690 S780 760, 980 700 S1180 620, 1360 670" />
-        <path class="rail faint" d="M70 800 C250 760, 420 840, 620 790 S920 720, 1120 780 S1300 840, 1420 800" />
-
-        <!-- primary lanes -->
-        <path class="rail" d="M60 200 C210 160, 340 250, 500 220 C660 190, 780 140, 940 175 C1080 205, 1180 250, 1280 235 C1340 225, 1385 218, 1440 230" />
-        <path class="rail accent" d="M50 300 C200 340, 340 250, 500 290 C660 330, 780 380, 960 330 C1120 290, 1220 250, 1300 275 C1365 295, 1405 305, 1460 295" />
-        <path class="rail soft" d="M40 400 C190 360, 330 450, 500 420 C670 390, 800 340, 980 380 C1140 415, 1240 460, 1320 440 C1385 425, 1425 418, 1470 435" />
-        <path class="rail" d="M70 500 C220 540, 360 450, 530 490 C700 530, 840 590, 1020 540 C1180 500, 1280 470, 1340 495 C1395 515, 1430 528, 1475 515" />
-        <path class="rail soft" d="M55 600 C210 560, 350 650, 520 620 C690 590, 830 530, 1010 575 C1170 615, 1270 660, 1340 640 C1395 622, 1430 615, 1475 630" />
-        <path class="rail accent" d="M80 700 C240 740, 390 650, 560 690 C730 730, 870 780, 1050 730 C1210 690, 1310 650, 1370 685 C1420 710, 1450 722, 1490 710" />
-
-        <!-- cross merges / forks -->
-        <path class="rail faint" d="M260 210 C310 260, 350 300, 390 340" />
-        <path class="rail" d="M480 230 C520 270, 540 310, 560 360" />
-        <path class="rail soft" d="M720 160 C760 220, 790 280, 820 340" />
-        <path class="rail accent" d="M900 190 C940 250, 970 310, 1000 360" />
-        <path class="rail" d="M340 410 C390 450, 430 490, 470 530" />
-        <path class="rail soft" d="M640 400 C690 450, 740 510, 790 560" />
-        <path class="rail accent" d="M860 400 C910 460, 960 530, 1010 590" />
-        <path class="rail" d="M420 610 C470 560, 520 510, 580 470" />
-        <path class="rail soft" d="M760 640 C820 590, 880 540, 950 500" />
-        <path class="rail faint" d="M1100 360 C1140 410, 1180 470, 1220 520" />
-        <path class="rail" d="M1080 560 C1130 510, 1180 460, 1240 430" />
-        <path class="rail accent" d="M300 690 C360 640, 430 590, 500 560" />
-
-        <!-- flowing dashes on main lanes -->
-        <path class="dash coral" d="M60 200 C210 160, 340 250, 500 220 C660 190, 780 140, 940 175 C1080 205, 1180 250, 1280 235 C1340 225, 1385 218, 1440 230" />
-        <path class="dash teal" d="M50 300 C200 340, 340 250, 500 290 C660 330, 780 380, 960 330 C1120 290, 1220 250, 1300 275 C1365 295, 1405 305, 1460 295" />
-        <path class="dash" d="M40 400 C190 360, 330 450, 500 420 C670 390, 800 340, 980 380 C1140 415, 1240 460, 1320 440 C1385 425, 1425 418, 1470 435" />
-        <path class="dash slow" d="M70 500 C220 540, 360 450, 530 490 C700 530, 840 590, 1020 540 C1180 500, 1280 470, 1340 495 C1395 515, 1430 528, 1475 515" />
-        <path class="dash teal" d="M55 600 C210 560, 350 650, 520 620 C690 590, 830 530, 1010 575 C1170 615, 1270 660, 1340 640 C1395 622, 1430 615, 1475 630" />
-        <path class="dash coral" d="M80 700 C240 740, 390 650, 560 690 C730 730, 870 780, 1050 730 C1210 690, 1310 650, 1370 685 C1420 710, 1450 722, 1490 710" />
-        <path class="dash slow" d="M420 610 C470 560, 520 510, 580 470" />
-        <path class="dash" d="M860 400 C910 460, 960 530, 1010 590" />
-
-        <!-- chips: tickets / sandbox / lanes -->
-        <g transform="translate(92 178)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
-        </g>
-        <g transform="translate(250 142)">
-          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
-          <text class="chip-text" x="27" y="14" text-anchor="middle">bots</text>
-        </g>
-        <g transform="translate(430 198)">
-          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
-          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
-        </g>
-        <g transform="translate(700 118)">
-          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
-          <text class="chip-text" x="27" y="14" text-anchor="middle">ci</text>
-        </g>
-        <g transform="translate(960 152)">
-          <rect class="chip coral" x="0" y="0" width="42" height="20" rx="6" />
-          <text class="chip-text coral" x="21" y="14" text-anchor="middle">pr</text>
-        </g>
-        <g transform="translate(860 212)">
-          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
-          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
-        </g>
-        <g transform="translate(980 198)">
-          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
-          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
-        </g>
-        <g transform="translate(1100 208)">
-          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
-          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
-        </g>
-
-        <g transform="translate(110 278)">
-          <rect class="chip" x="0" y="0" width="62" height="20" rx="6" />
-          <text class="chip-text" x="31" y="14" text-anchor="middle">agents</text>
-        </g>
-        <g transform="translate(330 248)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
-        </g>
-        <g transform="translate(560 268)">
-          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
-          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
-        </g>
-        <g transform="translate(820 352)">
-          <rect class="chip" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text" x="29" y="14" text-anchor="middle">queue</text>
-        </g>
-        <g transform="translate(760 248)">
-          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
-          <text class="chip-text" x="27" y="14" text-anchor="middle">checks</text>
-        </g>
-        <g transform="translate(880 268)">
-          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
-          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
-        </g>
-        <g transform="translate(1000 288)">
-          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
-          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
-        </g>
-        <g transform="translate(1120 292)">
-          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
-          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
-        </g>
-
-        <g transform="translate(100 378)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
-        </g>
-        <g transform="translate(360 398)">
-          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
-          <text class="chip-text" x="27" y="14" text-anchor="middle">review</text>
-        </g>
-        <g transform="translate(620 368)">
-          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
-          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
-        </g>
-        <g transform="translate(900 358)">
-          <rect class="chip" x="0" y="0" width="42" height="20" rx="6" />
-          <text class="chip-text" x="21" y="14" text-anchor="middle">pr</text>
-        </g>
-        <g transform="translate(1240 360)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">merge</text>
-        </g>
-
-        <g transform="translate(140 478)">
-          <rect class="chip" x="0" y="0" width="62" height="20" rx="6" />
-          <text class="chip-text" x="31" y="14" text-anchor="middle">agents</text>
-        </g>
-        <g transform="translate(400 468)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
-        </g>
-        <g transform="translate(680 508)">
-          <rect class="chip" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text" x="29" y="14" text-anchor="middle">queue</text>
-        </g>
-        <g transform="translate(960 518)">
-          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
-          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
-        </g>
-        <g transform="translate(870 468)">
-          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
-          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
-        </g>
-        <g transform="translate(995 492)">
-          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
-          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
-        </g>
-        <g transform="translate(1120 502)">
-          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
-          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
-        </g>
-
-        <g transform="translate(160 578)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
-        </g>
-        <g transform="translate(430 598)">
-          <rect class="chip teal" x="0" y="0" width="70" height="20" rx="6" />
-          <text class="chip-text teal" x="35" y="14" text-anchor="middle">sandbox</text>
-        </g>
-        <g transform="translate(740 548)">
-          <rect class="chip" x="0" y="0" width="54" height="20" rx="6" />
-          <text class="chip-text" x="27" y="14" text-anchor="middle">ci</text>
-        </g>
-        <g transform="translate(760 552)">
-          <rect class="chip" x="0" y="0" width="42" height="20" rx="6" />
-          <text class="chip-text" x="21" y="14" text-anchor="middle">pr</text>
-        </g>
-        <g transform="translate(880 618)">
-          <rect class="chip ink" x="0" y="0" width="56" height="20" rx="6" />
-          <text class="chip-text ink" x="28" y="14" text-anchor="middle">main</text>
-        </g>
-        <g transform="translate(1005 608)">
-          <rect class="chip teal" x="0" y="0" width="68" height="20" rx="6" />
-          <text class="chip-text teal" x="34" y="14" text-anchor="middle">staging</text>
-        </g>
-        <g transform="translate(1130 618)">
-          <rect class="chip coral" x="0" y="0" width="52" height="20" rx="6" />
-          <text class="chip-text coral" x="26" y="14" text-anchor="middle">prod</text>
-        </g>
-
-        <g transform="translate(200 678)">
-          <rect class="chip" x="0" y="0" width="62" height="20" rx="6" />
-          <text class="chip-text" x="31" y="14" text-anchor="middle">agents</text>
-        </g>
-        <g transform="translate(480 668)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">ticket</text>
-        </g>
-        <g transform="translate(820 712)">
-          <rect class="chip" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text" x="29" y="14" text-anchor="middle">queue</text>
-        </g>
-        <g transform="translate(1240 668)">
-          <rect class="chip coral" x="0" y="0" width="58" height="20" rx="6" />
-          <text class="chip-text coral" x="29" y="14" text-anchor="middle">merge</text>
-        </g>
-
-        <!-- nodes / halos -->
-        <circle class="halo" cx="500" cy="220" r="13" />
-        <circle class="halo teal" cx="960" cy="330" r="15" />
-        <circle class="halo" cx="1020" cy="540" r="14" />
-
-        <circle class="node coral" cx="120" cy="195" r="4" />
-        <circle class="node" cx="280" cy="175" r="4" />
-        <circle class="node live" cx="500" cy="220" r="6" />
-        <circle class="node teal" cx="760" cy="155" r="4" />
-        <circle class="node" cx="980" cy="180" r="5" />
-        <circle class="node live" cx="1340" cy="220" r="7" />
-
-        <circle class="node" cx="140" cy="310" r="4" />
-        <circle class="node coral" cx="360" cy="270" r="4" />
-        <circle class="node teal" cx="590" cy="300" r="5" />
-        <circle class="node live" cx="960" cy="330" r="6" />
-        <circle class="node" cx="1200" cy="270" r="4" />
-        <circle class="node live" cx="1380" cy="290" r="7" />
-
-        <circle class="node coral" cx="130" cy="390" r="4" />
-        <circle class="node" cx="390" cy="425" r="4" />
-        <circle class="node teal" cx="650" cy="400" r="5" />
-        <circle class="node" cx="930" cy="375" r="4" />
-        <circle class="node live" cx="1390" cy="420" r="6" />
-
-        <circle class="node" cx="170" cy="515" r="4" />
-        <circle class="node coral" cx="430" cy="485" r="4" />
-        <circle class="node" cx="710" cy="540" r="5" />
-        <circle class="node live" cx="1020" cy="540" r="6" />
-        <circle class="node teal" cx="820" cy="575" r="4" />
-        <circle class="node live" cx="1410" cy="510" r="7" />
-
-        <circle class="node coral" cx="190" cy="590" r="4" />
-        <circle class="node teal" cx="460" cy="625" r="4" />
-        <circle class="node" cx="770" cy="555" r="4" />
-        <circle class="node live" cx="1400" cy="620" r="6" />
-
-        <circle class="node" cx="230" cy="710" r="4" />
-        <circle class="node coral" cx="510" cy="695" r="4" />
-        <circle class="node" cx="850" cy="745" r="4" />
-        <circle class="node live" cx="1430" cy="700" r="7" />
-
-        <circle class="node teal" cx="1055" cy="175" r="4" />
-        <circle class="node coral" cx="1165" cy="195" r="5" />
-        <circle class="node teal" cx="1075" cy="270" r="4" />
-        <circle class="node coral" cx="1185" cy="280" r="5" />
-        <circle class="node teal" cx="1070" cy="475" r="4" />
-        <circle class="node coral" cx="1185" cy="490" r="5" />
-        <circle class="node teal" cx="1080" cy="590" r="4" />
-        <circle class="node coral" cx="1195" cy="605" r="5" />
-        <circle class="node teal" cx="1345" cy="430" r="4" />
-        <circle class="node coral" cx="1260" cy="370" r="4" />
-        <circle class="node teal" cx="1275" cy="680" r="4" />
-        <circle class="node coral" cx="1300" cy="680" r="4" />
-
-        <!-- traveling sparks -->
-        <circle class="spark a" r="2.3">
-          <animateMotion dur="6s" repeatCount="indefinite" path="M90 200 C210 160, 340 250, 500 220 C660 190, 780 140, 940 175 C1080 205, 1180 250, 1320 225" />
+      <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
+        <path class="synapse coral" d="M120 140 C250 140, 250 168, 380 168" />
+        <path class="synapse" d="M120 140 C250 140, 250 110, 380 110" />
+        <path class="synapse" d="M120 140 C250 140, 250 226, 380 226" />
+        <path class="synapse" d="M120 140 C250 140, 250 284, 380 284" />
+        <path class="synapse" d="M120 210 C250 210, 250 168, 380 168" />
+        <path class="synapse" d="M120 210 C250 210, 250 284, 380 284" />
+        <path class="synapse soft" d="M120 210 C250 210, 250 110, 380 110" />
+        <path class="synapse" d="M120 280 C250 280, 250 284, 380 284" />
+        <path class="synapse" d="M120 280 C250 280, 250 342, 380 342" />
+        <path class="synapse soft" d="M120 280 C250 280, 250 168, 380 168" />
+        <path class="synapse coral" d="M120 350 C250 350, 250 342, 380 342" />
+        <path class="synapse coral" d="M120 350 C250 350, 250 400, 380 400" />
+        <path class="synapse coral" d="M120 350 C250 350, 250 284, 380 284" />
+        <path class="synapse teal" d="M120 350 C250 350, 250 458, 380 458" />
+        <path class="synapse coral" d="M120 420 C250 420, 250 400, 380 400" />
+        <path class="synapse coral" d="M120 420 C250 420, 250 458, 380 458" />
+        <path class="synapse" d="M120 420 C250 420, 250 342, 380 342" />
+        <path class="synapse coral" d="M120 420 C250 420, 250 516, 380 516" />
+        <path class="synapse soft" d="M120 490 C250 490, 250 516, 380 516" />
+        <path class="synapse soft" d="M120 490 C250 490, 250 458, 380 458" />
+        <path class="synapse soft" d="M120 490 C250 490, 250 574, 380 574" />
+        <path class="synapse coral" d="M120 490 C250 490, 250 400, 380 400" />
+        <path class="synapse coral" d="M120 560 C250 560, 250 574, 380 574" />
+        <path class="synapse teal" d="M120 560 C250 560, 250 516, 380 516" />
+        <path class="synapse teal" d="M120 560 C250 560, 250 632, 380 632" />
+        <path class="synapse teal" d="M120 560 C250 560, 250 458, 380 458" />
+        <path class="synapse" d="M120 630 C250 630, 250 632, 380 632" />
+        <path class="synapse soft" d="M120 630 C250 630, 250 574, 380 574" />
+        <path class="synapse teal" d="M120 630 C250 630, 250 690, 380 690" />
+        <path class="synapse soft" d="M120 630 C250 630, 250 516, 380 516" />
+        <path class="synapse" d="M120 700 C250 700, 250 690, 380 690" />
+        <path class="synapse teal" d="M120 700 C250 700, 250 748, 380 748" />
+        <path class="synapse teal" d="M120 700 C250 700, 250 632, 380 632" />
+        <path class="synapse soft" d="M120 700 C250 700, 250 806, 380 806" />
+        <path class="synapse" d="M120 770 C250 770, 250 748, 380 748" />
+        <path class="synapse" d="M120 770 C250 770, 250 690, 380 690" />
+        <path class="synapse teal" d="M120 770 C250 770, 250 632, 380 632" />
+        <path class="synapse soft" d="M380 110 C530 110, 530 130, 680 130" />
+        <path class="synapse soft" d="M380 110 C530 110, 530 185, 680 185" />
+        <path class="synapse soft" d="M380 110 C530 110, 530 295, 680 295" />
+        <path class="synapse" d="M380 168 C530 168, 530 185, 680 185" />
+        <path class="synapse coral" d="M380 168 C530 168, 530 130, 680 130" />
+        <path class="synapse coral" d="M380 168 C530 168, 530 240, 680 240" />
+        <path class="synapse soft" d="M380 168 C530 168, 530 295, 680 295" />
+        <path class="synapse soft" d="M380 226 C530 226, 530 240, 680 240" />
+        <path class="synapse soft" d="M380 226 C530 226, 530 185, 680 185" />
+        <path class="synapse teal" d="M380 226 C530 226, 530 295, 680 295" />
+        <path class="synapse teal" d="M380 284 C530 284, 530 295, 680 295" />
+        <path class="synapse teal" d="M380 284 C530 284, 530 240, 680 240" />
+        <path class="synapse soft" d="M380 284 C530 284, 530 350, 680 350" />
+        <path class="synapse coral" d="M380 342 C530 342, 530 350, 680 350" />
+        <path class="synapse coral" d="M380 342 C530 342, 530 295, 680 295" />
+        <path class="synapse coral" d="M380 342 C530 342, 530 405, 680 405" />
+        <path class="synapse" d="M380 342 C530 342, 530 240, 680 240" />
+        <path class="synapse teal" d="M380 400 C530 400, 530 405, 680 405" />
+        <path class="synapse teal" d="M380 400 C530 400, 530 350, 680 350" />
+        <path class="synapse" d="M380 400 C530 400, 530 295, 680 295" />
+        <path class="synapse soft" d="M380 458 C530 458, 530 460, 680 460" />
+        <path class="synapse soft" d="M380 458 C530 458, 530 405, 680 405" />
+        <path class="synapse soft" d="M380 458 C530 458, 530 515, 680 515" />
+        <path class="synapse" d="M380 458 C530 458, 530 350, 680 350" />
+        <path class="synapse" d="M380 516 C530 516, 530 570, 680 570" />
+        <path class="synapse" d="M380 516 C530 516, 530 460, 680 460" />
+        <path class="synapse coral" d="M380 516 C530 516, 530 625, 680 625" />
+        <path class="synapse teal" d="M380 574 C530 574, 530 570, 680 570" />
+        <path class="synapse" d="M380 574 C530 574, 530 625, 680 625" />
+        <path class="synapse coral" d="M380 574 C530 574, 530 680, 680 680" />
+        <path class="synapse teal" d="M380 632 C530 632, 530 625, 680 625" />
+        <path class="synapse soft" d="M380 632 C530 632, 530 680, 680 680" />
+        <path class="synapse soft" d="M380 632 C530 632, 530 570, 680 570" />
+        <path class="synapse soft" d="M380 690 C530 690, 530 680, 680 680" />
+        <path class="synapse coral" d="M380 690 C530 690, 530 735, 680 735" />
+        <path class="synapse teal" d="M380 690 C530 690, 530 625, 680 625" />
+        <path class="synapse soft" d="M380 690 C530 690, 530 570, 680 570" />
+        <path class="synapse coral" d="M380 748 C530 748, 530 735, 680 735" />
+        <path class="synapse coral" d="M380 748 C530 748, 530 680, 680 680" />
+        <path class="synapse coral" d="M380 748 C530 748, 530 570, 680 570" />
+        <path class="synapse" d="M380 806 C530 806, 530 735, 680 735" />
+        <path class="synapse teal" d="M380 806 C530 806, 530 680, 680 680" />
+        <path class="synapse teal" d="M680 130 C830 130, 830 150, 980 150" />
+        <path class="synapse coral" d="M680 130 C830 130, 830 215, 980 215" />
+        <path class="synapse coral" d="M680 130 C830 130, 830 280, 980 280" />
+        <path class="synapse teal" d="M680 130 C830 130, 830 345, 980 345" />
+        <path class="synapse coral" d="M680 185 C830 185, 830 215, 980 215" />
+        <path class="synapse soft" d="M680 185 C830 185, 830 150, 980 150" />
+        <path class="synapse coral" d="M680 185 C830 185, 830 280, 980 280" />
+        <path class="synapse soft" d="M680 185 C830 185, 830 345, 980 345" />
+        <path class="synapse" d="M680 240 C830 240, 830 215, 980 215" />
+        <path class="synapse soft" d="M680 240 C830 240, 830 150, 980 150" />
+        <path class="synapse teal" d="M680 240 C830 240, 830 345, 980 345" />
+        <path class="synapse teal" d="M680 295 C830 295, 830 280, 980 280" />
+        <path class="synapse coral" d="M680 295 C830 295, 830 215, 980 215" />
+        <path class="synapse soft" d="M680 295 C830 295, 830 410, 980 410" />
+        <path class="synapse coral" d="M680 350 C830 350, 830 345, 980 345" />
+        <path class="synapse" d="M680 350 C830 350, 830 410, 980 410" />
+        <path class="synapse teal" d="M680 350 C830 350, 830 280, 980 280" />
+        <path class="synapse" d="M680 350 C830 350, 830 475, 980 475" />
+        <path class="synapse" d="M680 405 C830 405, 830 410, 980 410" />
+        <path class="synapse coral" d="M680 405 C830 405, 830 475, 980 475" />
+        <path class="synapse coral" d="M680 405 C830 405, 830 280, 980 280" />
+        <path class="synapse teal" d="M680 460 C830 460, 830 475, 980 475" />
+        <path class="synapse soft" d="M680 460 C830 460, 830 410, 980 410" />
+        <path class="synapse" d="M680 460 C830 460, 830 540, 980 540" />
+        <path class="synapse coral" d="M680 460 C830 460, 830 345, 980 345" />
+        <path class="synapse soft" d="M680 515 C830 515, 830 475, 980 475" />
+        <path class="synapse coral" d="M680 515 C830 515, 830 605, 980 605" />
+        <path class="synapse soft" d="M680 515 C830 515, 830 410, 980 410" />
+        <path class="synapse teal" d="M680 570 C830 570, 830 540, 980 540" />
+        <path class="synapse coral" d="M680 570 C830 570, 830 605, 980 605" />
+        <path class="synapse" d="M680 570 C830 570, 830 475, 980 475" />
+        <path class="synapse coral" d="M680 570 C830 570, 830 670, 980 670" />
+        <path class="synapse coral" d="M680 625 C830 625, 830 605, 980 605" />
+        <path class="synapse coral" d="M680 625 C830 625, 830 670, 980 670" />
+        <path class="synapse coral" d="M680 625 C830 625, 830 540, 980 540" />
+        <path class="synapse coral" d="M680 625 C830 625, 830 735, 980 735" />
+        <path class="synapse teal" d="M680 680 C830 680, 830 670, 980 670" />
+        <path class="synapse soft" d="M680 680 C830 680, 830 735, 980 735" />
+        <path class="synapse" d="M680 680 C830 680, 830 605, 980 605" />
+        <path class="synapse soft" d="M680 735 C830 735, 830 735, 980 735" />
+        <path class="synapse soft" d="M680 735 C830 735, 830 670, 980 670" />
+        <path class="synapse coral" d="M680 735 C830 735, 830 605, 980 605" />
+        <path class="synapse" d="M680 735 C830 735, 830 540, 980 540" />
+        <path class="synapse" d="M980 150 C1110 150, 1110 260, 1240 260" />
+        <path class="synapse coral" d="M980 150 C1110 150, 1110 340, 1240 340" />
+        <path class="synapse soft" d="M980 150 C1110 150, 1110 420, 1240 420" />
+        <path class="synapse" d="M980 215 C1110 215, 1110 180, 1240 180" />
+        <path class="synapse teal" d="M980 215 C1110 215, 1110 260, 1240 260" />
+        <path class="synapse soft" d="M980 215 C1110 215, 1110 340, 1240 340" />
+        <path class="synapse" d="M980 215 C1110 215, 1110 420, 1240 420" />
+        <path class="synapse coral" d="M980 280 C1110 280, 1110 340, 1240 340" />
+        <path class="synapse" d="M980 280 C1110 280, 1110 180, 1240 180" />
+        <path class="synapse" d="M980 280 C1110 280, 1110 420, 1240 420" />
+        <path class="synapse" d="M980 345 C1110 345, 1110 340, 1240 340" />
+        <path class="synapse coral" d="M980 345 C1110 345, 1110 420, 1240 420" />
+        <path class="synapse soft" d="M980 345 C1110 345, 1110 260, 1240 260" />
+        <path class="synapse soft" d="M980 345 C1110 345, 1110 500, 1240 500" />
+        <path class="synapse coral" d="M980 410 C1110 410, 1110 420, 1240 420" />
+        <path class="synapse teal" d="M980 410 C1110 410, 1110 340, 1240 340" />
+        <path class="synapse soft" d="M980 475 C1110 475, 1110 500, 1240 500" />
+        <path class="synapse" d="M980 475 C1110 475, 1110 420, 1240 420" />
+        <path class="synapse teal" d="M980 475 C1110 475, 1110 580, 1240 580" />
+        <path class="synapse coral" d="M980 475 C1110 475, 1110 340, 1240 340" />
+        <path class="synapse coral" d="M980 540 C1110 540, 1110 500, 1240 500" />
+        <path class="synapse" d="M980 540 C1110 540, 1110 580, 1240 580" />
+        <path class="synapse teal" d="M980 540 C1110 540, 1110 660, 1240 660" />
+        <path class="synapse coral" d="M980 605 C1110 605, 1110 580, 1240 580" />
+        <path class="synapse" d="M980 605 C1110 605, 1110 500, 1240 500" />
+        <path class="synapse soft" d="M980 605 C1110 605, 1110 420, 1240 420" />
+        <path class="synapse coral" d="M980 670 C1110 670, 1110 660, 1240 660" />
+        <path class="synapse soft" d="M980 670 C1110 670, 1110 580, 1240 580" />
+        <path class="synapse soft" d="M980 670 C1110 670, 1110 420, 1240 420" />
+        <path class="synapse teal" d="M980 735 C1110 735, 1110 660, 1240 660" />
+        <path class="synapse teal" d="M980 735 C1110 735, 1110 580, 1240 580" />
+        <path class="synapse soft" d="M980 735 C1110 735, 1110 500, 1240 500" />
+        <path class="synapse" d="M980 735 C1110 735, 1110 420, 1240 420" />
+        <path class="synapse faint" d="M380 400 C680 400, 680 670, 980 670" />
+        <path class="synapse faint" d="M680 350 C960 350, 960 500, 1240 500" />
+        <path class="synapse faint" d="M120 210 C400 210, 400 295, 680 295" />
+        <path class="synapse faint" d="M120 210 C400 210, 400 350, 680 350" />
+        <path class="synapse faint" d="M380 110 C680 110, 680 280, 980 280" />
+        <path class="synapse faint" d="M380 806 C680 806, 680 280, 980 280" />
+        <path class="synapse faint" d="M380 690 C680 690, 680 410, 980 410" />
+        <path class="synapse faint" d="M380 226 C680 226, 680 670, 980 670" />
+        <path class="synapse faint" d="M680 625 C960 625, 960 420, 1240 420" />
+        <path class="synapse faint" d="M680 405 C960 405, 960 180, 1240 180" />
+        <path class="synapse faint" d="M380 110 C680 110, 680 280, 980 280" />
+        <path class="synapse faint" d="M380 168 C680 168, 680 410, 980 410" />
+        <path class="synapse faint" d="M120 210 C400 210, 400 350, 680 350" />
+        <path class="synapse faint" d="M120 770 C400 770, 400 295, 680 295" />
+        <path class="synapse faint" d="M120 420 C400 420, 400 185, 680 185" />
+        <path class="synapse faint" d="M380 110 C680 110, 680 475, 980 475" />
+        <path class="synapse faint" d="M680 460 C960 460, 960 340, 1240 340" />
+        <path class="synapse faint" d="M680 240 C960 240, 960 180, 1240 180" />
+        <circle class="halo" cx="120" cy="140" r="12" />
+        <circle class="neuron input" cx="120" cy="140" r="5" />
+        <circle class="neuron input" cx="120" cy="210" r="5" />
+        <circle class="neuron input" cx="120" cy="280" r="5" />
+        <circle class="neuron input" cx="120" cy="350" r="5" />
+        <circle class="neuron input" cx="120" cy="420" r="5" />
+        <circle class="neuron input" cx="120" cy="490" r="5" />
+        <circle class="neuron input" cx="120" cy="560" r="5" />
+        <circle class="neuron input" cx="120" cy="630" r="5" />
+        <circle class="neuron input" cx="120" cy="700" r="5" />
+        <circle class="halo" cx="120" cy="770" r="12" />
+        <circle class="neuron input" cx="120" cy="770" r="5" />
+        <circle class="neuron coral" cx="380" cy="110" r="4.2" />
+        <circle class="neuron" cx="380" cy="168" r="4.2" />
+        <circle class="neuron" cx="380" cy="226" r="4.2" />
+        <circle class="neuron" cx="380" cy="284" r="4.2" />
+        <circle class="neuron active" cx="380" cy="342" r="4.2" />
+        <circle class="neuron" cx="380" cy="400" r="4.2" />
+        <circle class="neuron" cx="380" cy="458" r="4.2" />
+        <circle class="neuron" cx="380" cy="516" r="4.2" />
+        <circle class="halo teal" cx="380" cy="574" r="12" />
+        <circle class="neuron active" cx="380" cy="574" r="4.2" />
+        <circle class="neuron active" cx="380" cy="632" r="4.2" />
+        <circle class="neuron coral" cx="380" cy="690" r="4.2" />
+        <circle class="neuron" cx="380" cy="748" r="4.2" />
+        <circle class="neuron active" cx="380" cy="806" r="4.2" />
+        <circle class="neuron teal" cx="680" cy="130" r="4.2" />
+        <circle class="neuron coral" cx="680" cy="185" r="4.2" />
+        <circle class="neuron" cx="680" cy="240" r="4.2" />
+        <circle class="neuron active" cx="680" cy="295" r="4.2" />
+        <circle class="neuron active" cx="680" cy="350" r="4.2" />
+        <circle class="neuron" cx="680" cy="405" r="4.2" />
+        <circle class="neuron active" cx="680" cy="460" r="4.2" />
+        <circle class="halo" cx="680" cy="515" r="12" />
+        <circle class="neuron" cx="680" cy="515" r="4.2" />
+        <circle class="neuron" cx="680" cy="570" r="4.2" />
+        <circle class="neuron" cx="680" cy="625" r="4.2" />
+        <circle class="neuron coral" cx="680" cy="680" r="4.2" />
+        <circle class="neuron coral" cx="680" cy="735" r="4.2" />
+        <circle class="neuron" cx="980" cy="150" r="4.2" />
+        <circle class="neuron coral" cx="980" cy="215" r="4.2" />
+        <circle class="neuron teal" cx="980" cy="280" r="4.2" />
+        <circle class="neuron" cx="980" cy="345" r="4.2" />
+        <circle class="neuron teal" cx="980" cy="410" r="4.2" />
+        <circle class="neuron" cx="980" cy="475" r="4.2" />
+        <circle class="halo teal" cx="980" cy="540" r="12" />
+        <circle class="neuron teal" cx="980" cy="540" r="4.2" />
+        <circle class="neuron teal" cx="980" cy="605" r="4.2" />
+        <circle class="neuron coral" cx="980" cy="670" r="4.2" />
+        <circle class="neuron teal" cx="980" cy="735" r="4.2" />
+        <circle class="neuron output" cx="1240" cy="180" r="5" />
+        <circle class="neuron output" cx="1240" cy="260" r="5" />
+        <circle class="neuron output" cx="1240" cy="340" r="5" />
+        <circle class="neuron output" cx="1240" cy="420" r="5" />
+        <circle class="neuron output" cx="1240" cy="500" r="5" />
+        <circle class="halo" cx="1240" cy="580" r="12" />
+        <circle class="neuron output" cx="1240" cy="580" r="5" />
+        <circle class="neuron output" cx="1240" cy="660" r="5" />
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.2s" begin="0.0s" repeatCount="indefinite" />
+          <animateMotion dur="3.2s" begin="0.0s" repeatCount="indefinite" path="M120 140 C250 140, 250 168, 380 168" />
         </circle>
-        <circle class="spark b" r="2.1">
-          <animateMotion dur="5.4s" begin="0.8s" repeatCount="indefinite" path="M80 305 C200 340, 340 250, 500 290 C660 330, 780 380, 960 330 C1120 290, 1220 250, 1360 285" />
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.0s" begin="1.1s" repeatCount="indefinite" />
+          <animateMotion dur="5.0s" begin="1.1s" repeatCount="indefinite" path="M120 210 C250 210, 250 284, 380 284" />
         </circle>
-        <circle class="spark c" r="2.1">
-          <animateMotion dur="6.8s" begin="1.4s" repeatCount="indefinite" path="M70 405 C190 360, 330 450, 500 420 C670 390, 800 340, 980 380 C1140 415, 1240 460, 1360 430" />
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.2s" begin="2.2s" repeatCount="indefinite" />
+          <animateMotion dur="4.2s" begin="2.2s" repeatCount="indefinite" path="M120 350 C250 350, 250 342, 380 342" />
         </circle>
-        <circle class="spark d" r="1.9">
-          <animateMotion dur="7.2s" begin="0.5s" repeatCount="indefinite" path="M100 505 C220 540, 360 450, 530 490 C700 530, 840 590, 1020 540 C1180 500, 1280 470, 1380 505" />
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.6s" begin="0.9s" repeatCount="indefinite" />
+          <animateMotion dur="3.6s" begin="0.9s" repeatCount="indefinite" path="M120 420 C250 420, 250 458, 380 458" />
         </circle>
-        <circle class="spark e" r="2">
-          <animateMotion dur="6.4s" begin="1.8s" repeatCount="indefinite" path="M90 605 C210 560, 350 650, 520 620 C690 590, 830 530, 1010 575 C1170 615, 1270 660, 1380 625" />
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.3s" begin="2.0s" repeatCount="indefinite" />
+          <animateMotion dur="5.3s" begin="2.0s" repeatCount="indefinite" path="M120 490 C250 490, 250 574, 380 574" />
         </circle>
-        <circle class="spark a" r="1.8">
-          <animateMotion dur="5.8s" begin="2.2s" repeatCount="indefinite" path="M110 705 C240 740, 390 650, 560 690 C730 730, 870 780, 1050 730 C1210 690, 1310 650, 1400 695" />
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.6s" begin="0.7s" repeatCount="indefinite" />
+          <animateMotion dur="4.6s" begin="0.7s" repeatCount="indefinite" path="M120 560 C250 560, 250 458, 380 458" />
         </circle>
-        <circle class="spark b" r="1.7">
-          <animateMotion dur="4.6s" begin="1.1s" repeatCount="indefinite" path="M430 605 C480 555, 530 505, 590 465" />
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.9s" begin="1.8s" repeatCount="indefinite" />
+          <animateMotion dur="3.9s" begin="1.8s" repeatCount="indefinite" path="M120 700 C250 700, 250 690, 380 690" />
         </circle>
-        <circle class="spark c" r="1.7">
-          <animateMotion dur="5s" begin="2.6s" repeatCount="indefinite" path="M870 405 C920 465, 970 535, 1020 595" />
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.2s" begin="0.4s" repeatCount="indefinite" />
+          <animateMotion dur="3.2s" begin="0.4s" repeatCount="indefinite" path="M120 770 C250 770, 250 690, 380 690" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.0s" begin="1.5s" repeatCount="indefinite" />
+          <animateMotion dur="5.0s" begin="1.5s" repeatCount="indefinite" path="M380 168 C530 168, 530 185, 680 185" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.2s" begin="0.2s" repeatCount="indefinite" />
+          <animateMotion dur="4.2s" begin="0.2s" repeatCount="indefinite" path="M380 226 C530 226, 530 185, 680 185" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.6s" begin="1.3s" repeatCount="indefinite" />
+          <animateMotion dur="3.6s" begin="1.3s" repeatCount="indefinite" path="M380 342 C530 342, 530 350, 680 350" />
+        </circle>
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.3s" begin="0.0s" repeatCount="indefinite" />
+          <animateMotion dur="5.3s" begin="0.0s" repeatCount="indefinite" path="M380 400 C530 400, 530 350, 680 350" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.6s" begin="1.1s" repeatCount="indefinite" />
+          <animateMotion dur="4.6s" begin="1.1s" repeatCount="indefinite" path="M380 458 C530 458, 530 350, 680 350" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.9s" begin="2.2s" repeatCount="indefinite" />
+          <animateMotion dur="3.9s" begin="2.2s" repeatCount="indefinite" path="M380 574 C530 574, 530 625, 680 625" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.2s" begin="0.9s" repeatCount="indefinite" />
+          <animateMotion dur="3.2s" begin="0.9s" repeatCount="indefinite" path="M380 690 C530 690, 530 680, 680 680" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.0s" begin="2.0s" repeatCount="indefinite" />
+          <animateMotion dur="5.0s" begin="2.0s" repeatCount="indefinite" path="M380 748 C530 748, 530 680, 680 680" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.2s" begin="0.7s" repeatCount="indefinite" />
+          <animateMotion dur="4.2s" begin="0.7s" repeatCount="indefinite" path="M680 130 C830 130, 830 215, 980 215" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.6s" begin="1.8s" repeatCount="indefinite" />
+          <animateMotion dur="3.6s" begin="1.8s" repeatCount="indefinite" path="M680 185 C830 185, 830 280, 980 280" />
+        </circle>
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.3s" begin="0.4s" repeatCount="indefinite" />
+          <animateMotion dur="5.3s" begin="0.4s" repeatCount="indefinite" path="M680 295 C830 295, 830 280, 980 280" />
+        </circle>
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.6s" begin="1.5s" repeatCount="indefinite" />
+          <animateMotion dur="4.6s" begin="1.5s" repeatCount="indefinite" path="M680 350 C830 350, 830 280, 980 280" />
+        </circle>
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.9s" begin="0.2s" repeatCount="indefinite" />
+          <animateMotion dur="3.9s" begin="0.2s" repeatCount="indefinite" path="M680 460 C830 460, 830 475, 980 475" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.2s" begin="1.3s" repeatCount="indefinite" />
+          <animateMotion dur="3.2s" begin="1.3s" repeatCount="indefinite" path="M680 515 C830 515, 830 605, 980 605" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.0s" begin="0.0s" repeatCount="indefinite" />
+          <animateMotion dur="5.0s" begin="0.0s" repeatCount="indefinite" path="M680 570 C830 570, 830 670, 980 670" />
+        </circle>
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.2s" begin="1.1s" repeatCount="indefinite" />
+          <animateMotion dur="4.2s" begin="1.1s" repeatCount="indefinite" path="M680 680 C830 680, 830 670, 980 670" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.6s" begin="2.2s" repeatCount="indefinite" />
+          <animateMotion dur="3.6s" begin="2.2s" repeatCount="indefinite" path="M680 735 C830 735, 830 605, 980 605" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.3s" begin="0.9s" repeatCount="indefinite" />
+          <animateMotion dur="5.3s" begin="0.9s" repeatCount="indefinite" path="M980 215 C1110 215, 1110 180, 1240 180" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.6s" begin="2.0s" repeatCount="indefinite" />
+          <animateMotion dur="4.6s" begin="2.0s" repeatCount="indefinite" path="M980 280 C1110 280, 1110 180, 1240 180" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.9s" begin="0.7s" repeatCount="indefinite" />
+          <animateMotion dur="3.9s" begin="0.7s" repeatCount="indefinite" path="M980 345 C1110 345, 1110 500, 1240 500" />
+        </circle>
+        <circle class="signal teal" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.2s" begin="1.8s" repeatCount="indefinite" />
+          <animateMotion dur="3.2s" begin="1.8s" repeatCount="indefinite" path="M980 475 C1110 475, 1110 580, 1240 580" />
+        </circle>
+        <circle class="signal coral" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.0s" begin="0.4s" repeatCount="indefinite" />
+          <animateMotion dur="5.0s" begin="0.4s" repeatCount="indefinite" path="M980 605 C1110 605, 1110 580, 1240 580" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.2s" begin="1.5s" repeatCount="indefinite" />
+          <animateMotion dur="4.2s" begin="1.5s" repeatCount="indefinite" path="M980 670 C1110 670, 1110 420, 1240 420" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.6s" begin="0.2s" repeatCount="indefinite" />
+          <animateMotion dur="3.6s" begin="0.2s" repeatCount="indefinite" path="M380 400 C680 400, 680 670, 980 670" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="5.3s" begin="1.3s" repeatCount="indefinite" />
+          <animateMotion dur="5.3s" begin="1.3s" repeatCount="indefinite" path="M380 806 C680 806, 680 280, 980 280" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="4.6s" begin="0.0s" repeatCount="indefinite" />
+          <animateMotion dur="4.6s" begin="0.0s" repeatCount="indefinite" path="M380 110 C680 110, 680 280, 980 280" />
+        </circle>
+        <circle class="signal a" r="2.2">
+          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.85;1" dur="3.9s" begin="1.1s" repeatCount="indefinite" />
+          <animateMotion dur="3.9s" begin="1.1s" repeatCount="indefinite" path="M380 110 C680 110, 680 475, 980 475" />
         </circle>
       </svg>
     </div>

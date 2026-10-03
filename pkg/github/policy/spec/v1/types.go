@@ -172,7 +172,7 @@ type Command struct {
 	Allow Allow `yaml:"allow,omitempty"`
 }
 
-// PriorityRule is parsed; the queue engine is not run in this delivery.
+// PriorityRule picks the merge-queue priority for a PR (first match wins).
 type PriorityRule struct {
 	Name            string  `yaml:"name"`
 	When            Clauses `yaml:"when"`
@@ -180,7 +180,7 @@ type PriorityRule struct {
 	InterruptChecks bool    `yaml:"interrupt_checks,omitempty"`
 }
 
-// QueueRule is parsed; the queue engine is not run in this delivery.
+// QueueRule defines how a PR may enter and land in the merge queue.
 type QueueRule struct {
 	Name             string    `yaml:"name"`
 	Allow            Allow     `yaml:"allow,omitempty"`

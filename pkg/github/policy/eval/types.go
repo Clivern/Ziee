@@ -69,4 +69,8 @@ type Client interface {
 	GetPermission(login string) string
 	// SummarizeIssue returns an AI summary of the issue title and body.
 	SummarizeIssue(issue Issue) string
+	// HasApprovals reports whether the pull request meets the approvals matcher.
+	HasApprovals(issue Issue, approvals v1.Approvals) bool
+	// HasCheck reports whether the named check is green on the pull request.
+	HasCheck(issue Issue, name string) bool
 }

@@ -75,6 +75,12 @@ func MatchClause(when v1.Clause, issue Issue, client Client) bool {
 	if when.AuthorBlocked != nil && *when.AuthorBlocked != client.IsAuthorBlocked(issue) {
 		return false
 	}
+	if when.Approvals != nil && !client.HasApprovals(issue, *when.Approvals) {
+		return false
+	}
+	if !lo.IsEmpty(when.Check) && !client.HasCheck(issue, when.Check) {
+		return false
+	}
 	if when.Draft != nil && *when.Draft != issue.Draft {
 		return false
 	}

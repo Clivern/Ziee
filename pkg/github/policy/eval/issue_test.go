@@ -508,6 +508,7 @@ type stubClient struct {
 	prsExceeds   bool
 	blocked      bool
 	blockedLogin string
+	permission   string
 }
 
 func (s *stubClient) EvaluateIssue(_ Issue, intentions []v1.Intention) v1.Intention {
@@ -544,11 +545,19 @@ func (s *stubClient) BlockAuthor(issue Issue) {
 }
 
 func (s *stubClient) GetPermission(string) string {
-	return ""
+	return s.permission
 }
 
 func (s *stubClient) SummarizeIssue(Issue) string {
 	return ""
+}
+
+func (s *stubClient) HasApprovals(Issue, v1.Approvals) bool {
+	return true
+}
+
+func (s *stubClient) HasCheck(Issue, string) bool {
+	return true
 }
 
 func TestUnitEvaluateIssueComment(t *testing.T) {

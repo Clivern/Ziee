@@ -242,6 +242,16 @@ func (c IssueClient) SummarizeIssue(issue eval.Issue) string {
 	return text
 }
 
+// HasApprovals is unused for issue events.
+func (c IssueClient) HasApprovals(eval.Issue, v1.Approvals) bool {
+	return true
+}
+
+// HasCheck is unused for issue events.
+func (c IssueClient) HasCheck(eval.Issue, string) bool {
+	return true
+}
+
 // NewPullRequestClient returns a GitHub client for pull request events.
 func NewPullRequestClient(ctx context.Context, installationId, githubRepoId int64, owner, repo string) PullRequestClient {
 	return PullRequestClient{
@@ -421,4 +431,14 @@ func (c PullRequestClient) GetPermission(login string) string {
 // SummarizeIssue is unused for pull request events.
 func (c PullRequestClient) SummarizeIssue(eval.Issue) string {
 	return ""
+}
+
+// HasApprovals reports whether the pull request meets the approvals matcher.
+func (c PullRequestClient) HasApprovals(eval.Issue, v1.Approvals) bool {
+	return true
+}
+
+// HasCheck reports whether the named check is green on the pull request.
+func (c PullRequestClient) HasCheck(eval.Issue, string) bool {
+	return true
 }

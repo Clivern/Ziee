@@ -87,6 +87,7 @@ func EvaluatePullRequestOpened(conf *v1.File, event Event, client Client) action
 			})
 		}
 		if rule.BlockAuthor {
+			// Write blocklist now so later author_blocked matchers in this pass see it.
 			client.BlockAuthor(event.Issue)
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind:  policy.BlockAuthor,
@@ -172,6 +173,7 @@ func EvaluatePullRequestUpdated(conf *v1.File, event Event, client Client) actio
 			})
 		}
 		if rule.BlockAuthor {
+			// Write blocklist now so later author_blocked matchers in this pass see it.
 			client.BlockAuthor(event.Issue)
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind:  policy.BlockAuthor,
@@ -324,6 +326,7 @@ func EvaluatePullRequestComment(conf *v1.File, event Event, client Client) actio
 			Labels: []string{"spam"},
 		})
 		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+		// Write blocklist now so later author_blocked matchers in this pass see it.
 		client.BlockAuthor(event.Issue)
 		plan.Actions = append(plan.Actions, action.Action{
 			Kind:  policy.BlockAuthor,

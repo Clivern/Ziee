@@ -74,6 +74,7 @@ func EvaluateIssueOpened(conf *v1.File, event Event, client Client) action.Plan 
 			})
 		}
 		if rule.BlockAuthor {
+			// Write blocklist now so later author_blocked matchers in this pass see it.
 			client.BlockAuthor(event.Issue)
 			plan.Actions = append(plan.Actions, action.Action{
 				Kind:  policy.BlockAuthor,
@@ -190,6 +191,7 @@ func EvaluateIssueComment(conf *v1.File, event Event, client Client) action.Plan
 			Labels: []string{"spam"},
 		})
 		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
+		// Write blocklist now so later author_blocked matchers in this pass see it.
 		client.BlockAuthor(event.Issue)
 		plan.Actions = append(plan.Actions, action.Action{
 			Kind:  policy.BlockAuthor,

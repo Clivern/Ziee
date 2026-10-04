@@ -11,16 +11,20 @@ import (
 
 // PullRequest is a GitHub pull request.
 type PullRequest struct {
-	ID      int64  `json:"id"`
-	Number  int    `json:"number"`
-	Title   string `json:"title"`
-	State   string `json:"state"`
-	Body    string `json:"body"`
-	HTMLURL string `json:"html_url"`
-	Draft   bool   `json:"draft"`
-	Merged  bool   `json:"merged"`
-	User    User   `json:"user"`
-	Head    struct {
+	ID                int64   `json:"id"`
+	Number            int     `json:"number"`
+	Title             string  `json:"title"`
+	State             string  `json:"state"`
+	Body              string  `json:"body"`
+	HTMLURL           string  `json:"html_url"`
+	Draft             bool    `json:"draft"`
+	Merged            bool    `json:"merged"`
+	Mergeable         *bool   `json:"mergeable"`
+	AuthorAssociation string  `json:"author_association"`
+	User              User    `json:"user"`
+	Labels            []Label `json:"labels"`
+	Assignees         []User  `json:"assignees"`
+	Head              struct {
 		Ref string `json:"ref"`
 		SHA string `json:"sha"`
 	} `json:"head"`

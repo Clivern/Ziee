@@ -15,6 +15,8 @@ const Version = "1.0.0"
 // Parse unmarshals a version 1.0.0 `.ziee.yml` document.
 func Parse(data []byte) (*File, error) {
 	var file File
+
+	// Decode the whole document into the typed File tree.
 	err := yaml.Unmarshal(data, &file)
 	if err != nil {
 		return nil, err
@@ -23,11 +25,14 @@ func Parse(data []byte) (*File, error) {
 	return &file, nil
 }
 
+// UnmarshalYAML parses one `when` matcher (scalar bool shorthand or mapping).
 func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
+	// `- draft` / `- -draft` form.
 	if value.Kind == yaml.ScalarNode {
 		return c.SetBoolScalar(value.Value)
 	}
 
+	// Mapping form: one or more matcher keys on this clause.
 	var raw map[string]yaml.Node
 	err := value.Decode(&raw)
 	if err != nil {
@@ -59,6 +64,7 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 		case "author_not_in_team":
 			err = node.Decode(&c.AuthorNotInTeam)
 		case "first_contribution", "author_blocked", "draft", "conflict", "closed", "prerelease":
+			// Explicit bool: `draft: true` / `draft: false`.
 			var v bool
 			err = node.Decode(&v)
 			if err == nil {
@@ -103,6 +109,7 @@ func (c *Clause) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+// SetBoolScalar applies a scalar when key; a leading `-` means false.
 func (c *Clause) SetBoolScalar(name string) error {
 	v := true
 	if strings.HasPrefix(name, "-") {
@@ -113,6 +120,7 @@ func (c *Clause) SetBoolScalar(name string) error {
 	return c.SetBool(name, v)
 }
 
+// SetBool stores a named boolean matcher on the clause.
 func (c *Clause) SetBool(name string, v bool) error {
 	switch name {
 	case "first_contribution":
@@ -134,6 +142,7 @@ func (c *Clause) SetBool(name string, v bool) error {
 	return nil
 }
 
+// UnmarshalYAML parses one allow-list entry (`permission`, `teams`, `users`, `self`).
 func (e *AllowEntry) UnmarshalYAML(value *yaml.Node) error {
 	var raw map[string]yaml.Node
 	err := value.Decode(&raw)
@@ -162,12 +171,15 @@ func (e *AllowEntry) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+// UnmarshalYAML accepts a bare name string or `{name, description}` mapping.
 func (i *Intention) UnmarshalYAML(value *yaml.Node) error {
+	// Shorthand: `intention: bug`.
 	if value.Kind == yaml.ScalarNode {
 		i.Name = value.Value
 		return nil
 	}
 
+	// Full form with optional classify description.
 	var s struct {
 		Name        string `yaml:"name"`
 		Description string `yaml:"description"`
@@ -183,6 +195,7 @@ func (i *Intention) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+// MarshalYAML emits a bare name when description is empty, else a mapping.
 func (i Intention) MarshalYAML() (any, error) {
 	if i.Description == "" {
 		return i.Name, nil
@@ -194,7 +207,9 @@ func (i Intention) MarshalYAML() (any, error) {
 	}{Name: i.Name, Description: i.Description}, nil
 }
 
+// UnmarshalYAML accepts a single int or `{min, max}` for merge-queue batches.
 func (b *BatchSize) UnmarshalYAML(value *yaml.Node) error {
+	// Single size: `batch_size: 1`.
 	var n int
 	err := value.Decode(&n)
 	if err == nil {
@@ -202,6 +217,7 @@ func (b *BatchSize) UnmarshalYAML(value *yaml.Node) error {
 		return nil
 	}
 
+	// Range size: `batch_size: {min: 1, max: 8}`.
 	var s struct {
 		Min int `yaml:"min"`
 		Max int `yaml:"max"`
@@ -217,6 +233,7 @@ func (b *BatchSize) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+// MarshalYAML emits a single int when set, otherwise `{min, max}`.
 func (b BatchSize) MarshalYAML() (any, error) {
 	if b.Value != nil {
 		return *b.Value, nil

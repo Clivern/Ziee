@@ -39,6 +39,7 @@ func init() {
 	Webhook.On(IssueComment)
 	Webhook.On(PullRequestComment)
 	Webhook.On(PullRequests)
+	Webhook.On(CheckRuns)
 	Webhook.On(DetectConfChanges)
 }
 
@@ -525,6 +526,75 @@ func PullRequests(_ context.Context, d webhook.Delivery) {
 		Str("repo", payload.Repository.Name).
 		Int("number", payload.PullRequest.Number).
 		Msg("GitHub pull request webhook handled")
+}
+
+func CheckRuns(_ context.Context, d webhook.Delivery) {
+	if d.Event != "check_run" {
+		return
+	}
+
+	var payload webhook.CheckRunEvent
+	json.Unmarshal(d.Body, &payload)
+
+	if payload.Action != "completed" {
+		return
+	}
+
+	i := Instance.Installation
+
+	installation, err := i.GetByGitHubId(payload.Installation.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub check_run webhook")
+		return
+	}
+	if lo.IsEmpty(lo.FromPtr(installation).WorkspaceId) {
+		return
+	}
+
+	r := Instance.Repository
+
+	path, err := r.GetConfigPath(payload.Repository.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub check_run webhook")
+		return
+	}
+	if lo.IsEmpty(path) {
+		log.Info().
+			Str("deliveryId", d.ID).
+			Str("action", payload.Action).
+			Int64("githubId", payload.Installation.ID).
+			Str("owner", payload.Repository.Owner.Login).
+			Str("repo", payload.Repository.Name).
+			Str("check", payload.CheckRun.Name).
+			Msg("GitHub check_run webhook skipped, no config")
+		return
+	}
+
+	err = module.EnqueueTask(db.AsyncTaskTypeGitHubCheckRun, map[string]string{
+		"deliveryId":     d.ID,
+		"event":          d.Event,
+		"action":         payload.Action,
+		"body":           string(d.Body),
+		"installationId": strconv.FormatInt(payload.Installation.ID, 10),
+		"owner":          payload.Repository.Owner.Login,
+		"repo":           payload.Repository.Name,
+		"sha":            payload.CheckRun.HeadSHA,
+		"check":          payload.CheckRun.Name,
+	}, installation.WorkspaceId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to enqueue GitHub check_run webhook")
+		return
+	}
+
+	log.Info().
+		Str("deliveryId", d.ID).
+		Str("action", payload.Action).
+		Int64("githubId", payload.Installation.ID).
+		Str("owner", payload.Repository.Owner.Login).
+		Str("repo", payload.Repository.Name).
+		Str("check", payload.CheckRun.Name).
+		Str("conclusion", payload.CheckRun.Conclusion).
+		Msg("GitHub check_run webhook handled")
 }
 
 func DetectConfChanges(_ context.Context, d webhook.Delivery) {

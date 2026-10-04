@@ -109,6 +109,7 @@ func (w *Worker) register() {
 	On(db.AsyncTaskTypeGitHubIssueComment, h.HandleGitHubIssueComment)
 	On(db.AsyncTaskTypeGitHubPullRequestComment, h.HandleGitHubPullRequestComment)
 	On(db.AsyncTaskTypeGitHubPullRequest, h.HandleGitHubPullRequest)
+	On(db.AsyncTaskTypeGitHubCheckRun, h.HandleGitHubCheckRun)
 	On(db.AsyncTaskTypeRepoLabels, h.HandleRepositoryLabels)
 	On(db.AsyncTaskTypeRepoMerge, h.HandleRepositoryMerge)
 }

@@ -82,6 +82,23 @@ func (a *App) ListPullRequests(ctx context.Context, installationID int64, owner,
 	}
 }
 
+// ListPullRequestsForCommit lists open pull requests that contain the commit.
+func (a *App) ListPullRequestsForCommit(ctx context.Context, installationID int64, owner, repo, sha string) ([]PullRequest, error) {
+	token, err := a.GetInstallationToken(ctx, installationID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pulls []PullRequest
+	path := fmt.Sprintf("%s/repos/%s/%s/commits/%s/pulls", a.apiURL, owner, repo, sha)
+	err = Call(ctx, http.MethodGet, path, token.Token, GetHeaders(), nil, &pulls)
+	if err != nil {
+		return nil, err
+	}
+
+	return pulls, nil
+}
+
 // ListPullRequestFiles lists changed file paths on a pull request.
 func (a *App) ListPullRequestFiles(ctx context.Context, installationID int64, owner, repo string, number int) ([]string, error) {
 	token, err := a.GetInstallationToken(ctx, installationID)

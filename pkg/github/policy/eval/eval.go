@@ -3,7 +3,7 @@
 //
 // Package eval turns a parsed `.ziee.yml` and an event into an action plan.
 //
-//	spec.Parse → eval.Run → action.Apply
+//	spec.Parse → eval.Run (triage) → action.Apply
 package eval
 
 import (

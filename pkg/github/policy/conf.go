@@ -3,7 +3,7 @@
 //
 // Package policy is the framework that enforces `.ziee.yml`.
 //
-//	spec.Parse → eval.Run → action.Apply
+//	spec.Parse → eval.Run (triage) + queue.Run (merge queue) → action.Apply
 package policy
 
 const (
@@ -16,6 +16,7 @@ const (
 	KindPullRequestOpened      = "pull_request.opened"
 	KindPullRequestEdited      = "pull_request.edited"
 	KindPullRequestSynchronize = "pull_request.synchronize"
+	KindCheckRunCompleted      = "check_run.completed"
 
 	CommentsOutcomes = "outcomes"
 	CommentsAll      = "all"

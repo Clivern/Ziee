@@ -21,6 +21,7 @@ const (
 	AsyncTaskTypeGitHubIssueComment       = "ziee.github.issue_comment"
 	AsyncTaskTypeGitHubPullRequestComment = "ziee.github.pull_request_comment"
 	AsyncTaskTypeGitHubPullRequest        = "ziee.github.pull_request"
+	AsyncTaskTypeGitHubCheckRun           = "ziee.github.check_run"
 	AsyncTaskTypeRepoLabels               = "ziee.repo.labels"
 	AsyncTaskTypeRepoMerge                = "ziee.repo.merge"
 )

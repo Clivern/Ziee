@@ -15,8 +15,8 @@ import (
 	"github.com/samber/lo"
 )
 
-// EvaluatePROpened evaluates a new pull request against every pr_triage rule.
-func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
+// EvaluatePullRequestOpened evaluates a new pull request against every pr_triage rule.
+func EvaluatePullRequestOpened(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan
 
 	if !conf.PRTriage.Enabled {
@@ -106,8 +106,8 @@ func EvaluatePROpened(conf *v1.File, event Event, client Client) action.Plan {
 	return plan
 }
 
-// EvaluatePRUpdated re-evaluates a pull request after sync or edit.
-func EvaluatePRUpdated(conf *v1.File, event Event, client Client) action.Plan {
+// EvaluatePullRequestUpdated re-evaluates a pull request after sync or edit.
+func EvaluatePullRequestUpdated(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan
 
 	if !conf.PRTriage.Enabled || IsAppActor(event.Actor.Login) {
@@ -180,7 +180,7 @@ func EvaluatePRUpdated(conf *v1.File, event Event, client Client) action.Plan {
 		}
 	}
 
-	plan.Actions = ReconcilePRActions(plan.Actions, event.Issue)
+	plan.Actions = ReconcilePullRequestActions(plan.Actions, event.Issue)
 
 	body := OutcomeComment(conf.PRTriage.Comments, "pull request", plan.Actions)
 	if !lo.IsEmpty(body) {
@@ -193,8 +193,8 @@ func EvaluatePRUpdated(conf *v1.File, event Event, client Client) action.Plan {
 	return plan
 }
 
-// ReconcilePRActions drops no-op actions against the current pull request state.
-func ReconcilePRActions(actions []action.Action, issue Issue) []action.Action {
+// ReconcilePullRequestActions drops no-op actions against the current pull request state.
+func ReconcilePullRequestActions(actions []action.Action, issue Issue) []action.Action {
 	var out []action.Action
 
 	for _, a := range actions {
@@ -232,8 +232,8 @@ func ReconcilePRActions(actions []action.Action, issue Issue) []action.Action {
 	return out
 }
 
-// EvaluatePRComment evaluates a pull request comment as a Ziee command.
-func EvaluatePRComment(conf *v1.File, event Event, client Client) action.Plan {
+// EvaluatePullRequestComment evaluates a pull request comment as a Ziee command.
+func EvaluatePullRequestComment(conf *v1.File, event Event, client Client) action.Plan {
 	var plan action.Plan
 
 	if IsAppActor(event.Actor.Login) {

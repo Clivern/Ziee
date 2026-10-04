@@ -34,7 +34,7 @@ func TestUnitEvaluatePROpenedSpam(t *testing.T) {
 	}
 
 	client := &stubClient{intention: v1.Intention{Name: "spam"}}
-	plan := EvaluatePROpened(conf, Event{
+	plan := EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "spammer", Title: "buy crypto"},
 	}, client)
 
@@ -72,7 +72,7 @@ func TestUnitEvaluatePROpenedSkipAINotRateLimit(t *testing.T) {
 	}
 
 	client := &stubClient{prsExceeds: true, intention: v1.Intention{Name: "bug"}}
-	plan := EvaluatePROpened(conf, Event{
+	plan := EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "maya", Title: "crash"},
 	}, client)
 
@@ -82,7 +82,7 @@ func TestUnitEvaluatePROpenedSkipAINotRateLimit(t *testing.T) {
 	}, plan.Actions)
 
 	client = &stubClient{prsExceeds: true, intention: v1.Intention{Name: "bug"}}
-	plan = EvaluatePROpened(conf, Event{
+	plan = EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "flooder", Title: "crash"},
 	}, client)
 
@@ -113,7 +113,7 @@ func TestUnitEvaluatePROpenedRateLimit(t *testing.T) {
 	}
 
 	client := &stubClient{prsExceeds: true}
-	plan := EvaluatePROpened(conf, Event{
+	plan := EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "flooder"},
 	}, client)
 
@@ -144,7 +144,7 @@ func TestUnitEvaluatePROpenedOr(t *testing.T) {
 		},
 	}
 
-	plan := EvaluatePROpened(conf, Event{
+	plan := EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "clivern"},
 	}, &stubClient{})
 
@@ -152,7 +152,7 @@ func TestUnitEvaluatePROpenedOr(t *testing.T) {
 		{Kind: policy.AddLabels, Labels: []string{"team/sre"}},
 	}, plan.Actions)
 
-	plan = EvaluatePROpened(conf, Event{
+	plan = EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "maya"},
 	}, &stubClient{})
 
@@ -174,7 +174,7 @@ func TestUnitEvaluatePROpenedDraft(t *testing.T) {
 		},
 	}
 
-	plan := EvaluatePROpened(conf, Event{
+	plan := EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "maya"},
 	}, &stubClient{})
 
@@ -182,7 +182,7 @@ func TestUnitEvaluatePROpenedDraft(t *testing.T) {
 		{Kind: policy.AddLabels, Labels: []string{"bot"}},
 	}, plan.Actions)
 
-	plan = EvaluatePROpened(conf, Event{
+	plan = EvaluatePullRequestOpened(conf, Event{
 		Issue: Issue{Author: "maya", Draft: true},
 	}, &stubClient{})
 
@@ -211,7 +211,7 @@ func TestUnitEvaluatePRComment(t *testing.T) {
 		},
 	}
 
-	plan := EvaluatePRComment(conf, Event{
+	plan := EvaluatePullRequestComment(conf, Event{
 		Comment: "@zieeai label bug",
 		Actor:   Actor{Login: "maya"},
 		Issue:   Issue{Author: "guest"},
@@ -222,7 +222,7 @@ func TestUnitEvaluatePRComment(t *testing.T) {
 		{Kind: policy.Comment, Body: "Labeled `bug` as requested by @maya."},
 	}, plan.Actions)
 
-	plan = EvaluatePRComment(conf, Event{
+	plan = EvaluatePullRequestComment(conf, Event{
 		Comment: "@zieeai reviewers clivern",
 		Actor:   Actor{Login: "maya"},
 		Issue:   Issue{Author: "guest"},
@@ -233,7 +233,7 @@ func TestUnitEvaluatePRComment(t *testing.T) {
 		{Kind: policy.Comment, Body: "Requested review from @clivern as requested by @maya."},
 	}, plan.Actions)
 
-	plan = EvaluatePRComment(conf, Event{
+	plan = EvaluatePullRequestComment(conf, Event{
 		Comment: "@zieeai close",
 		Actor:   Actor{Login: "clivern"},
 		Issue:   Issue{Author: "guest"},
@@ -245,7 +245,7 @@ func TestUnitEvaluatePRComment(t *testing.T) {
 	}, plan.Actions)
 
 	client := &stubClient{}
-	plan = EvaluatePRComment(conf, Event{
+	plan = EvaluatePullRequestComment(conf, Event{
 		Comment: "@zieeai spam",
 		Actor:   Actor{Login: "clivern"},
 		Issue:   Issue{Author: "spammer"},
@@ -259,7 +259,7 @@ func TestUnitEvaluatePRComment(t *testing.T) {
 		{Kind: policy.Comment, Body: "Labeled `spam`, closed this pull request, blocked the author as requested by @clivern."},
 	}, plan.Actions)
 
-	plan = EvaluatePRComment(conf, Event{
+	plan = EvaluatePullRequestComment(conf, Event{
 		Comment: "@zieeai label bug",
 		Actor:   Actor{Login: "guest"},
 		Issue:   Issue{Author: "guest"},
@@ -290,7 +290,7 @@ func TestUnitEvaluatePRUpdated(t *testing.T) {
 		},
 	}
 
-	plan := EvaluatePRUpdated(conf, Event{
+	plan := EvaluatePullRequestUpdated(conf, Event{
 		Issue: Issue{
 			Author:    "maya",
 			Files:     []string{"api/health.go"},
@@ -302,7 +302,7 @@ func TestUnitEvaluatePRUpdated(t *testing.T) {
 
 	assert.Empty(t, plan.Actions)
 
-	plan = EvaluatePRUpdated(conf, Event{
+	plan = EvaluatePullRequestUpdated(conf, Event{
 		Issue: Issue{
 			Author: "maya",
 			Files:  []string{"api/health.go"},

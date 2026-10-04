@@ -24,11 +24,11 @@ func Run(conf *v1.File, event Event, client Client) action.Plan {
 	case policy.KindIssueComment:
 		return EvaluateIssueComment(conf, event, client)
 	case policy.KindPullRequestComment:
-		return EvaluatePRComment(conf, event, client)
+		return EvaluatePullRequestComment(conf, event, client)
 	case policy.KindPullRequestOpened:
-		return EvaluatePROpened(conf, event, client)
+		return EvaluatePullRequestOpened(conf, event, client)
 	case policy.KindPullRequestEdited, policy.KindPullRequestSynchronize:
-		return EvaluatePRUpdated(conf, event, client)
+		return EvaluatePullRequestUpdated(conf, event, client)
 	default:
 		return action.Plan{}
 	}

@@ -220,6 +220,25 @@ func MergeQueueOutcomeComment(mode, actor string, actions []action.Action) strin
 	return ""
 }
 
+
+// DequeueActions builds dequeue + queue-state label actions.
+func DequeueActions(conf *v1.File) []action.Action {
+	labels := conf.MergeQueue.Labels
+
+	actions := []action.Action{{Kind: policy.Dequeue}}
+
+	add := lo.Compact([]string{labels.Dequeued})
+	remove := lo.Compact([]string{labels.Queued, labels.Checking})
+	if len(add) > 0 {
+		actions = append(actions, action.Action{Kind: policy.AddLabels, Labels: add})
+	}
+	if len(remove) > 0 {
+		actions = append(actions, action.Action{Kind: policy.RemoveLabels, Labels: remove})
+	}
+
+	return actions
+}
+
 // IsAppActor reports whether login is the configured GitHub App bot.
 func IsAppActor(login string) bool {
 	bot := strings.ToLower(app.GetConfig().BotName)

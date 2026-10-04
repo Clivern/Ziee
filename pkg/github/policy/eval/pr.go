@@ -247,12 +247,6 @@ func EvaluatePullRequestComment(conf *v1.File, event Event, client Client) actio
 		return plan
 	}
 
-	if conf.MergeQueue.Enabled {
-		if _, ok := conf.MergeQueue.Commands[cmd.Verb]; ok {
-			return EvaluateMergeQueueComment(conf, event, client)
-		}
-	}
-
 	if !conf.PRTriage.Enabled {
 		return plan
 	}
@@ -316,7 +310,7 @@ func EvaluatePullRequestComment(conf *v1.File, event Event, client Client) actio
 	case "close":
 		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Close})
 		if conf.MergeQueue.Enabled {
-			plan.Actions = append(plan.Actions, dequeueActions(conf)...)
+			plan.Actions = append(plan.Actions, DequeueActions(conf)...)
 		}
 	case "reopen":
 		plan.Actions = append(plan.Actions, action.Action{Kind: policy.Reopen})
@@ -333,7 +327,7 @@ func EvaluatePullRequestComment(conf *v1.File, event Event, client Client) actio
 			Users: []string{event.Issue.Author},
 		})
 		if conf.MergeQueue.Enabled {
-			plan.Actions = append(plan.Actions, dequeueActions(conf)...)
+			plan.Actions = append(plan.Actions, DequeueActions(conf)...)
 		}
 	}
 

@@ -17,6 +17,7 @@ import (
 	"github.com/clivern/ziee/pkg/github/policy"
 	"github.com/clivern/ziee/pkg/github/policy/action"
 	"github.com/clivern/ziee/pkg/github/policy/eval"
+	"github.com/clivern/ziee/pkg/github/policy/queue"
 	"github.com/clivern/ziee/pkg/github/policy/spec"
 	"github.com/clivern/ziee/pkg/github/webhook"
 
@@ -115,7 +116,7 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 		assignees[i] = user.Login
 	}
 
-	plan := eval.Run(file, eval.Event{
+	event := eval.Event{
 		Kind: fmt.Sprintf("pull_request.%s", payload["action"]),
 		Account: eval.Account{
 			Login: pull.Repository.Owner.Login,
@@ -138,7 +139,11 @@ func (h *handlers) HandleGitHubPullRequest(ctx context.Context, msg *broker.Msg)
 		Actor: eval.Actor{
 			Login: pull.Sender.Login,
 		},
-	}, NewPullRequestClient(ctx, installationId, pull.Repository.ID, payload["owner"], payload["repo"]))
+	}
+	client := NewPullRequestClient(ctx, installationId, pull.Repository.ID, payload["owner"], payload["repo"])
+
+	plan := eval.Run(file, event, client)
+	plan.Actions = append(plan.Actions, queue.Run(file, event, client).Actions...)
 
 	log.Info().
 		Str("deliveryId", payload["deliveryId"]).
@@ -277,7 +282,7 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 		assignees[i] = user.Login
 	}
 
-	plan := eval.Run(file, eval.Event{
+	event := eval.Event{
 		Kind: policy.KindPullRequestComment,
 		Account: eval.Account{
 			Login: comment.Repository.Owner.Login,
@@ -298,7 +303,11 @@ func (h *handlers) HandleGitHubPullRequestComment(ctx context.Context, msg *brok
 		Actor: eval.Actor{
 			Login: comment.Sender.Login,
 		},
-	}, NewPullRequestClient(ctx, installationId, comment.Repository.ID, payload["owner"], payload["repo"]))
+	}
+	client := NewPullRequestClient(ctx, installationId, comment.Repository.ID, payload["owner"], payload["repo"])
+
+	plan := eval.Run(file, event, client)
+	plan.Actions = append(plan.Actions, queue.Run(file, event, client).Actions...)
 
 	log.Info().
 		Str("deliveryId", payload["deliveryId"]).

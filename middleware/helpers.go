@@ -28,7 +28,9 @@ func IsAssetPath(path string) bool {
 
 // ShouldSkipAuth determines if authentication should be skipped for a given path
 func ShouldSkipAuth(path string) bool {
-	return strings.HasPrefix(path, "/api/v1/public/") || !strings.HasPrefix(path, "/api/v1/")
+	return strings.HasPrefix(path, "/api/v1/public/") ||
+		strings.HasPrefix(path, "/api/v1/sandbox/") ||
+		!strings.HasPrefix(path, "/api/v1/")
 }
 
 // GetPrincipal returns the authenticated user or workspace access key from context.

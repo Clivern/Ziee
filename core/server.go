@@ -22,6 +22,7 @@ import (
 	"github.com/clivern/ziee/middleware"
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/github/app"
+	"github.com/clivern/ziee/sandbox"
 
 	"github.com/go-chi/chi/v5"
 	cmid "github.com/go-chi/chi/v5/middleware"
@@ -62,6 +63,7 @@ func SetupServer(Static embed.FS, a *api.API) http.Handler {
 		if conf.IsSaaS() {
 			r.Post("/api/v1/public/action/stripe/webhook", a.StripeWebhookAction) // Stripe billing webhook
 		}
+		r.Handle("/api/v1/sandbox/{Id}/*", sandbox.NewProxy()) // OpenRouter sandbox proxy
 	})
 	r.Get("/api/v1/me", a.GetMeAction) // current authenticated user
 	r.Group(func(r chi.Router) {       // user profile and GitHub App installations

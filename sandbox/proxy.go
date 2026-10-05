@@ -72,7 +72,7 @@ func IsChatEndpoint(raw string) bool {
 
 // ServeHTTP proxies /api/v1/sandbox/{Id}/{openrouter_path} to OpenRouter.
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	_ = chi.URLParam(r, "Id")
+	id := chi.URLParam(r, "Id")
 
 	rest := chi.URLParam(r, "*")
 	openPath := DedupePath("/" + strings.TrimPrefix(rest, "/"))
@@ -98,6 +98,11 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			req.Host = OpenRouterAPIHost
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			req.Header.Del("X-Api-Key")
+			// Let Transport decompress gzip so ModifyResponse sees plain JSON.
+			req.Header.Del("Accept-Encoding")
+		},
+		ModifyResponse: func(resp *http.Response) error {
+			return CaptureUsage(resp, id, pathOnly)
 		},
 	}
 

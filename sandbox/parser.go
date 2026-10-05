@@ -69,7 +69,9 @@ func CaptureUsage(resp *http.Response, id, path string) error {
 		}
 	}
 
-	LogUsage(body, id, path)
+	if !LogUsage(body, id, path) {
+		Block(id)
+	}
 
 	resp.Body = io.NopCloser(bytes.NewReader(body))
 	resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(body)))

@@ -12,6 +12,7 @@ import (
 	"github.com/clivern/ziee/pkg/util"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -73,6 +74,17 @@ func IsChatEndpoint(raw string) bool {
 // ServeHTTP proxies /api/v1/sandbox/{Id}/{openrouter_path} to OpenRouter.
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "Id")
+
+	if IsBlocked(id) {
+		log.Info().
+			Str("id", id).
+			Msg("Blocked sandbox id")
+
+		util.WriteJSON(w, http.StatusForbidden, map[string]any{
+			"errorMessage": "access forbidden",
+		})
+		return
+	}
 
 	rest := chi.URLParam(r, "*")
 	openPath := DedupePath("/" + strings.TrimPrefix(rest, "/"))

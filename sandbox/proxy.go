@@ -19,8 +19,7 @@ const (
 	ChatCompletionsPath = "/api/v1/chat/completions"
 	MessagesPath        = "/api/v1/messages"
 	ResponsesPath       = "/api/v1/responses"
-
-	openRouterHost = "openrouter.ai"
+	OpenRouterAPIHost   = "openrouter.ai"
 )
 
 // Proxy forwards sandbox chat requests to OpenRouter.
@@ -59,7 +58,6 @@ func DedupePath(raw string) string {
 }
 
 // IsChatEndpoint reports whether raw is an OpenRouter chat endpoint path.
-// Query strings are ignored; consecutive duplicate segments are collapsed first.
 func IsChatEndpoint(raw string) bool {
 	path, _, _ := strings.Cut(DedupePath(raw), "?")
 	path = strings.TrimRight(path, "/")
@@ -93,11 +91,11 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		FlushInterval: -1,
 		Director: func(req *http.Request) {
 			req.URL.Scheme = "https"
-			req.URL.Host = openRouterHost
+			req.URL.Host = OpenRouterAPIHost
 			req.URL.Path = pathOnly
 			req.URL.RawPath = ""
 			req.URL.RawQuery = rawQuery
-			req.Host = openRouterHost
+			req.Host = OpenRouterAPIHost
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			req.Header.Del("X-Api-Key")
 		},

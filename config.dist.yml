@@ -101,6 +101,12 @@ app:
     docker_image: ${ZIEE_CODING_DOCKER_IMAGE:-clivern/swarm:v0.8.5}
     proxy_url: ${ZIEE_CODING_PROXY_URL:-}
 
+  sandbox:
+    api_key: ${ZIEE_SANDBOX_OROUTE_API_KEY:-}
+    docker_image: ${ZIEE_SANDBOX_DOCKER_IMAGE:-}
+    temp_dir: ${ZIEE_SANDBOX_TEMP_DIR:-/tmp/ziee}
+    model: ${ZIEE_SANDBOX_MODEL:-openrouter/anthropic/claude-sonnet-4.5}
+
   cache:
     provider: ${ZIEE_CACHE_PROVIDER:-redis}
     redis:

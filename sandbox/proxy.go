@@ -110,7 +110,8 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			req.Host = OpenRouterAPIHost
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			req.Header.Del("X-Api-Key")
-			// Let Transport decompress gzip so ModifyResponse sees plain JSON.
+			// Let Transport decompress gzip so
+			// ModifyResponse sees plain JSON.
 			req.Header.Del("Accept-Encoding")
 		},
 		ModifyResponse: func(resp *http.Response) error {

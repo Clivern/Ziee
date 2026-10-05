@@ -28,7 +28,7 @@ type UsageEnvelope struct {
 	Usage *OpenRouterUsage `json:"usage"`
 }
 
-type SSEUsageReader struct {
+type UsageReader struct {
 	io.ReadCloser
 	Id      string
 	Path    string
@@ -42,7 +42,7 @@ func CaptureUsage(resp *http.Response, id, path string) error {
 
 	ct := resp.Header.Get("Content-Type")
 	if strings.Contains(ct, "text/event-stream") {
-		resp.Body = &SSEUsageReader{
+		resp.Body = &UsageReader{
 			ReadCloser: resp.Body,
 			Id:         id,
 			Path:       path,
@@ -95,9 +95,9 @@ func LogUsage(raw []byte, id, path string) bool {
 	log.Info().
 		Str("id", id).
 		Str("path", path).
-		Int64("promptTokens", prompt).
-		Int64("totalTokens", total).
-		Float64("costUsd", cost).
+		Int64("prompt_tokens", prompt).
+		Int64("total_tokens", total).
+		Float64("cost_usd", cost).
 		Msg("Sandbox OpenRouter usage")
 
 	return true
@@ -124,7 +124,7 @@ func (u *OpenRouterUsage) Values() (prompt, total int64, cost float64) {
 	return prompt, total, cost
 }
 
-func (s *SSEUsageReader) Read(p []byte) (int, error) {
+func (s *UsageReader) Read(p []byte) (int, error) {
 	n, err := s.ReadCloser.Read(p)
 	if n > 0 {
 		s.pending = append(s.pending, p[:n]...)
@@ -134,7 +134,7 @@ func (s *SSEUsageReader) Read(p []byte) (int, error) {
 	return n, err
 }
 
-func (s *SSEUsageReader) drain() {
+func (s *UsageReader) drain() {
 	for {
 		i := bytes.IndexByte(s.pending, '\n')
 		if i < 0 {

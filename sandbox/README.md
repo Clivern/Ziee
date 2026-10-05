@@ -2,6 +2,26 @@
 
 Run an agent container that reaches `OpenRouter` through `Ziee`, then talk to it over `RPC`.
 
+```
+  client.py                 Sandbox Container             Ziee                 OpenRouter
+      |                            |                        |                       |
+      |  RPC :8765                 |                        |                       |
+      |  (RPC_API_KEY)             |                        |                       |
+      |--------------------------->|                        |                       |
+      |                            |  PROXY_URL             |                       |
+      |                            |  /api/v1/sandbox/...   |                       |
+      |                            |----------------------->|                       |
+      |                            |                        | chat completions      |
+      |                            |                        | (ziee openrouter key) |
+      |                            |                        |---------------------->|
+      |                            |                        |  Ziee tracks usage    |
+      |                            |          Stream        |<----------------------|
+      |          Stream            |<-----------------------|                       |
+      |<---------------------------|                        |                       |
+```
+
+You talk to the container locally. The agent never holds an OpenRouter key; Ziee proxies those calls.
+
 
 ### Start the Sandbox
 

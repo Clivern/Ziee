@@ -144,10 +144,10 @@ func (u *Usage) IncrementAIUsage(usage db.UsageRepository, subscriptions db.Subs
 		}
 	}
 
-	log.Info().
+	log.Debug().
 		Str("workspaceId", workspaceId.String()).
 		Int64("tokens", tokens).
-		Int64("cost", cost).
+		Int64("costNanoUsd", cost).
 		Msg("AI usage incremented")
 
 	return nil

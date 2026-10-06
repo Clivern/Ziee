@@ -123,7 +123,7 @@ func (a *Audit) ListAuditEvents(workspaceId db.Id, limit, offset int) (*ListAudi
 		})
 	}
 
-	log.Info().
+	log.Debug().
 		Str("workspaceId", workspaceId.String()).
 		Int("count", len(list)).
 		Int64("total", total).

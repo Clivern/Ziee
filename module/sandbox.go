@@ -182,7 +182,7 @@ func (s *Sandbox) ListSandboxes(repositoryId db.Id) (*ListSandboxesResult, error
 		})
 	}
 
-	log.Info().
+	log.Debug().
 		Str("repositoryId", repositoryId.String()).
 		Int("count", len(list)).
 		Msg("Sandboxes listed")
@@ -205,7 +205,7 @@ func (s *Sandbox) TouchSandbox(id db.Id) error {
 		return fmt.Errorf("%w: %v", ErrFailedTouchSandbox, err)
 	}
 
-	log.Info().
+	log.Debug().
 		Str("sandboxId", id.String()).
 		Msg("Sandbox touched")
 

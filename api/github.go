@@ -68,6 +68,10 @@ func (a *API) ListGitHubInstallationsAction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	log.Info().
+		Str("userId", user.Id.String()).
+		Msg("Listing GitHub installations")
+
 	installations, err := a.Installation.ListPending(lo.FromPtr(user.ProviderUserId))
 	if err != nil {
 		log.Error().
@@ -110,6 +114,12 @@ func (a *API) AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	log.Info().
+		Str("installationId", id).
+		Str("workspaceId", req.WorkspaceId).
+		Str("userId", user.Id.String()).
+		Msg("Attaching GitHub installation")
+
 	err = a.Installation.Attach(r.Context(), db.Id(id), db.Id(req.WorkspaceId), lo.FromPtr(user.ProviderUserId))
 	if err != nil {
 		switch {
@@ -130,6 +140,12 @@ func (a *API) AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Requ
 		}
 		return
 	}
+
+	log.Info().
+		Str("installationId", id).
+		Str("workspaceId", req.WorkspaceId).
+		Str("userId", user.Id.String()).
+		Msg("GitHub installation attached")
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{
 		"attached": true,

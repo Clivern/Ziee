@@ -24,6 +24,8 @@ const OauthStateCookie = "_ziee_oauth_state"
 func (a *API) GitHubOAuthStartAction(w http.ResponseWriter, r *http.Request) {
 	errorURL := util.AppURL("/login?oauth_error=github")
 
+	log.Info().Msg("New GitHub oauth request")
+
 	state, err := util.GenerateSecureToken(24)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to generate oauth state")
@@ -55,6 +57,8 @@ func (a *API) GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) 
 	expectedState := util.GetCookie(r, OauthStateCookie)
 
 	util.DeleteCookie(w, OauthStateCookie)
+
+	log.Info().Msg("GitHub oauth callback received")
 
 	token, err := a.OAuth.Exchange(r.Context(), code, state, expectedState)
 	if err != nil {
@@ -97,6 +101,11 @@ func (a *API) GitHubOAuthCallbackAction(w http.ResponseWriter, r *http.Request) 
 	}
 
 	util.SetCookie(w, "_ziee_session", result.Session.Token, result.CookieOptions)
+
+	log.Info().
+		Str("userId", result.User.Id.String()).
+		Int64("githubUserId", user.ID).
+		Msg("GitHub oauth login succeeded")
 
 	err = a.Invite.AttachPending(result.User)
 	if err != nil {

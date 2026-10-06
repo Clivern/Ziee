@@ -28,6 +28,10 @@ func (a *API) ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) 
 	}
 	workspaceId := db.Id(wid)
 
+	log.Info().
+		Str("workspaceId", wid).
+		Msg("Listing audit events")
+
 	limit, offset := util.ParsePagination(r)
 
 	result, err := a.Audit.ListAuditEvents(workspaceId, limit, offset)
@@ -74,6 +78,11 @@ func (a *API) GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	log.Info().
+		Str("workspaceId", wid).
+		Str("auditId", auditId).
+		Msg("Getting audit event")
 
 	event, err := a.Audit.GetAuditEvent(workspaceId, db.Id(auditId))
 	if err != nil {

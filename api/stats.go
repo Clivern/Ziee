@@ -27,6 +27,10 @@ func (a *API) GetWorkspaceStatsAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Msg("Getting workspace stats")
+
 	stats, err := a.Stats.GetWorkspaceStats(db.Id(wid))
 	if err != nil {
 		switch {

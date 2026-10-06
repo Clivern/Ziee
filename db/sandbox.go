@@ -24,6 +24,7 @@ type Sandbox struct {
 	Status         string
 	Token          string
 	RemoteId       string
+	RunId          Id
 	ExpiresAt      time.Time
 	LastActivityAt time.Time
 	CreatedAt      time.Time
@@ -36,6 +37,7 @@ type SandboxRepository interface {
 	GetById(id Id) (*Sandbox, error)
 	GetByToken(token string) (*Sandbox, error)
 	GetByRemoteId(remoteId string) (*Sandbox, error)
+	GetByRunId(runId Id) (*Sandbox, error)
 	ListByRepositoryId(repositoryId Id) ([]*Sandbox, error)
 	Touch(id Id) error
 	Delete(id Id) error
@@ -73,8 +75,8 @@ func (r *SandboxRepositoryPostgres) Create(item *Sandbox) error {
 	}
 
 	return r.db.QueryRow(
-		`INSERT INTO sandbox (id, repository_id, config, usage, port, status, token, remote_id, expires_at, last_activity_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		`INSERT INTO sandbox (id, repository_id, config, usage, port, status, token, remote_id, run_id, expires_at, last_activity_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING created_at, updated_at`,
 		item.Id.String(),
 		item.RepositoryId.String(),
@@ -84,6 +86,7 @@ func (r *SandboxRepositoryPostgres) Create(item *Sandbox) error {
 		item.Status,
 		item.Token,
 		item.RemoteId,
+		item.RunId.String(),
 		item.ExpiresAt,
 		item.LastActivityAt,
 	).Scan(&item.CreatedAt, &item.UpdatedAt)
@@ -93,7 +96,7 @@ func (r *SandboxRepositoryPostgres) Create(item *Sandbox) error {
 func (r *SandboxRepositoryPostgres) GetById(id Id) (*Sandbox, error) {
 	item := &Sandbox{}
 	err := r.db.QueryRow(
-		`SELECT id, repository_id, config, usage, port, status, token, remote_id, expires_at, last_activity_at, created_at, updated_at
+		`SELECT id, repository_id, config, usage, port, status, token, remote_id, run_id, expires_at, last_activity_at, created_at, updated_at
 		FROM sandbox
 		WHERE id = $1 AND expires_at > $2`,
 		id.String(),
@@ -107,6 +110,7 @@ func (r *SandboxRepositoryPostgres) GetById(id Id) (*Sandbox, error) {
 		&item.Status,
 		&item.Token,
 		&item.RemoteId,
+		&item.RunId,
 		&item.ExpiresAt,
 		&item.LastActivityAt,
 		&item.CreatedAt,
@@ -123,7 +127,7 @@ func (r *SandboxRepositoryPostgres) GetById(id Id) (*Sandbox, error) {
 func (r *SandboxRepositoryPostgres) GetByToken(token string) (*Sandbox, error) {
 	item := &Sandbox{}
 	err := r.db.QueryRow(
-		`SELECT id, repository_id, config, usage, port, status, token, remote_id, expires_at, last_activity_at, created_at, updated_at
+		`SELECT id, repository_id, config, usage, port, status, token, remote_id, run_id, expires_at, last_activity_at, created_at, updated_at
 		FROM sandbox
 		WHERE token = $1 AND expires_at > $2`,
 		token,
@@ -137,6 +141,7 @@ func (r *SandboxRepositoryPostgres) GetByToken(token string) (*Sandbox, error) {
 		&item.Status,
 		&item.Token,
 		&item.RemoteId,
+		&item.RunId,
 		&item.ExpiresAt,
 		&item.LastActivityAt,
 		&item.CreatedAt,
@@ -153,7 +158,7 @@ func (r *SandboxRepositoryPostgres) GetByToken(token string) (*Sandbox, error) {
 func (r *SandboxRepositoryPostgres) GetByRemoteId(remoteId string) (*Sandbox, error) {
 	item := &Sandbox{}
 	err := r.db.QueryRow(
-		`SELECT id, repository_id, config, usage, port, status, token, remote_id, expires_at, last_activity_at, created_at, updated_at
+		`SELECT id, repository_id, config, usage, port, status, token, remote_id, run_id, expires_at, last_activity_at, created_at, updated_at
 		FROM sandbox
 		WHERE remote_id = $1 AND expires_at > $2`,
 		remoteId,
@@ -167,6 +172,38 @@ func (r *SandboxRepositoryPostgres) GetByRemoteId(remoteId string) (*Sandbox, er
 		&item.Status,
 		&item.Token,
 		&item.RemoteId,
+		&item.RunId,
+		&item.ExpiresAt,
+		&item.LastActivityAt,
+		&item.CreatedAt,
+		&item.UpdatedAt,
+	)
+	if isNotFound(err) {
+		return nil, nil
+	}
+
+	return item, err
+}
+
+// GetByRunId returns a non-expired sandbox by run id.
+func (r *SandboxRepositoryPostgres) GetByRunId(runId Id) (*Sandbox, error) {
+	item := &Sandbox{}
+	err := r.db.QueryRow(
+		`SELECT id, repository_id, config, usage, port, status, token, remote_id, run_id, expires_at, last_activity_at, created_at, updated_at
+		FROM sandbox
+		WHERE run_id = $1 AND expires_at > $2`,
+		runId.String(),
+		time.Now().UTC(),
+	).Scan(
+		&item.Id,
+		&item.RepositoryId,
+		&item.Config,
+		&item.Usage,
+		&item.Port,
+		&item.Status,
+		&item.Token,
+		&item.RemoteId,
+		&item.RunId,
 		&item.ExpiresAt,
 		&item.LastActivityAt,
 		&item.CreatedAt,
@@ -182,7 +219,7 @@ func (r *SandboxRepositoryPostgres) GetByRemoteId(remoteId string) (*Sandbox, er
 // ListByRepositoryId lists non-expired sandbox rows for a repository.
 func (r *SandboxRepositoryPostgres) ListByRepositoryId(repositoryId Id) ([]*Sandbox, error) {
 	rows, err := r.db.Query(
-		`SELECT id, repository_id, config, usage, port, status, token, remote_id, expires_at, last_activity_at, created_at, updated_at
+		`SELECT id, repository_id, config, usage, port, status, token, remote_id, run_id, expires_at, last_activity_at, created_at, updated_at
 		FROM sandbox
 		WHERE repository_id = $1 AND expires_at > $2
 		ORDER BY created_at DESC`,
@@ -206,6 +243,7 @@ func (r *SandboxRepositoryPostgres) ListByRepositoryId(repositoryId Id) ([]*Sand
 			&item.Status,
 			&item.Token,
 			&item.RemoteId,
+			&item.RunId,
 			&item.ExpiresAt,
 			&item.LastActivityAt,
 			&item.CreatedAt,

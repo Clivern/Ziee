@@ -46,6 +46,7 @@ type SandboxResponse struct {
 	Status         string `json:"status"`
 	Token          string `json:"token,omitempty"`
 	RemoteId       string `json:"remoteId,omitempty"`
+	RunId          db.Id  `json:"runId,omitempty"`
 	ExpiresAt      string `json:"expiresAt"`
 	LastActivityAt string `json:"lastActivityAt"`
 	CreatedAt      string `json:"createdAt"`
@@ -59,7 +60,7 @@ type ListSandboxesResult struct {
 }
 
 // CreateSandbox creates a sandbox for a repository.
-func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remoteId string, port int, expiresAt time.Time) (*SandboxResponse, error) {
+func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remoteId string, runId db.Id, port int, expiresAt time.Time) (*SandboxResponse, error) {
 	repo, err := s.RepoRepository.GetById(repositoryId)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedCreateSandbox, err)
@@ -75,6 +76,7 @@ func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remote
 		Port:         port,
 		Token:        token,
 		RemoteId:     remoteId,
+		RunId:        runId,
 		ExpiresAt:    expiresAt,
 	}
 
@@ -87,6 +89,7 @@ func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remote
 		Str("sandboxId", item.Id.String()).
 		Str("repositoryId", repositoryId.String()).
 		Str("remoteId", remoteId).
+		Str("runId", runId.String()).
 		Msg("Sandbox created")
 
 	return &SandboxResponse{
@@ -98,6 +101,7 @@ func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remote
 		Status:         item.Status,
 		Token:          item.Token,
 		RemoteId:       item.RemoteId,
+		RunId:          item.RunId,
 		ExpiresAt:      item.ExpiresAt.UTC().Format(time.RFC3339),
 		LastActivityAt: item.LastActivityAt.UTC().Format(time.RFC3339),
 		CreatedAt:      item.CreatedAt.UTC().Format(time.RFC3339),
@@ -124,6 +128,7 @@ func (s *Sandbox) GetSandbox(id db.Id) (*SandboxResponse, error) {
 		Status:         item.Status,
 		Token:          item.Token,
 		RemoteId:       item.RemoteId,
+		RunId:          item.RunId,
 		ExpiresAt:      item.ExpiresAt.UTC().Format(time.RFC3339),
 		LastActivityAt: item.LastActivityAt.UTC().Format(time.RFC3339),
 		CreatedAt:      item.CreatedAt.UTC().Format(time.RFC3339),
@@ -150,6 +155,7 @@ func (s *Sandbox) GetSandboxByToken(token string) (*SandboxResponse, error) {
 		Status:         item.Status,
 		Token:          item.Token,
 		RemoteId:       item.RemoteId,
+		RunId:          item.RunId,
 		ExpiresAt:      item.ExpiresAt.UTC().Format(time.RFC3339),
 		LastActivityAt: item.LastActivityAt.UTC().Format(time.RFC3339),
 		CreatedAt:      item.CreatedAt.UTC().Format(time.RFC3339),
@@ -175,6 +181,7 @@ func (s *Sandbox) ListSandboxes(repositoryId db.Id) (*ListSandboxesResult, error
 			Status:         item.Status,
 			Token:          item.Token,
 			RemoteId:       item.RemoteId,
+			RunId:          item.RunId,
 			ExpiresAt:      item.ExpiresAt.UTC().Format(time.RFC3339),
 			LastActivityAt: item.LastActivityAt.UTC().Format(time.RFC3339),
 			CreatedAt:      item.CreatedAt.UTC().Format(time.RFC3339),

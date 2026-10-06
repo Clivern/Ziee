@@ -36,6 +36,10 @@ func (a *API) LogoutAction(w http.ResponseWriter, r *http.Request) {
 			Str("userId", user.Id.String()).
 			Err(err).
 			Msg("Failed to revoke session")
+	} else {
+		log.Info().
+			Str("userId", user.Id.String()).
+			Msg("User logged out")
 	}
 
 	util.WriteJSON(w, http.StatusOK, map[string]any{

@@ -29,6 +29,10 @@ func (a *API) GetMeAction(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the request is for an API key
 	if lo.IsNotEmpty(apiKey) {
+		log.Info().
+			Str("keyType", "api").
+			Msg("Getting me")
+
 		me, err := a.Me.GetByAPIKey(apiKey)
 		if err != nil {
 			switch {
@@ -50,6 +54,10 @@ func (a *API) GetMeAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the request is for an access key
+	log.Info().
+		Str("keyType", "access").
+		Msg("Getting me")
+
 	me, err := a.Me.GetByAccessKey(accessKey)
 	if err != nil {
 		switch {

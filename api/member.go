@@ -146,6 +146,13 @@ func (a *API) UpdateWorkspaceMemberRoleAction(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("memberUserId", memberUserId).
+		Str("userId", user.Id.String()).
+		Str("role", req.Role).
+		Msg("Workspace member role updated")
+
 	util.WriteJSON(w, http.StatusOK, member)
 }
 
@@ -208,6 +215,12 @@ func (a *API) DeleteWorkspaceMemberAction(w http.ResponseWriter, r *http.Request
 		}
 		return
 	}
+
+	log.Info().
+		Str("workspaceId", wid).
+		Str("memberUserId", memberUserId).
+		Str("userId", user.Id.String()).
+		Msg("Workspace member removed")
 
 	w.WriteHeader(http.StatusNoContent)
 }

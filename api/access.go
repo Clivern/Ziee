@@ -61,6 +61,11 @@ func (a *API) CreateAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("accessKeyId", key.Id.String()).
+		Msg("Access key created")
+
 	util.WriteJSON(w, http.StatusCreated, key)
 }
 
@@ -124,6 +129,11 @@ func (a *API) GetAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("accessKeyId", keyId).
+		Msg("Getting access key")
+
 	key, err := a.Access.GetAccessKey(db.Id(wid), db.Id(keyId))
 	if err != nil {
 		switch {
@@ -165,6 +175,11 @@ func (a *API) DeleteAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("accessKeyId", keyId).
+		Msg("Deleting access key")
+
 	err := a.Access.DeleteAccessKey(db.Id(wid), db.Id(keyId))
 	if err != nil {
 		switch {
@@ -184,6 +199,11 @@ func (a *API) DeleteAccessKeyAction(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	log.Info().
+		Str("workspaceId", wid).
+		Str("accessKeyId", keyId).
+		Msg("Access key deleted")
 
 	w.WriteHeader(http.StatusNoContent)
 }

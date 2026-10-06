@@ -31,6 +31,10 @@ func (a *API) UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Msg("New document upload request")
+
 	form, err := util.ParseUploadForm(r)
 	if err != nil {
 		util.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -59,6 +63,11 @@ func (a *API) UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("documentId", doc.Id.String()).
+		Msg("Document uploaded")
+
 	util.WriteJSON(w, http.StatusCreated, doc)
 }
 
@@ -71,6 +80,10 @@ func (a *API) ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	log.Info().
+		Str("workspaceId", wid).
+		Msg("Listing documents")
 
 	limit, offset := util.ParsePagination(r)
 
@@ -122,6 +135,11 @@ func (a *API) DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("documentId", documentId).
+		Msg("Deleting document")
+
 	err := a.Document.DeleteDocument(
 		r.Context(),
 		db.Id(wid),
@@ -146,6 +164,11 @@ func (a *API) DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", wid).
+		Str("documentId", documentId).
+		Msg("Document deleted")
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -166,6 +189,11 @@ func (a *API) SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := lo.Ternary(req.Limit == 0, conf.DefaultSearchLimit, req.Limit)
+
+	log.Info().
+		Str("workspaceId", wid).
+		Int("limit", limit).
+		Msg("Searching documents")
 
 	vdb, err := qdrant.New()
 	if err != nil {

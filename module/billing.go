@@ -259,26 +259,17 @@ func (b *Billing) HandleWebhook(payload []byte, signature string) error {
 	}
 
 	if event.Type != "checkout.session.completed" {
-		log.Info().
+		log.Debug().
 			Str("eventType", string(event.Type)).
 			Msg("Stripe webhook event ignored")
 		return nil
 	}
-
-	log.Info().
-		Str("eventType", string(event.Type)).
-		Msg("Stripe webhook received")
 
 	var session stripesdk.CheckoutSession
 	err = json.Unmarshal(event.Data.Raw, &session)
 	if err != nil {
 		return fmt.Errorf("decode checkout session: %w", err)
 	}
-
-	log.Info().
-		Str("sessionId", session.ID).
-		Str("workspaceId", session.Metadata["workspaceId"]).
-		Msg("Checkout session completed webhook processed")
 
 	return b.CreditTokenPurchase(client, &session)
 }
@@ -287,12 +278,20 @@ func (b *Billing) HandleWebhook(payload []byte, signature string) error {
 func (b *Billing) CreditTokenPurchase(client *stripe.Client, session *stripesdk.CheckoutSession) error {
 	workspaceId := db.Id(session.Metadata["workspaceId"])
 	if lo.IsEmpty(workspaceId) {
+		log.Warn().
+			Str("sessionId", session.ID).
+			Msg("Checkout session has no workspace id, skip credit")
 		return nil
 	}
 
 	amountCents := session.AmountTotal
 	tokens := client.Config().TokensForCents(amountCents)
 	if tokens <= 0 {
+		log.Warn().
+			Str("workspaceId", workspaceId.String()).
+			Str("sessionId", session.ID).
+			Int64("amountCents", amountCents).
+			Msg("Checkout session amount maps to zero tokens, skip credit")
 		return nil
 	}
 
@@ -306,6 +305,10 @@ func (b *Billing) CreditTokenPurchase(client *stripe.Client, session *stripesdk.
 		return fmt.Errorf("record token purchase: %w", err)
 	}
 	if !inserted {
+		log.Info().
+			Str("workspaceId", workspaceId.String()).
+			Str("sessionId", session.ID).
+			Msg("Token purchase already credited, skip duplicate webhook")
 		return nil
 	}
 

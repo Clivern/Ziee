@@ -56,7 +56,10 @@ func NewAuth(
 // Logout revokes all sessions for a user.
 func (a *Auth) Logout(userId db.Id) error {
 	count, err := a.SessionRepository.DeleteExpired()
-	if err == nil && count > 0 {
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to delete expired sessions")
+	}
+	if count > 0 {
 		log.Info().
 			Int64("count", count).
 			Msg("Expired sessions deleted")

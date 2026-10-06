@@ -5,6 +5,8 @@ package sandbox
 
 import (
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 var blocked sync.Map
@@ -12,6 +14,10 @@ var blocked sync.Map
 // Block marks a sandbox id as blocked.
 func Block(id string) {
 	blocked.Store(id, struct{}{})
+
+	log.Info().
+		Str("id", id).
+		Msg("Sandbox id blocked")
 }
 
 // IsBlocked reports whether a sandbox id is blocked.

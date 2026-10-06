@@ -25,7 +25,6 @@ import (
 
 const (
 	RPCPort         = 8765
-	DefaultMinPort  = 20000
 	ContainerPrefix = "ziee-"
 )
 
@@ -56,39 +55,72 @@ func NewRunner(github *app.App, repos db.RepositoriesRepository, sandboxes db.Sa
 
 // Start clones the repository and runs a sandbox container on it.
 func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string, ttl time.Duration) (*db.Sandbox, error) {
+	log.Info().
+		Str("repositoryId", repositoryId.String()).
+		Str("remoteId", remoteId).
+		Dur("ttl", ttl).
+		Msg("Starting sandbox")
+
 	repo, err := r.repos.GetById(repositoryId)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("repositoryId", repositoryId.String()).
+			Msg("Failed to get sandbox repository")
 		return nil, err
 	}
 
 	installToken, err := r.github.GetInstallationToken(ctx, repo.InstallationId)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("repositoryId", repositoryId.String()).
+			Int64("installationId", repo.InstallationId).
+			Msg("Failed to get installation token for sandbox")
 		return nil, err
 	}
 
 	runId, err := db.NewId()
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to generate sandbox run id")
 		return nil, err
 	}
 
 	token, err := db.NewId()
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to generate sandbox token")
 		return nil, err
 	}
 
 	dir := filepath.Join(r.config.TempDir, runId.String())
 	err = Clone(ctx, repo.FullName, installToken.Token, dir)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("repository", repo.FullName).
+			Str("runId", runId.String()).
+			Str("dir", dir).
+			Msg("Failed to clone sandbox repository")
 		return nil, err
 	}
 
 	port, err := FreePort(r.config.MinPort)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("runId", runId.String()).
+			Int("minPort", r.config.MinPort).
+			Msg("Failed to find a free port for sandbox")
 		return nil, err
 	}
 
 	err = r.Run(ctx, runId.String(), token.String(), dir, port)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("runId", runId.String()).
+			Int("port", port).
+			Msg("Failed to run sandbox container")
 		return nil, err
 	}
 
@@ -98,6 +130,10 @@ func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string,
 		Dir:   dir,
 	})
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("runId", runId.String()).
+			Msg("Failed to encode sandbox config")
 		return nil, err
 	}
 
@@ -113,6 +149,11 @@ func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string,
 
 	err = r.sandboxes.Create(item)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("repositoryId", repositoryId.String()).
+			Str("runId", runId.String()).
+			Msg("Failed to store sandbox")
 		return nil, err
 	}
 
@@ -129,25 +170,60 @@ func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string,
 
 // Stop removes the sandbox container, its clone and its row.
 func (r *Runner) Stop(ctx context.Context, id db.Id) error {
+	log.Info().
+		Str("sandboxId", id.String()).
+		Msg("Stopping sandbox")
+
 	item, err := r.sandboxes.GetById(id)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("sandboxId", id.String()).
+			Msg("Failed to get sandbox")
 		return err
 	}
 
 	Block(item.RunId.String())
 
-	err = exec.CommandContext(ctx, "docker", "rm", "-f", fmt.Sprintf("%s%s", ContainerPrefix, item.RunId.String())).Run()
+	container := fmt.Sprintf("%s%s", ContainerPrefix, item.RunId.String())
+	out, err := exec.CommandContext(ctx, "docker", "rm", "-f", container).CombinedOutput()
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("sandboxId", id.String()).
+			Str("container", container).
+			Str("output", strings.TrimSpace(string(out))).
+			Msg("Failed to remove sandbox container")
 		return err
 	}
 
-	err = os.RemoveAll(filepath.Join(r.config.TempDir, item.RunId.String()))
+	log.Debug().
+		Str("sandboxId", id.String()).
+		Str("container", container).
+		Msg("Sandbox container removed")
+
+	dir := filepath.Join(r.config.TempDir, item.RunId.String())
+	err = os.RemoveAll(dir)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("sandboxId", id.String()).
+			Str("dir", dir).
+			Msg("Failed to remove sandbox directory")
 		return err
 	}
+
+	log.Debug().
+		Str("sandboxId", id.String()).
+		Str("dir", dir).
+		Msg("Sandbox directory removed")
 
 	err = r.sandboxes.Delete(id)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("sandboxId", id.String()).
+			Msg("Failed to delete sandbox")
 		return err
 	}
 
@@ -168,10 +244,22 @@ func (r *Runner) Run(ctx context.Context, runId, token, dir string, port int) er
 		runId,
 	)
 
+	container := fmt.Sprintf("%s%s", ContainerPrefix, runId)
+
+	log.Debug().
+		Str("runId", runId).
+		Str("container", container).
+		Str("image", r.config.DockerImage).
+		Str("model", r.config.Model).
+		Str("dir", dir).
+		Int("port", port).
+		Str("proxyURL", proxyURL).
+		Msg("Running sandbox container")
+
 	out, err := exec.CommandContext(
 		ctx,
 		"docker", "run", "-d",
-		"--name", fmt.Sprintf("%s%s", ContainerPrefix, runId),
+		"--name", container,
 		"-p", fmt.Sprintf("127.0.0.1:%d:%d", port, RPCPort),
 		"-v", fmt.Sprintf("%s:/repo", dir),
 		"-e", fmt.Sprintf("RUN_ID=%s", runId),
@@ -185,11 +273,24 @@ func (r *Runner) Run(ctx context.Context, runId, token, dir string, port int) er
 		return fmt.Errorf("docker run: %w: %s", err, out)
 	}
 
+	log.Debug().
+		Str("runId", runId).
+		Str("container", container).
+		Str("containerId", strings.TrimSpace(string(out))).
+		Msg("Sandbox container running")
+
 	return nil
 }
 
 // Clone shallow clones a GitHub repository into dir using an installation token.
 func Clone(ctx context.Context, fullName, token, dir string) error {
+	start := time.Now()
+
+	log.Debug().
+		Str("repository", fullName).
+		Str("dir", dir).
+		Msg("Cloning sandbox repository")
+
 	_, err := git.PlainCloneContext(ctx, dir, false, &git.CloneOptions{
 		URL:   fmt.Sprintf("https://github.com/%s.git", fullName),
 		Depth: 1,
@@ -198,14 +299,23 @@ func Clone(ctx context.Context, fullName, token, dir string) error {
 			Password: token,
 		},
 	})
+	if err != nil {
+		return err
+	}
 
-	return err
+	log.Debug().
+		Str("repository", fullName).
+		Str("dir", dir).
+		Dur("duration", time.Since(start)).
+		Msg("Sandbox repository cloned")
+
+	return nil
 }
 
 // FreePort returns the first free local TCP port starting from minPort.
 func FreePort(minPort int) (int, error) {
-	if minPort <= 0 {
-		minPort = DefaultMinPort
+	if minPort <= 0 || minPort > 65535 {
+		return 0, fmt.Errorf("invalid min port %d", minPort)
 	}
 
 	for port := minPort; port <= 65535; port++ {
@@ -214,6 +324,11 @@ func FreePort(minPort int) (int, error) {
 			continue
 		}
 		l.Close()
+
+		log.Debug().
+			Int("minPort", minPort).
+			Int("port", port).
+			Msg("Found free sandbox port")
 
 		return port, nil
 	}

@@ -89,6 +89,11 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rest := chi.URLParam(r, "*")
 	openPath := DedupePath("/" + strings.TrimPrefix(rest, "/"))
 	if !IsChatEndpoint(openPath) {
+		log.Warn().
+			Str("id", id).
+			Str("path", openPath).
+			Msg("Rejected sandbox request to non chat endpoint")
+
 		util.WriteJSON(w, http.StatusForbidden, map[string]any{
 			"errorMessage": "access forbidden",
 		})
@@ -98,6 +103,12 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pathOnly, _, _ := strings.Cut(openPath, "?")
 	token := p.token
 	rawQuery := r.URL.RawQuery
+
+	log.Debug().
+		Str("id", id).
+		Str("method", r.Method).
+		Str("path", pathOnly).
+		Msg("Proxying sandbox request to OpenRouter")
 
 	proxy := &httputil.ReverseProxy{
 		FlushInterval: -1,
@@ -115,7 +126,24 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			req.Header.Del("Accept-Encoding")
 		},
 		ModifyResponse: func(resp *http.Response) error {
+			if resp.StatusCode >= http.StatusBadRequest {
+				log.Warn().
+					Str("id", id).
+					Str("path", pathOnly).
+					Int("status", resp.StatusCode).
+					Msg("OpenRouter returned an error for sandbox request")
+			}
+
 			return CaptureUsage(resp, id, pathOnly)
+		},
+		ErrorHandler: func(w http.ResponseWriter, req *http.Request, err error) {
+			log.Error().
+				Err(err).
+				Str("id", id).
+				Str("path", pathOnly).
+				Msg("Failed to proxy sandbox request to OpenRouter")
+
+			w.WriteHeader(http.StatusBadGateway)
 		},
 	}
 

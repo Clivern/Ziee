@@ -53,6 +53,12 @@ func CaptureUsage(resp *http.Response, id, path string) error {
 	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("id", id).
+			Str("path", path).
+			Msg("Failed to read OpenRouter response body")
+
 		resp.Body = io.NopCloser(bytes.NewReader(nil))
 		return err
 	}
@@ -65,11 +71,28 @@ func CaptureUsage(resp *http.Response, id, path string) error {
 			if err == nil {
 				body = plain
 				resp.Header.Del("Content-Encoding")
+			} else {
+				log.Warn().
+					Err(err).
+					Str("id", id).
+					Str("path", path).
+					Msg("Failed to decompress OpenRouter response")
 			}
+		} else {
+			log.Warn().
+				Err(err).
+				Str("id", id).
+				Str("path", path).
+				Msg("Failed to open gzip OpenRouter response")
 		}
 	}
 
 	if !LogUsage(body, id, path) {
+		log.Warn().
+			Str("id", id).
+			Str("path", path).
+			Msg("No usage found in OpenRouter response, blocking sandbox")
+
 		Block(id)
 	}
 

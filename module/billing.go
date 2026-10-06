@@ -194,6 +194,13 @@ func (b *Billing) CreateCheckoutSession(ctx context.Context, workspaceId db.Id, 
 		return nil, err
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("sessionId", session.ID).
+		Int64("amountCents", req.AmountCents).
+		Int64("tokens", tokens).
+		Msg("Checkout session created")
+
 	return &BillingSessionResponse{URL: session.URL}, nil
 }
 
@@ -231,6 +238,11 @@ func (b *Billing) CreatePortalSession(ctx context.Context, workspaceId db.Id, re
 		return nil, err
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("sessionId", session.ID).
+		Msg("Portal session created")
+
 	return &BillingSessionResponse{URL: session.URL}, nil
 }
 
@@ -247,14 +259,26 @@ func (b *Billing) HandleWebhook(payload []byte, signature string) error {
 	}
 
 	if event.Type != "checkout.session.completed" {
+		log.Info().
+			Str("eventType", string(event.Type)).
+			Msg("Stripe webhook event ignored")
 		return nil
 	}
+
+	log.Info().
+		Str("eventType", string(event.Type)).
+		Msg("Stripe webhook received")
 
 	var session stripesdk.CheckoutSession
 	err = json.Unmarshal(event.Data.Raw, &session)
 	if err != nil {
 		return fmt.Errorf("decode checkout session: %w", err)
 	}
+
+	log.Info().
+		Str("sessionId", session.ID).
+		Str("workspaceId", session.Metadata["workspaceId"]).
+		Msg("Checkout session completed webhook processed")
 
 	return b.CreditTokenPurchase(client, &session)
 }

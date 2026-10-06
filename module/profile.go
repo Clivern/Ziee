@@ -9,6 +9,7 @@ import (
 
 	"github.com/clivern/ziee/db"
 
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -67,6 +68,10 @@ func (p *Profile) UpdateProfile(userId db.Id, req *UpdateProfileRequest) (*db.Us
 	if err != nil {
 		return nil, fmt.Errorf("%w: update user: %v", ErrFailedUpdateProfile, err)
 	}
+
+	log.Info().
+		Str("userId", userId.String()).
+		Msg("Profile updated")
 
 	return user, nil
 }

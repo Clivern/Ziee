@@ -79,6 +79,11 @@ func (a *APIKey) CreateAPIKey(req *CreateAPIKeyRequest, user *db.User) (*APIKeyR
 		return nil, err
 	}
 
+	log.Info().
+		Str("userId", user.Id.String()).
+		Str("keyId", apiKey.Id.String()).
+		Msg("API key created")
+
 	return &APIKeyResponse{
 		Id:        apiKey.Id,
 		Name:      req.Name,
@@ -170,5 +175,15 @@ func (a *APIKey) DeleteAPIKey(id db.Id, user *db.User) error {
 		return ErrAPIKeyNotFound
 	}
 
-	return a.APIKeyRepository.Delete(k.Id)
+	err = a.APIKeyRepository.Delete(k.Id)
+	if err != nil {
+		return err
+	}
+
+	log.Info().
+		Str("userId", user.Id.String()).
+		Str("keyId", id.String()).
+		Msg("API key deleted")
+
+	return nil
 }

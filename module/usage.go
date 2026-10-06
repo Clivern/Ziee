@@ -7,6 +7,8 @@ import (
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/ai"
 	"github.com/clivern/ziee/pkg/util"
+
+	"github.com/rs/zerolog/log"
 )
 
 const bytesPerGB = 1024 * 1024 * 1024
@@ -141,6 +143,12 @@ func (u *Usage) IncrementAIUsage(usage db.UsageRepository, subscriptions db.Subs
 			return err
 		}
 	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Int64("tokens", tokens).
+		Int64("cost", cost).
+		Msg("AI usage incremented")
 
 	return nil
 }

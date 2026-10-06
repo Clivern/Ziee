@@ -130,6 +130,11 @@ func (a *Access) CreateAccessKey(workspaceId db.Id, req *CreateAccessKeyRequest)
 		),
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("keyId", item.Id.String()).
+		Msg("Access key created")
+
 	return resp, nil
 }
 
@@ -249,6 +254,11 @@ func (a *Access) DeleteAccessKey(workspaceId, id db.Id) error {
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrFailedDeleteAccessKey, err)
 	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("keyId", id.String()).
+		Msg("Access key deleted")
 
 	return nil
 }

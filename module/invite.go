@@ -178,6 +178,12 @@ func (i *Invite) CreateInvite(workspaceId db.Id, req *CreateInviteRequest, invit
 		}
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("inviteId", invite.Id.String()).
+		Str("email", req.Email).
+		Msg("Workspace invite created")
+
 	return &InviteResponse{
 		Id:            invite.Id,
 		Email:         invite.Email,
@@ -311,6 +317,11 @@ func (i *Invite) DeleteInvite(workspaceId, inviteId db.Id) error {
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrFailedDeleteInvite, err)
 	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("inviteId", inviteId.String()).
+		Msg("Workspace invite deleted")
 
 	return nil
 }

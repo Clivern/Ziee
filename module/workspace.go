@@ -9,6 +9,8 @@ import (
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/util"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -111,6 +113,12 @@ func (w *Workspace) CreateWorkspace(req *CreateWorkspaceRequest, user *db.User) 
 	if err != nil {
 		return nil, err
 	}
+
+	log.Info().
+		Str("workspaceId", workspace.Id.String()).
+		Str("handle", workspace.Handle).
+		Str("userId", user.Id.String()).
+		Msg("Workspace created")
 
 	return &WorkspaceResponse{
 		Id:           workspace.Id,
@@ -230,6 +238,10 @@ func (w *Workspace) UpdateWorkspace(workspaceId db.Id, req *UpdateWorkspaceReque
 		return nil, err
 	}
 
+	log.Info().
+		Str("workspaceId", workspace.Id.String()).
+		Msg("Workspace updated")
+
 	return &WorkspaceResponse{
 		Id:           workspace.Id,
 		Name:         workspace.Name,
@@ -251,5 +263,14 @@ func (w *Workspace) DeleteWorkspace(workspaceId db.Id) error {
 		return ErrWorkspaceNotFound
 	}
 
-	return w.WorkspaceRepository.Delete(workspaceId)
+	err = w.WorkspaceRepository.Delete(workspaceId)
+	if err != nil {
+		return err
+	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Msg("Workspace deleted")
+
+	return nil
 }

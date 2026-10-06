@@ -162,6 +162,12 @@ func (d *Document) UploadDocument(ctx context.Context, form *util.UploadForm, wo
 			Msg("Failed to enqueue document index task")
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("documentId", document.Id.String()).
+		Str("filename", document.Filename).
+		Msg("Document uploaded")
+
 	chkOpts := util.DefaultChunkingOptions(document.CharCount, document.Filename)
 
 	return &DocumentResponse{
@@ -208,6 +214,12 @@ func (d *Document) DeleteDocument(_ context.Context, workspaceId, documentId db.
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrFailedDeleteDocument, err)
 	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("documentId", documentId.String()).
+		Str("internalId", document.InternalId.String()).
+		Msg("Document deleted")
 
 	return d.EnqueueDeleteTask(workspaceId, documentId, document.InternalId)
 }

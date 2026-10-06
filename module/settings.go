@@ -9,6 +9,7 @@ import (
 
 	"github.com/clivern/ziee/db"
 
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -35,6 +36,10 @@ func (s *Settings) Update(platformEmail string, maintenanceMode bool) error {
 			return fmt.Errorf("failed to update config %s: %w", key, err)
 		}
 	}
+
+	log.Info().
+		Str("keys", fmt.Sprintf("%v", lo.Keys(updates))).
+		Msg("Settings updated")
 
 	return nil
 }

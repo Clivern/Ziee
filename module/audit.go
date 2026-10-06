@@ -11,6 +11,8 @@ import (
 
 	"github.com/clivern/ziee/db"
 	"github.com/clivern/ziee/pkg/util"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -120,6 +122,12 @@ func (a *Audit) ListAuditEvents(workspaceId db.Id, limit, offset int) (*ListAudi
 			CreatedAt:    item.CreatedAt.UTC().Format(time.RFC3339),
 		})
 	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Int("count", len(list)).
+		Int64("total", total).
+		Msg("Audit events listed")
 
 	return &ListAuditEventsResponse{Events: list, Total: total}, nil
 }

@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/clivern/ziee/db"
+
+	"github.com/rs/zerolog/log"
 )
 
 // WorkspaceMemberResponse is a workspace member shaped for API responses.
@@ -118,6 +120,12 @@ func (w *Workspace) UpdateWorkspaceMemberRole(workspaceId, userId db.Id, role st
 		return nil, ErrWorkspaceUserNotFound
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("userId", userId.String()).
+		Str("role", role).
+		Msg("Workspace member role updated")
+
 	return &WorkspaceMemberResponse{
 		Id:          m.Id,
 		WorkspaceId: m.WorkspaceId,
@@ -148,5 +156,15 @@ func (w *Workspace) DeleteWorkspaceMember(workspaceId, userId db.Id) error {
 		return ErrWorkspaceUserNotFound
 	}
 
-	return w.WorkspaceUserRepository.Delete(m.Id)
+	err = w.WorkspaceUserRepository.Delete(m.Id)
+	if err != nil {
+		return err
+	}
+
+	log.Info().
+		Str("workspaceId", workspaceId.String()).
+		Str("userId", userId.String()).
+		Msg("Workspace member removed")
+
+	return nil
 }

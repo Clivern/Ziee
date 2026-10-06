@@ -4,6 +4,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -14,6 +15,7 @@ import (
 	"github.com/clivern/ziee/module"
 	"github.com/clivern/ziee/pkg/broker"
 	"github.com/clivern/ziee/pkg/github/app"
+	"github.com/clivern/ziee/sandbox"
 	"github.com/clivern/ziee/worker"
 
 	"github.com/rs/zerolog/log"
@@ -38,6 +40,14 @@ func RunWorker() error {
 	err = app.Init(module.NewCache(db.NewKVRepository(db.GetDB())))
 	if err != nil {
 		return fmt.Errorf("failed to initialize github app: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	check := sandbox.IsDockerRunning(ctx)
+	cancel()
+
+	if !check {
+		log.Warn().Msg("Docker is not running, sandbox can't run!")
 	}
 
 	w := worker.New()

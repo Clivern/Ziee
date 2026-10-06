@@ -201,7 +201,10 @@ func (i *Invite) CreateInvite(workspaceId db.Id, req *CreateInviteRequest, invit
 // ListInvites returns paginated invites for a workspace.
 func (i *Invite) ListInvites(workspaceId db.Id, limit, offset int) (*ListInvitesResponse, error) {
 	count, err := i.UserInviteRepository.MarkExpiredAsExpired()
-	if err == nil && count > 0 {
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to mark expired invites")
+	}
+	if count > 0 {
 		log.Info().
 			Int64("count", count).
 			Msg("Expired invites marked")
@@ -253,7 +256,10 @@ func (i *Invite) ListInvites(workspaceId db.Id, limit, offset int) (*ListInvites
 // GetInvite returns one invite by Id within a workspace.
 func (i *Invite) GetInvite(workspaceId, inviteId db.Id) (*InviteResponse, error) {
 	count, err := i.UserInviteRepository.MarkExpiredAsExpired()
-	if err == nil && count > 0 {
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to mark expired invites")
+	}
+	if count > 0 {
 		log.Info().
 			Int64("count", count).
 			Msg("Expired invites marked")

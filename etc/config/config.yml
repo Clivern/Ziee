@@ -63,6 +63,7 @@ app:
       portal_return: ${ZIEE_STRIPE_PORTAL_RETURN_URL:-/billing}
 
   storage:
+    # s3 or local
     provider: ${ZIEE_STORAGE_PROVIDER:-local}
     s3:
       bucket: ${ZIEE_S3_BUCKET:-ziee}
@@ -94,17 +95,12 @@ app:
       classify:
         model: ${ZIEE_AI_CLASSIFY_LLM_MODEL:-typesafe/jev-1.13}
 
-  coding:
-    dir: ${ZIEE_CODING_DIR:-/tmp/ziee}
-    model: ${ZIEE_CODING_MODEL:-openrouter/anthropic/claude-sonnet-4.5}
-    docker_image: ${ZIEE_CODING_DOCKER_IMAGE:-clivern/swarm:v0.8.5}
-    proxy_url: ${ZIEE_CODING_PROXY_URL:-}
-
   sandbox:
     api_key: ${ZIEE_SANDBOX_OROUTE_API_KEY:-}
     docker_image: ${ZIEE_SANDBOX_DOCKER_IMAGE:-}
     temp_dir: ${ZIEE_SANDBOX_TEMP_DIR:-/tmp/ziee}
     model: ${ZIEE_SANDBOX_MODEL:-openrouter/anthropic/claude-sonnet-4.5}
+    min_port: ${ZIEE_SANDBOX_MIN_PORT:-20000}
 
   cache:
     provider: ${ZIEE_CACHE_PROVIDER:-redis}

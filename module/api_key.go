@@ -101,7 +101,10 @@ func (a *APIKey) CreateAPIKey(req *CreateAPIKeyRequest, user *db.User) (*APIKeyR
 // ListAPIKeys returns the user's API keys (metadata only, never the secret).
 func (a *APIKey) ListAPIKeys(user *db.User, limit, offset int) (*ListAPIKeysResult, error) {
 	count, err := a.APIKeyRepository.DeleteExpired()
-	if err == nil && count > 0 {
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to delete expired API keys")
+	}
+	if count > 0 {
 		log.Info().
 			Int64("count", count).
 			Msg("Expired API keys deleted")
@@ -138,7 +141,10 @@ func (a *APIKey) ListAPIKeys(user *db.User, limit, offset int) (*ListAPIKeysResu
 // GetAPIKey returns a single API key owned by the user (never the secret).
 func (a *APIKey) GetAPIKey(id db.Id, user *db.User) (*APIKeyResponse, error) {
 	count, err := a.APIKeyRepository.DeleteExpired()
-	if err == nil && count > 0 {
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to delete expired API keys")
+	}
+	if count > 0 {
 		log.Info().
 			Int64("count", count).
 			Msg("Expired API keys deleted")

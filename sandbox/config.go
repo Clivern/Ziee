@@ -13,6 +13,7 @@ type Config struct {
 	DockerImage string
 	TempDir     string
 	Model       string
+	MinPort     int
 }
 
 // GetConfig loads sandbox settings from app.sandbox config.
@@ -22,5 +23,6 @@ func GetConfig() Config {
 		DockerImage: viper.GetString("app.sandbox.docker_image"),
 		TempDir:     viper.GetString("app.sandbox.temp_dir"),
 		Model:       viper.GetString("app.sandbox.model"),
+		MinPort:     viper.GetInt("app.sandbox.min_port"),
 	}
 }

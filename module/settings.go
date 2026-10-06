@@ -38,7 +38,7 @@ func (s *Settings) Update(platformEmail string, maintenanceMode bool) error {
 	}
 
 	log.Info().
-		Str("keys", fmt.Sprintf("%v", lo.Keys(updates))).
+		Strs("keys", lo.Keys(updates)).
 		Msg("Settings updated")
 
 	return nil

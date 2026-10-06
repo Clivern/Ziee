@@ -145,6 +145,12 @@ func (a *API) CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	log.Info().
+		Str("workspaceId", workspaceId).
+		Str("userId", user.Id.String()).
+		Int64("amountCents", req.AmountCents).
+		Msg("Billing checkout session created")
+
 	util.WriteJSON(w, http.StatusOK, session)
 }
 
@@ -186,6 +192,10 @@ func (a *API) CreateBillingPortalAction(w http.ResponseWriter, r *http.Request) 
 		}
 		return
 	}
+
+	log.Info().
+		Str("workspaceId", workspaceId).
+		Msg("Billing portal session created")
 
 	util.WriteJSON(w, http.StatusOK, session)
 }

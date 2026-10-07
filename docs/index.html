@@ -55,9 +55,9 @@
     .orbit {
       position: absolute;
       top: 50%;
-      right: -4%;
-      width: min(68vw, 820px);
-      height: min(74vh, 680px);
+      right: clamp(1.5rem, calc((100vw - 1280px) * 0.25), 10rem);
+      width: min(54vw, 660px);
+      height: min(60vh, 520px);
       transform: translateY(-50%);
       opacity: 0.95;
       animation: drift 28s ease-in-out infinite;
@@ -70,73 +70,105 @@
       overflow: visible;
     }
 
-    .blast-core {
-      fill: rgba(55, 53, 47, 0.92);
-      transform-origin: 360px 280px;
-      transform-box: fill-box;
-      animation: core-pulse 2.8s var(--ease) infinite;
-    }
-
-    .blast-flash {
-      fill: rgba(196, 90, 69, 0.16);
-      transform-origin: 360px 280px;
-      animation: flash-pulse 2.8s var(--ease) infinite;
-    }
-
-    .blast-ring {
-      fill: none;
-      stroke: rgba(196, 90, 69, 0.4);
-      stroke-width: 1.35;
-      transform-origin: 360px 280px;
-      animation: blast-expand 3.2s var(--ease) infinite;
-    }
-
-    .blast-ring.teal {
-      stroke: rgba(15, 123, 108, 0.36);
-      animation-delay: 1.05s;
-    }
-
-    .blast-ring.ink {
-      stroke: rgba(55, 53, 47, 0.16);
-      animation-delay: 2.1s;
-    }
-
-    .ray {
-      stroke-linecap: round;
-      transform-origin: 360px 280px;
-    }
-
-    .ray.ink {
-      stroke: rgba(55, 53, 47, 0.3);
-      stroke-width: 1.5;
-      animation: ray-flare 3.8s var(--ease) infinite;
-    }
-
-    .ray.coral {
-      stroke: rgba(196, 90, 69, 0.5);
-      stroke-width: 1.9;
-      animation: ray-flare 3.2s var(--ease) infinite;
-    }
-
-    .ray.teal {
-      stroke: rgba(15, 123, 108, 0.45);
-      stroke-width: 1.7;
-      animation: ray-flare 3.5s var(--ease) infinite;
-    }
-
-    .ray.faint {
-      stroke: rgba(55, 53, 47, 0.12);
+    .track {
+      stroke: rgba(55, 53, 47, 0.09);
       stroke-width: 1;
-      animation: ray-flare 4.4s var(--ease) infinite;
+      stroke-dasharray: 2 7;
     }
 
-    .spark {
+    .card-link {
+      fill: none;
+      stroke: rgba(196, 90, 69, 0.38);
+      stroke-width: 1.2;
+    }
+
+    .card-link.org {
+      stroke: rgba(15, 123, 108, 0.32);
+      stroke-dasharray: 3 5;
+    }
+
+    .card-body {
+      fill: #fff;
+      stroke: rgba(55, 53, 47, 0.16);
+      stroke-width: 1;
+      filter: drop-shadow(0 2px 3px rgba(55, 53, 47, 0.07));
+    }
+
+    .avatar { fill: var(--ink); }
+    .avatar.coral { fill: var(--coral); }
+    .avatar.teal { fill: var(--green); }
+    .avatar.sand { fill: #b08a5a; }
+
+    .avatar-letter {
+      fill: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .repo-icon {
+      fill: none;
+      stroke: var(--ink-soft);
+      stroke-width: 1.3;
+      stroke-linejoin: round;
+    }
+
+    .card-name {
       fill: var(--ink);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .card-status {
+      fill: var(--green);
+      font-size: 10px;
+      font-weight: 600;
+      text-anchor: middle;
       opacity: 0;
     }
 
-    .spark.coral { fill: var(--coral); }
-    .spark.teal { fill: var(--green); }
+    .packet { fill: var(--coral); }
+    .packet.ink { fill: var(--ink); }
+    .packet.teal { fill: var(--green); }
+
+    .hub {
+      fill: #fff;
+      stroke: rgba(55, 53, 47, 0.22);
+      stroke-width: 2;
+    }
+
+    .hub-halo {
+      fill: none;
+      stroke: rgba(196, 90, 69, 0.3);
+      stroke-width: 1.2;
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: pulse-ring 4s ease-out infinite;
+    }
+
+    .hub-halo.late {
+      stroke: rgba(15, 123, 108, 0.3);
+      animation-delay: 2s;
+    }
+
+    .hub-ping {
+      fill: none;
+      stroke: rgba(196, 90, 69, 0.5);
+      stroke-width: 1.5;
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: ping 1.1s ease-out forwards;
+    }
+
+    .hub-logo { fill: var(--ink); }
+
+    .hub-dot {
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: dot-pulse 2.6s var(--ease) infinite;
+    }
+
+    .hub-dot.late { animation-delay: 0.35s; }
 
     .page {
       position: relative;
@@ -151,14 +183,14 @@
     }
 
     .copy {
-      max-width: 40rem;
-      width: min(100%, 40rem);
+      max-width: 34rem;
+      width: min(100%, 34rem);
     }
 
     .brand {
       display: block;
       margin: 0 0 1.5rem;
-      width: clamp(7rem, 18vw, 11rem);
+      width: clamp(4.5rem, 10vw, 7rem);
       height: auto;
       color: var(--ink);
     }
@@ -166,7 +198,7 @@
     h1 {
       margin: 0 0 1.85rem;
       max-width: 18ch;
-      font-size: clamp(1.7rem, 4vw, 2.55rem);
+      font-size: clamp(1.6rem, 3.4vw, 2.2rem);
       font-weight: 600;
       letter-spacing: -0.03em;
       line-height: 1.15;
@@ -195,9 +227,9 @@
 
     .lead {
       margin: 0 0 1rem;
-      max-width: 36rem;
+      max-width: 31rem;
       color: var(--ink-soft);
-      font-size: clamp(0.98rem, 1.6vw, 1.08rem);
+      font-size: clamp(0.9rem, 1.35vw, 0.98rem);
       line-height: 1.55;
     }
 
@@ -281,29 +313,21 @@
       }
     }
 
-    @keyframes blast-expand {
-      0% { transform: scale(0.2); opacity: 0.75; }
-      65% { transform: scale(1.7); opacity: 0; }
-      100% { transform: scale(1.7); opacity: 0; }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.85); opacity: 0.65; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
 
-    @keyframes core-pulse {
+    @keyframes ping {
+      0% { transform: scale(1); opacity: 0.9; }
+      100% { transform: scale(1.45); opacity: 0; }
+    }
+
+    @keyframes dot-pulse {
       0%, 100% { transform: scale(1); }
-      35% { transform: scale(1.35); }
-      60% { transform: scale(0.92); }
-    }
-
-    @keyframes flash-pulse {
-      0%, 100% { transform: scale(0.6); opacity: 0.2; }
-      35% { transform: scale(1.8); opacity: 0.55; }
-      70% { transform: scale(2.4); opacity: 0; }
-    }
-
-    @keyframes ray-flare {
-      0% { opacity: 0; stroke-dashoffset: 28; }
-      20% { opacity: 0.95; stroke-dashoffset: 0; }
-      55% { opacity: 0.35; stroke-dashoffset: -18; }
-      100% { opacity: 0; stroke-dashoffset: -36; }
+      30% { transform: scale(1.12); }
+      55% { transform: scale(0.96); }
     }
 
     @keyframes hero-gradient-shift {
@@ -316,69 +340,20 @@
   <div class="backdrop" aria-hidden="true">
     <div class="orbit">
       <svg viewBox="0 0 720 560" preserveAspectRatio="xMidYMid meet">
-        <circle class="blast-flash" cx="360" cy="280" r="42" />
-        <circle class="blast-ring" cx="360" cy="280" r="70" />
-        <circle class="blast-ring teal" cx="360" cy="280" r="110" />
-        <circle class="blast-ring ink" cx="360" cy="280" r="155" />
-
-        <line class="ray coral" x1="360" y1="280" x2="360" y2="55" stroke-dasharray="14 18" style="animation-delay: 0s" />
-        <line class="ray teal" x1="360" y1="280" x2="545" y2="110" stroke-dasharray="12 16" style="animation-delay: 0.25s" />
-        <line class="ray ink" x1="360" y1="280" x2="640" y2="235" stroke-dasharray="16 14" style="animation-delay: 0.5s" />
-        <line class="ray coral" x1="360" y1="280" x2="655" y2="355" stroke-dasharray="11 17" style="animation-delay: 0.75s" />
-        <line class="ray teal" x1="360" y1="280" x2="575" y2="470" stroke-dasharray="14 18" style="animation-delay: 0.15s" />
-        <line class="ray ink" x1="360" y1="280" x2="420" y2="515" stroke-dasharray="12 16" style="animation-delay: 0.65s" />
-        <line class="ray coral" x1="360" y1="280" x2="255" y2="505" stroke-dasharray="16 14" style="animation-delay: 0.4s" />
-        <line class="ray teal" x1="360" y1="280" x2="120" y2="420" stroke-dasharray="11 17" style="animation-delay: 0.9s" />
-        <line class="ray ink" x1="360" y1="280" x2="80" y2="290" stroke-dasharray="14 18" style="animation-delay: 0.1s" />
-        <line class="ray coral" x1="360" y1="280" x2="115" y2="155" stroke-dasharray="12 16" style="animation-delay: 0.55s" />
-        <line class="ray teal" x1="360" y1="280" x2="230" y2="75" stroke-dasharray="16 14" style="animation-delay: 0.3s" />
-        <line class="ray faint" x1="360" y1="280" x2="490" y2="70" stroke-dasharray="8 20" style="animation-delay: 1.1s" />
-        <line class="ray faint" x1="360" y1="280" x2="630" y2="410" stroke-dasharray="8 20" style="animation-delay: 0.45s" />
-        <line class="ray faint" x1="360" y1="280" x2="190" y2="485" stroke-dasharray="8 20" style="animation-delay: 0.8s" />
-        <line class="ray faint" x1="360" y1="280" x2="70" y2="195" stroke-dasharray="8 20" style="animation-delay: 0.2s" />
-
-        <circle class="blast-core" cx="360" cy="280" r="8" />
-
-        <circle class="spark coral" r="2.6">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.6s" begin="0s" repeatCount="indefinite" />
-          <animateMotion dur="2.6s" begin="0s" repeatCount="indefinite" path="M360 280 L360 70" />
-        </circle>
-        <circle class="spark teal" r="2.4">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.9s" begin="0.3s" repeatCount="indefinite" />
-          <animateMotion dur="2.9s" begin="0.3s" repeatCount="indefinite" path="M360 280 L545 130" />
-        </circle>
-        <circle class="spark coral" r="2.5">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.4s" begin="0.6s" repeatCount="indefinite" />
-          <animateMotion dur="2.4s" begin="0.6s" repeatCount="indefinite" path="M360 280 L650 300" />
-        </circle>
-        <circle class="spark teal" r="2.3">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="3.1s" begin="0.15s" repeatCount="indefinite" />
-          <animateMotion dur="3.1s" begin="0.15s" repeatCount="indefinite" path="M360 280 L530 470" />
-        </circle>
-        <circle class="spark" r="2.2">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.7s" begin="0.45s" repeatCount="indefinite" />
-          <animateMotion dur="2.7s" begin="0.45s" repeatCount="indefinite" path="M360 280 L300 510" />
-        </circle>
-        <circle class="spark coral" r="2.5">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.5s" begin="0.8s" repeatCount="indefinite" />
-          <animateMotion dur="2.5s" begin="0.8s" repeatCount="indefinite" path="M360 280 L140 430" />
-        </circle>
-        <circle class="spark teal" r="2.4">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.8s" begin="0.2s" repeatCount="indefinite" />
-          <animateMotion dur="2.8s" begin="0.2s" repeatCount="indefinite" path="M360 280 L90 250" />
-        </circle>
-        <circle class="spark coral" r="2.3">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="3s" begin="0.7s" repeatCount="indefinite" />
-          <animateMotion dur="3s" begin="0.7s" repeatCount="indefinite" path="M360 280 L180 120" />
-        </circle>
-        <circle class="spark teal" r="2.2">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.6s" begin="1s" repeatCount="indefinite" />
-          <animateMotion dur="2.6s" begin="1s" repeatCount="indefinite" path="M360 280 L470 85" />
-        </circle>
-        <circle class="spark" r="2.1">
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.55;1" dur="2.9s" begin="0.5s" repeatCount="indefinite" />
-          <animateMotion dur="2.9s" begin="0.5s" repeatCount="indefinite" path="M360 280 L620 400" />
-        </circle>
+        <line class="track" x1="0" y1="78" x2="720" y2="78" />
+        <line class="track" x1="0" y1="152" x2="720" y2="152" />
+        <g class="links"></g>
+        <g class="lanes"></g>
+        <circle class="hub-halo" cx="360" cy="410" r="64" />
+        <circle class="hub-halo late" cx="360" cy="410" r="64" />
+        <g class="pings"></g>
+        <circle class="hub" cx="360" cy="410" r="64" />
+        <g class="hub-logo" transform="translate(313.5 367) scale(0.185)">
+          <circle class="hub-dot" cx="249.8" cy="82" r="46" />
+          <circle class="hub-dot late" cx="249.8" cy="190" r="46" />
+          <path d="m334.64 261.9c-12.44-12.44-11.39-12-29-12h-111.64c-17.62 0-16.57-.43-29 12l-59.52 59.53a161.1 161.1 0 0 0 60.34 65.93c15.25-15.24 61-60.95 68.57-68.57 6.25-6.24 9-8.66 12.39-9.7a9.87 9.87 0 0 1 3-.56 9.71 9.71 0 0 1 3 .56c3.39 1 6.15 3.46 12.39 9.7l68.57 68.57a161.06 161.06 0 0 0 60.35-65.93z" />
+        </g>
+        <g class="packets"></g>
       </svg>
     </div>
   </div>
@@ -404,5 +379,139 @@
   <footer class="site-footer">
     <a href="https://clivern.com" target="_blank" rel="noopener">Copyright © 2026 Clivern</a>
   </footer>
+  <script>
+    (() => {
+      const svg = document.querySelector('.orbit svg');
+      if (!svg) return;
+      const NS = 'http://www.w3.org/2000/svg';
+      const el = (tag, attrs, parent) => {
+        const node = document.createElementNS(NS, tag);
+        for (const key in attrs) node.setAttribute(key, attrs[key]);
+        if (parent) parent.appendChild(node);
+        return node;
+      };
+
+      const HUB = { x: 360, y: 410, r: 64 };
+      const linksG = svg.querySelector('.links');
+      const lanesG = svg.querySelector('.lanes');
+      const pingsG = svg.querySelector('.pings');
+      const packetsG = svg.querySelector('.packets');
+      const tones = ['coral', 'teal', 'ink', 'sand'];
+      const results = ['merged ✓', 'checks ✓', 'reviewed', 'triaged', 'rebased', 'labeled'];
+      const lanes = [
+        { y: 64, speed: 15, kind: 'org', items: ['@acme', '@nova', '@orbit', '@kite', '@pixel', '@lumen'] },
+        { y: 138, speed: 24, kind: 'repo', items: ['acme/api', 'nova/sdk', 'orbit/cli', 'kite/web', 'pixel/infra', 'lumen/docs', 'acme/mobile', 'nova/ui'] },
+      ];
+
+      const cards = [];
+      lanes.forEach((lane) => {
+        let x = 0;
+        let i = 0;
+        while (x < 1000) {
+          const name = lane.items[i % lane.items.length];
+          const w = Math.round(name.length * 6.3 + 42);
+          const g = el('g', { class: 'card' }, lanesG);
+          el('rect', { class: 'card-body', x: 0, y: 0, width: w, height: 28, rx: 8 }, g);
+          if (lane.kind === 'org') {
+            el('rect', { class: 'avatar ' + tones[i % tones.length], x: 7, y: 6, width: 16, height: 16, rx: 4 }, g);
+            el('text', { class: 'avatar-letter', x: 15, y: 17.5 }, g).textContent = name[1].toUpperCase();
+          } else {
+            el('path', { class: 'repo-icon', d: 'M10 7.5h8.5a1.5 1.5 0 0 1 1.5 1.5v11h-8.5a1.5 1.5 0 0 0-1.5 1.5z M10 7.5v13.5' }, g);
+          }
+          el('text', { class: 'card-name', x: 30, y: 18.5 }, g).textContent = name;
+          const status = el('text', { class: 'card-status', x: w / 2, y: 43 }, g);
+          const link = el('path', { class: 'card-link ' + lane.kind }, linksG);
+          cards.push({ g, w, lane, base: x, status, link, flash: 0, cx: 0 });
+          x += w + 18;
+          i++;
+        }
+        lane.total = x;
+      });
+
+      // Cubic curve from the bottom of a card down into the top of the hub.
+      const curve = (c) => {
+        const y0 = c.lane.y + 28;
+        const y1 = HUB.y - HUB.r;
+        return [c.cx, y0, c.cx, y0 + 90, HUB.x + (c.cx - HUB.x) * 0.25, y1 - 90, HUB.x, y1];
+      };
+
+      const pointAt = (k, t) => {
+        const u = 1 - t;
+        const a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
+        return [a * k[0] + b * k[2] + c * k[4] + d * k[6], a * k[1] + b * k[3] + c * k[5] + d * k[7]];
+      };
+
+      const layout = (time) => {
+        for (const c of cards) {
+          const left = ((c.base + time * c.lane.speed) % c.lane.total) - 140;
+          c.cx = left + c.w / 2;
+          c.g.setAttribute('transform', `translate(${left.toFixed(1)} ${c.lane.y})`);
+          c.g.style.opacity = Math.max(0, Math.min(1, (c.cx - 10) / 90, (710 - c.cx) / 90));
+          const k = curve(c);
+          c.link.setAttribute('d', `M${k[0]} ${k[1]} C${k[2]} ${k[3]} ${k[4]} ${k[5]} ${k[6]} ${k[7]}`);
+          const focus = Math.max(0, 1 - Math.abs(c.cx - HUB.x) / 330);
+          c.link.style.opacity = (Math.pow(focus, 1.4) * (c.lane.kind === 'org' ? 0.85 : 1)).toFixed(3);
+          c.status.style.opacity = Math.min(1, c.flash / 0.3).toFixed(3);
+        }
+      };
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        layout(0);
+        return;
+      }
+
+      const packets = [];
+      const send = (card, up, tone) => {
+        packets.push({ card, up, t: 0, dur: up ? 1.3 : 1.6, node: el('circle', { class: 'packet ' + tone, r: 3.2 }, packetsG) });
+      };
+
+      const ping = () => {
+        const ring = el('circle', { class: 'hub-ping', cx: HUB.x, cy: HUB.y, r: HUB.r }, pingsG);
+        setTimeout(() => ring.remove(), 1200);
+      };
+
+      let last = performance.now();
+      let time = 0;
+      let nextSpawn = 0.4;
+      const tick = (now) => {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        time += dt;
+        layout(time);
+
+        nextSpawn -= dt;
+        if (nextSpawn <= 0) {
+          const near = cards.filter((c) => c.cx > 140 && c.cx < 580);
+          if (near.length) send(near[(Math.random() * near.length) | 0], false, Math.random() < 0.65 ? 'coral' : 'ink');
+          nextSpawn = 0.45 + Math.random() * 0.5;
+        }
+
+        for (let i = packets.length - 1; i >= 0; i--) {
+          const pk = packets[i];
+          pk.t += dt / pk.dur;
+          if (pk.t >= 1) {
+            pk.node.remove();
+            packets.splice(i, 1);
+            if (pk.up) {
+              pk.card.status.textContent = results[(Math.random() * results.length) | 0];
+              pk.card.flash = 1.6;
+            } else {
+              ping();
+              send(pk.card, true, 'teal');
+            }
+            continue;
+          }
+          const e = pk.t < 0.5 ? 2 * pk.t * pk.t : 1 - Math.pow(-2 * pk.t + 2, 2) / 2;
+          const [x, y] = pointAt(curve(pk.card), pk.up ? 1 - e : e);
+          pk.node.setAttribute('cx', x.toFixed(1));
+          pk.node.setAttribute('cy', y.toFixed(1));
+        }
+
+        for (const c of cards) c.flash = Math.max(0, c.flash - dt);
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })();
+  </script>
 </body>
 </html>

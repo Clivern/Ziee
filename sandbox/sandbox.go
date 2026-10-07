@@ -43,6 +43,14 @@ type RunConfig struct {
 	Dir   string `json:"dir"`
 }
 
+// StartRequest is what you pass when starting a sandbox.
+type StartRequest struct {
+	RepositoryId db.Id
+	Owner        string
+	RemoteId     string
+	TTL          time.Duration
+}
+
 // NewRunner returns a sandbox runner.
 func NewRunner(github *app.App, repos db.RepositoriesRepository, sandboxes db.SandboxRepository) *Runner {
 	return &Runner{
@@ -54,18 +62,19 @@ func NewRunner(github *app.App, repos db.RepositoriesRepository, sandboxes db.Sa
 }
 
 // Start clones the repository and runs a sandbox container on it.
-func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string, ttl time.Duration) (*db.Sandbox, error) {
+func (r *Runner) Start(ctx context.Context, req *StartRequest) (*db.Sandbox, error) {
 	log.Info().
-		Str("repositoryId", repositoryId.String()).
-		Str("remoteId", remoteId).
-		Dur("ttl", ttl).
+		Str("repositoryId", req.RepositoryId.String()).
+		Str("owner", req.Owner).
+		Str("remoteId", req.RemoteId).
+		Dur("ttl", req.TTL).
 		Msg("Starting sandbox")
 
-	repo, err := r.repos.GetById(repositoryId)
+	repo, err := r.repos.GetById(req.RepositoryId)
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("repositoryId", repositoryId.String()).
+			Str("repositoryId", req.RepositoryId.String()).
 			Msg("Failed to get sandbox repository")
 		return nil, err
 	}
@@ -74,7 +83,7 @@ func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string,
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("repositoryId", repositoryId.String()).
+			Str("repositoryId", req.RepositoryId.String()).
 			Int64("installationId", repo.InstallationId).
 			Msg("Failed to get installation token for sandbox")
 		return nil, err
@@ -138,20 +147,21 @@ func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string,
 	}
 
 	item := &db.Sandbox{
-		RepositoryId: repositoryId,
+		RepositoryId: req.RepositoryId,
+		Owner:        req.Owner,
 		Config:       string(config),
 		Port:         port,
 		Token:        token.String(),
-		RemoteId:     remoteId,
+		RemoteId:     req.RemoteId,
 		RunId:        runId,
-		ExpiresAt:    time.Now().UTC().Add(ttl),
+		ExpiresAt:    time.Now().UTC().Add(req.TTL),
 	}
 
 	err = r.sandboxes.Create(item)
 	if err != nil {
 		log.Error().
 			Err(err).
-			Str("repositoryId", repositoryId.String()).
+			Str("repositoryId", req.RepositoryId.String()).
 			Str("runId", runId.String()).
 			Msg("Failed to store sandbox")
 		return nil, err
@@ -159,7 +169,8 @@ func (r *Runner) Start(ctx context.Context, repositoryId db.Id, remoteId string,
 
 	log.Info().
 		Str("sandboxId", item.Id.String()).
-		Str("repositoryId", repositoryId.String()).
+		Str("repositoryId", req.RepositoryId.String()).
+		Str("owner", item.Owner).
 		Str("remoteId", item.RemoteId).
 		Str("runId", item.RunId.String()).
 		Int("port", port).

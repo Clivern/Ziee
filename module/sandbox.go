@@ -40,6 +40,7 @@ func NewSandbox(sandboxes db.SandboxRepository, repos db.RepositoriesRepository)
 type SandboxResponse struct {
 	Id             db.Id  `json:"id"`
 	RepositoryId   db.Id  `json:"repositoryId"`
+	Owner          string `json:"owner"`
 	Config         string `json:"config"`
 	Usage          string `json:"usage"`
 	Port           int    `json:"port"`
@@ -60,7 +61,7 @@ type ListSandboxesResult struct {
 }
 
 // CreateSandbox creates a sandbox for a repository.
-func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remoteId string, runId db.Id, port int, expiresAt time.Time) (*SandboxResponse, error) {
+func (s *Sandbox) CreateSandbox(repositoryId db.Id, owner, config, usage, token, remoteId string, runId db.Id, port int, expiresAt time.Time) (*SandboxResponse, error) {
 	repo, err := s.RepoRepository.GetById(repositoryId)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedCreateSandbox, err)
@@ -71,6 +72,7 @@ func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remote
 
 	item := &db.Sandbox{
 		RepositoryId: repositoryId,
+		Owner:        owner,
 		Config:       config,
 		Usage:        usage,
 		Port:         port,
@@ -88,6 +90,7 @@ func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remote
 	log.Info().
 		Str("sandboxId", item.Id.String()).
 		Str("repositoryId", repositoryId.String()).
+		Str("owner", owner).
 		Str("remoteId", remoteId).
 		Str("runId", runId.String()).
 		Msg("Sandbox created")
@@ -95,6 +98,7 @@ func (s *Sandbox) CreateSandbox(repositoryId db.Id, config, usage, token, remote
 	return &SandboxResponse{
 		Id:             item.Id,
 		RepositoryId:   item.RepositoryId,
+		Owner:          item.Owner,
 		Config:         item.Config,
 		Usage:          item.Usage,
 		Port:           item.Port,
@@ -122,6 +126,7 @@ func (s *Sandbox) GetSandbox(id db.Id) (*SandboxResponse, error) {
 	return &SandboxResponse{
 		Id:             item.Id,
 		RepositoryId:   item.RepositoryId,
+		Owner:          item.Owner,
 		Config:         item.Config,
 		Usage:          item.Usage,
 		Port:           item.Port,
@@ -149,6 +154,7 @@ func (s *Sandbox) GetSandboxByToken(token string) (*SandboxResponse, error) {
 	return &SandboxResponse{
 		Id:             item.Id,
 		RepositoryId:   item.RepositoryId,
+		Owner:          item.Owner,
 		Config:         item.Config,
 		Usage:          item.Usage,
 		Port:           item.Port,
@@ -175,6 +181,7 @@ func (s *Sandbox) ListSandboxes(repositoryId db.Id) (*ListSandboxesResult, error
 		list = append(list, &SandboxResponse{
 			Id:             item.Id,
 			RepositoryId:   item.RepositoryId,
+			Owner:          item.Owner,
 			Config:         item.Config,
 			Usage:          item.Usage,
 			Port:           item.Port,

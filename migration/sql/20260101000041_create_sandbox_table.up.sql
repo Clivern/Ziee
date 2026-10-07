@@ -1,6 +1,7 @@
 CREATE TABLE sandbox (
 	id UUID PRIMARY KEY,
 	repository_id UUID NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
+	owner VARCHAR(255) NOT NULL,
 	config JSONB NOT NULL DEFAULT '{}',
 	usage JSONB NOT NULL DEFAULT '{}',
 	port INT NOT NULL,
@@ -14,6 +15,7 @@ CREATE TABLE sandbox (
 	updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 );
 CREATE INDEX idx_sandbox_repository_id ON sandbox(repository_id);
+CREATE INDEX idx_sandbox_owner ON sandbox(owner);
 CREATE INDEX idx_sandbox_expires_at ON sandbox(expires_at);
 CREATE INDEX idx_sandbox_status ON sandbox(status);
 CREATE INDEX idx_sandbox_token ON sandbox(token);

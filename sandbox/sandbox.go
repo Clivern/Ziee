@@ -102,6 +102,15 @@ func (r *Runner) Start(ctx context.Context, req *StartRequest) (*db.Sandbox, err
 	}
 
 	dir := filepath.Join(r.config.TempDir, runId.String())
+
+	// Remove the clone and container if Start fails after this point.
+	started := false
+	defer func() {
+		if !started {
+			r.Cleanup(runId.String(), dir)
+		}
+	}()
+
 	err = Clone(ctx, repo.FullName, installToken.Token, dir)
 	if err != nil {
 		log.Error().
@@ -176,7 +185,33 @@ func (r *Runner) Start(ctx context.Context, req *StartRequest) (*db.Sandbox, err
 		Int("port", port).
 		Msg("Sandbox started")
 
+	started = true
+
 	return item, nil
+}
+
+// Cleanup removes a sandbox container and clone left by a failed Start.
+func (r *Runner) Cleanup(runId, dir string) {
+	container := fmt.Sprintf("%s%s", ContainerPrefix, runId)
+
+	out, err := exec.Command("docker", "rm", "-f", container).CombinedOutput()
+	if err != nil && !strings.Contains(string(out), "No such container") {
+		log.Error().
+			Err(err).
+			Str("runId", runId).
+			Str("container", container).
+			Str("output", strings.TrimSpace(string(out))).
+			Msg("Failed to clean up sandbox container")
+	}
+
+	err = os.RemoveAll(dir)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("runId", runId).
+			Str("dir", dir).
+			Msg("Failed to clean up sandbox directory")
+	}
 }
 
 // Stop removes the sandbox container, its clone and its row.

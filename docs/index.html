@@ -94,24 +94,7 @@
       filter: drop-shadow(0 2px 3px rgba(55, 53, 47, 0.07));
     }
 
-    .avatar { fill: var(--ink); }
-    .avatar.coral { fill: var(--coral); }
-    .avatar.teal { fill: var(--green); }
-    .avatar.sand { fill: #b08a5a; }
-
-    .avatar-letter {
-      fill: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      text-anchor: middle;
-    }
-
-    .repo-icon {
-      fill: none;
-      stroke: var(--ink-soft);
-      stroke-width: 1.3;
-      stroke-linejoin: round;
-    }
+    .logo-tile.repo { fill-opacity: 0.14; }
 
     .card-name {
       fill: var(--ink);
@@ -343,6 +326,7 @@
         <line class="track" x1="0" y1="78" x2="720" y2="78" />
         <line class="track" x1="0" y1="152" x2="720" y2="152" />
         <g class="links"></g>
+        <g class="packets"></g>
         <g class="lanes"></g>
         <circle class="hub-halo" cx="360" cy="410" r="64" />
         <circle class="hub-halo late" cx="360" cy="410" r="64" />
@@ -353,7 +337,6 @@
           <circle class="hub-dot late" cx="249.8" cy="190" r="46" />
           <path d="m334.64 261.9c-12.44-12.44-11.39-12-29-12h-111.64c-17.62 0-16.57-.43-29 12l-59.52 59.53a161.1 161.1 0 0 0 60.34 65.93c15.25-15.24 61-60.95 68.57-68.57 6.25-6.24 9-8.66 12.39-9.7a9.87 9.87 0 0 1 3-.56 9.71 9.71 0 0 1 3 .56c3.39 1 6.15 3.46 12.39 9.7l68.57 68.57a161.06 161.06 0 0 0 60.35-65.93z" />
         </g>
-        <g class="packets"></g>
       </svg>
     </div>
   </div>
@@ -396,7 +379,16 @@
       const lanesG = svg.querySelector('.lanes');
       const pingsG = svg.querySelector('.pings');
       const packetsG = svg.querySelector('.packets');
-      const tones = ['coral', 'teal', 'ink', 'sand'];
+      // Each org has its own mark, drawn in a 16x16 box. Org cards show it
+      // white on a solid tile, repo cards show it tinted on a soft tile.
+      const ORGS = {
+        acme: { color: '#37352f', mark: '<path fill="currentColor" d="M2.5 12.5 6.5 4.5 9 9.2 10.6 7 13.5 12.5Z"/>' },
+        nova: { color: '#0f7b6c', mark: '<path fill="currentColor" d="M8 2.5 9.3 6.7 13.5 8 9.3 9.3 8 13.5 6.7 9.3 2.5 8 6.7 6.7Z"/>' },
+        orbit: { color: '#c45a45', mark: '<circle fill="currentColor" cx="8" cy="8" r="2.6"/><ellipse fill="none" stroke="currentColor" stroke-width="1.2" cx="8" cy="8" rx="5.6" ry="2.2" transform="rotate(-25 8 8)"/>' },
+        kite: { color: '#b08a5a', mark: '<path fill="currentColor" d="M8 2.5 12 7 8 11.5 4 7Z"/><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" d="M8 11.5Q7 13 8.6 13.8"/>' },
+        pixel: { color: '#5b6775', mark: '<rect fill="currentColor" x="3.5" y="3.5" width="4" height="4" rx="0.8"/><rect fill="currentColor" x="8.5" y="3.5" width="4" height="4" rx="0.8"/><rect fill="currentColor" x="3.5" y="8.5" width="4" height="4" rx="0.8"/><rect fill="currentColor" fill-opacity="0.45" x="8.5" y="8.5" width="4" height="4" rx="0.8"/>' },
+        lumen: { color: '#d08a2e', mark: '<circle fill="currentColor" cx="8" cy="8" r="2.7"/><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M8 2.6v1.3M8 12.1v1.3M2.6 8h1.3M12.1 8h1.3M4.2 4.2l.9.9M10.9 10.9l.9.9M4.2 11.8l.9-.9M10.9 5.1l.9-.9"/>' },
+      };
       const results = ['merged ✓', 'checks ✓', 'reviewed', 'triaged', 'rebased', 'labeled'];
       const lanes = [
         { y: 64, speed: 15, kind: 'org', items: ['@acme', '@nova', '@orbit', '@kite', '@pixel', '@lumen'] },
@@ -412,12 +404,11 @@
           const w = Math.round(name.length * 6.3 + 42);
           const g = el('g', { class: 'card' }, lanesG);
           el('rect', { class: 'card-body', x: 0, y: 0, width: w, height: 28, rx: 8 }, g);
-          if (lane.kind === 'org') {
-            el('rect', { class: 'avatar ' + tones[i % tones.length], x: 7, y: 6, width: 16, height: 16, rx: 4 }, g);
-            el('text', { class: 'avatar-letter', x: 15, y: 17.5 }, g).textContent = name[1].toUpperCase();
-          } else {
-            el('path', { class: 'repo-icon', d: 'M10 7.5h8.5a1.5 1.5 0 0 1 1.5 1.5v11h-8.5a1.5 1.5 0 0 0-1.5 1.5z M10 7.5v13.5' }, g);
-          }
+          const org = lane.kind === 'org' ? name.slice(1) : name.split('/')[0];
+          const color = ORGS[org].color;
+          el('rect', { class: 'logo-tile ' + lane.kind, x: 7, y: 6, width: 16, height: 16, rx: 4, fill: color }, g);
+          const mark = el('g', { transform: 'translate(7 6)', color: lane.kind === 'org' ? '#fff' : color }, g);
+          mark.innerHTML = ORGS[org].mark;
           el('text', { class: 'card-name', x: 30, y: 18.5 }, g).textContent = name;
           const status = el('text', { class: 'card-status', x: w / 2, y: 43 }, g);
           const link = el('path', { class: 'card-link ' + lane.kind }, linksG);

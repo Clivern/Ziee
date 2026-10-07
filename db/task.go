@@ -24,6 +24,12 @@ const (
 	AsyncTaskTypeGitHubCheckRun           = "ziee.github.check_run"
 	AsyncTaskTypeRepoLabels               = "ziee.repo.labels"
 	AsyncTaskTypeRepoMerge                = "ziee.repo.merge"
+	AsyncTaskTypeSandboxStart             = "ziee.sandbox.start"
+	AsyncTaskTypeSandboxQuery             = "ziee.sandbox.query"
+	AsyncTaskTypeSandboxStop              = "ziee.sandbox.stop"
+	AsyncTaskTypeSandboxRemove            = "ziee.sandbox.remove"
+	AsyncTaskTypeSandboxDeleteExpired     = "ziee.sandbox.delete_expired"
+	AsyncTaskTypeSandboxDeleteRemoved     = "ziee.sandbox.delete_removed"
 )
 
 // AsyncTask is a single row in the async_tasks table.

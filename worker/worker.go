@@ -112,6 +112,12 @@ func (w *Worker) register() {
 	On(db.AsyncTaskTypeGitHubCheckRun, h.HandleGitHubCheckRun)
 	On(db.AsyncTaskTypeRepoLabels, h.HandleRepositoryLabels)
 	On(db.AsyncTaskTypeRepoMerge, h.HandleRepositoryMerge)
+	On(db.AsyncTaskTypeSandboxStart, h.HandleSandboxStart)
+	On(db.AsyncTaskTypeSandboxQuery, h.HandleSandboxQuery)
+	On(db.AsyncTaskTypeSandboxStop, h.HandleSandboxStop)
+	On(db.AsyncTaskTypeSandboxRemove, h.HandleSandboxRemove)
+	On(db.AsyncTaskTypeSandboxDeleteExpired, h.HandleSandboxDeleteExpired)
+	On(db.AsyncTaskTypeSandboxDeleteRemoved, h.HandleSandboxDeleteRemoved)
 }
 
 // On registers a queue worker handler for subject.

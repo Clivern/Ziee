@@ -113,7 +113,7 @@ func (r *Runner) Start(ctx context.Context, req *StartRequest) (*db.Sandbox, err
 		return nil, err
 	}
 
-	port, err := FreePort(r.config.MinPort)
+	port, err := r.FreePort(r.config.MinPort)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -323,8 +323,9 @@ func Clone(ctx context.Context, fullName, token, dir string) error {
 	return nil
 }
 
-// FreePort returns the first free local TCP port starting from minPort.
-func FreePort(minPort int) (int, error) {
+// FreePort returns the first free local TCP port starting from minPort,
+// skipping ports held by active or stopped sandboxes.
+func (r *Runner) FreePort(minPort int) (int, error) {
 	if minPort <= 0 || minPort > 65535 {
 		return 0, fmt.Errorf("invalid min port %d", minPort)
 	}
@@ -335,6 +336,14 @@ func FreePort(minPort int) (int, error) {
 			continue
 		}
 		l.Close()
+
+		reserved, err := r.sandboxes.IsPortReserved(port)
+		if err != nil {
+			return 0, err
+		}
+		if reserved {
+			continue
+		}
 
 		log.Debug().
 			Int("minPort", minPort).

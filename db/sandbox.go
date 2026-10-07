@@ -40,6 +40,7 @@ type SandboxRepository interface {
 	GetByRemoteId(remoteId string) (*Sandbox, error)
 	GetByRunId(runId Id) (*Sandbox, error)
 	ListByRepositoryId(repositoryId Id) ([]*Sandbox, error)
+	IsPortReserved(port int) (bool, error)
 	Touch(id Id) error
 	Delete(id Id) error
 	DeleteExpired() (int64, error)
@@ -263,6 +264,19 @@ func (r *SandboxRepositoryPostgres) ListByRepositoryId(repositoryId Id) ([]*Sand
 	}
 
 	return items, rows.Err()
+}
+
+// IsPortReserved reports whether an active or stopped sandbox holds the port.
+func (r *SandboxRepositoryPostgres) IsPortReserved(port int) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(
+		`SELECT EXISTS (SELECT 1 FROM sandbox WHERE port = $1 AND status IN ($2, $3))`,
+		port,
+		SandboxStatusActive,
+		SandboxStatusStopped,
+	).Scan(&exists)
+
+	return exists, err
 }
 
 // Touch updates last activity for a sandbox.

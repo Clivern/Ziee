@@ -84,8 +84,10 @@ func (s *S3Store) GetDocument(ctx context.Context, id string) (string, error) {
 		if isS3NotFound(err) {
 			return "", ErrDocumentNotFound
 		}
+
 		return "", fmt.Errorf("s3 storage get document: %w", err)
 	}
+
 	defer output.Body.Close()
 
 	data, err := io.ReadAll(output.Body)
@@ -108,6 +110,7 @@ func (s *S3Store) DeleteDocument(ctx context.Context, id string) error {
 		if isS3NotFound(err) {
 			return ErrDocumentNotFound
 		}
+
 		return fmt.Errorf("s3 storage delete document: %w", err)
 	}
 

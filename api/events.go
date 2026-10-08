@@ -148,6 +148,7 @@ func Installation(_ context.Context, d webhook.Delivery) {
 		log.Error().Err(err).Msg("Failed to persist GitHub installation")
 		return
 	}
+
 	raw := string(meta)
 
 	err = i.Upsert(&db.GitHubInstallation{

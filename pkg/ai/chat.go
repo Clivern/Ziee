@@ -105,6 +105,7 @@ func (c *Client) Classify(ctx context.Context, title, body string, options []Cla
 		if text == "" {
 			text = option.Name
 		}
+
 		criterion := components.CreateCriteriaStr(text)
 		criteria[option.Name] = &criterion
 	}
@@ -180,6 +181,7 @@ func (c *Client) Complete(ctx context.Context, messages []Message) (string, Usag
 		default:
 			return "", Usage{}, fmt.Errorf("ai chat: unsupported role %q", message.Role)
 		}
+
 		items = append(items, item)
 	}
 

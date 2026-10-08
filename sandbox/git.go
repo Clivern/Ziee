@@ -141,6 +141,7 @@ func (g *Git) change(tree *object.Tree, path string) (Change, bool, error) {
 		if err != nil {
 			return change, false, err
 		}
+
 		change.Symlink = true
 		change.Content = target
 		return change, true, nil
@@ -157,5 +158,6 @@ func (g *Git) change(tree *object.Tree, path string) (Change, bool, error) {
 	}
 
 	change.Content = string(data)
+
 	return change, true, nil
 }

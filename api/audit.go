@@ -26,6 +26,7 @@ func (a *API) ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) 
 		})
 		return
 	}
+
 	workspaceId := db.Id(wid)
 
 	log.Info().
@@ -47,6 +48,7 @@ func (a *API) ListWorkspaceAuditsAction(w http.ResponseWriter, r *http.Request) 
 				"errorMessage": locale.TR(r, "failed_list_audits"),
 			})
 		}
+
 		return
 	}
 
@@ -69,6 +71,7 @@ func (a *API) GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
 	workspaceId := db.Id(wid)
 
 	auditId := chi.URLParam(r, "auditId")
@@ -101,6 +104,7 @@ func (a *API) GetWorkspaceAuditAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_get_audit"),
 			})
 		}
+
 		return
 	}
 

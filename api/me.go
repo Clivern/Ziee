@@ -46,6 +46,7 @@ func (a *API) GetMeAction(w http.ResponseWriter, r *http.Request) {
 					"errorMessage": locale.TR(r, "failed_get_me"),
 				})
 			}
+
 			return
 		}
 
@@ -71,6 +72,7 @@ func (a *API) GetMeAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_get_me"),
 			})
 		}
+
 		return
 	}
 

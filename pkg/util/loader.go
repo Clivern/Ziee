@@ -22,6 +22,7 @@ func GetBaseDir(dirName string) string {
 			Err(err).
 			Msg("Failed to read working directory")
 	}
+
 	cacheDir := fmt.Sprintf("%s/%s", baseDir, dirName)
 
 	for {
@@ -30,6 +31,7 @@ func GetBaseDir(dirName string) string {
 				return baseDir
 			}
 		}
+
 		baseDir = filepath.Dir(baseDir)
 		cacheDir = fmt.Sprintf("%s/%s", baseDir, dirName)
 	}

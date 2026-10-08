@@ -31,6 +31,7 @@ func Run(conf *v1.File, event eval.Event, client eval.Client) action.Plan {
 		if _, ok := conf.MergeQueue.Commands[cmd.Verb]; ok {
 			return EvaluateComment(conf, event, client)
 		}
+
 		return action.Plan{}
 	case policy.KindPullRequestOpened, policy.KindPullRequestEdited, policy.KindPullRequestSynchronize,
 		policy.KindCheckRunCompleted:

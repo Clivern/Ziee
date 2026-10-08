@@ -102,6 +102,7 @@ func (a *API) UpdateProfileAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_update_profile"),
 			})
 		}
+
 		return
 	}
 

@@ -90,6 +90,7 @@ func ParseQueryLabels(r *http.Request) map[string]string {
 		if len(values) == 0 {
 			continue
 		}
+
 		labels[key] = values[0]
 	}
 
@@ -124,6 +125,7 @@ func RandomHandle(min, max int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	digitLen, err := RandInt(min, max)
 	if err != nil {
 		return "", err
@@ -135,14 +137,17 @@ func RandomHandle(min, max int) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
 		handle[i] = letters[idx]
 	}
+
 	handle[letterLen] = '-'
 	for i := 0; i < digitLen; i++ {
 		idx, err := RandInt(0, len(digits)-1)
 		if err != nil {
 			return "", err
 		}
+
 		handle[letterLen+1+i] = digits[idx]
 	}
 
@@ -165,6 +170,7 @@ func HandleFromName(name string, maxLength int) string {
 			lastDash = true
 		}
 	}
+
 	handle := strings.Trim(b.String(), "-")
 	if maxLength > 0 && len(handle) > maxLength {
 		handle = strings.TrimRight(handle[:maxLength], "-")
@@ -178,6 +184,7 @@ func RemoveLabelFromJSON(labels *string, label string) (*string, bool) {
 	if labels == nil || lo.IsEmpty(*labels) {
 		return labels, false
 	}
+
 	var items []string
 	if err := json.Unmarshal([]byte(*labels), &items); err != nil {
 		return labels, false
@@ -185,14 +192,17 @@ func RemoveLabelFromJSON(labels *string, label string) (*string, bool) {
 	if !lo.Contains(items, label) {
 		return labels, false
 	}
+
 	next := lo.Without(items, label)
 	if len(next) == 0 {
 		return nil, true
 	}
+
 	raw, err := json.Marshal(next)
 	if err != nil {
 		return labels, false
 	}
+
 	s := string(raw)
 
 	return &s, true
@@ -212,6 +222,7 @@ func JSONSliceFromString[T any](raw *string) []T {
 	if raw == nil || lo.IsEmpty(*raw) {
 		return nil
 	}
+
 	var items []T
 	if err := json.Unmarshal([]byte(*raw), &items); err != nil {
 		return nil

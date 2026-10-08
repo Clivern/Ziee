@@ -112,6 +112,7 @@ func (a *App) GetInstallationToken(ctx context.Context, installationID int64) (*
 	if err != nil {
 		return nil, err
 	}
+
 	expiry = expiry.UTC().Add(-20 * time.Minute)
 
 	encrypted, err := util.Encrypt(a.config.EncryptionKey, token.Token)

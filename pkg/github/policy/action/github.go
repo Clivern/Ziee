@@ -106,6 +106,7 @@ func (a githubClient) Queue(ctx context.Context, repo Repo, priority, rule strin
 		if err != nil {
 			return err
 		}
+
 		meta = string(raw)
 	}
 

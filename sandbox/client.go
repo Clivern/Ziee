@@ -23,6 +23,7 @@ type Event map[string]any
 // Type returns the event type.
 func (e Event) Type() string {
 	t, _ := e["type"].(string)
+
 	return t
 }
 
@@ -73,6 +74,7 @@ func (c *Client) Close() error {
 	if c.conn == nil {
 		return nil
 	}
+
 	return c.conn.Close()
 }
 
@@ -88,6 +90,7 @@ func (c *Client) Prompt(ctx context.Context, message string) (string, error) {
 			if e["id"] == id {
 				failure = replyError(e, "prompt failed")
 			}
+
 			return failure != nil
 		case "message_update":
 			delta, _ := e["assistantMessageEvent"].(map[string]any)
@@ -98,6 +101,7 @@ func (c *Client) Prompt(ctx context.Context, message string) (string, error) {
 		case "agent_settled":
 			return true
 		}
+
 		return false
 	})
 	if err != nil {
@@ -178,6 +182,7 @@ func ctxErr(ctx context.Context, err error) error {
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
+
 	return err
 }
 
@@ -189,5 +194,6 @@ func replyError(reply Event, fallback string) error {
 	if msg, _ := reply["error"].(string); msg != "" {
 		return errors.New(msg)
 	}
+
 	return errors.New(fallback)
 }

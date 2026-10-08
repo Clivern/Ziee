@@ -52,6 +52,7 @@ func DedupePath(raw string) string {
 		if len(out) > 0 && out[len(out)-1] == part && part != "" {
 			continue
 		}
+
 		out = append(out, part)
 	}
 

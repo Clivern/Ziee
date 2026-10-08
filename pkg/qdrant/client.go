@@ -127,6 +127,7 @@ func (c *Client) Search(ctx context.Context, collection string, query Query) ([]
 		for field, value := range query.Filters {
 			conditions = append(conditions, qdrantsdk.NewMatchKeyword(field, value))
 		}
+
 		request.Filter = &qdrantsdk.Filter{Must: conditions}
 	}
 

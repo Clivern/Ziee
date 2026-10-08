@@ -63,6 +63,7 @@ func SetupServer(Static embed.FS, a *api.API) http.Handler {
 		if conf.IsSaaS() {
 			r.Post("/api/v1/public/action/stripe/webhook", a.StripeWebhookAction) // Stripe billing webhook
 		}
+
 		r.Handle("/api/v1/sandbox/{Id}/*", sandbox.NewProxy()) // OpenRouter sandbox proxy
 	})
 	r.Get("/api/v1/me", a.GetMeAction) // current authenticated user
@@ -157,6 +158,7 @@ func SetupServer(Static embed.FS, a *api.API) http.Handler {
 			http.Error(w, "Not Found", http.StatusNotFound)
 			return
 		}
+
 		defer indexFile.Close()
 
 		stat, err := indexFile.Stat()

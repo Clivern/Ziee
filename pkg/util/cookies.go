@@ -57,6 +57,7 @@ func SetCookie(w http.ResponseWriter, name, value string, options *CookieOptions
 	if options == nil {
 		options = DefaultCookieOptions()
 	}
+
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
@@ -70,6 +71,7 @@ func SetCookie(w http.ResponseWriter, name, value string, options *CookieOptions
 	if options.MaxAge > 0 {
 		cookie.Expires = time.Now().UTC().Add(time.Duration(options.MaxAge) * time.Second)
 	}
+
 	http.SetCookie(w, cookie)
 }
 

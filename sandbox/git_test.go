@@ -36,6 +36,7 @@ func initRepo(t *testing.T, files map[string]string) (string, *git.Worktree) {
 	for path, content := range files {
 		writeFile(t, dir, path, content)
 	}
+
 	require.NoError(t, worktree.AddGlob("."))
 	_, err = worktree.Commit("init", &git.CommitOptions{
 		Author: &object.Signature{Name: "test", Email: "test@example.com", When: time.Now()},
@@ -50,6 +51,7 @@ func changes(t *testing.T, dir string) []Change {
 
 	changes, err := NewGit(dir).Changes()
 	require.NoError(t, err)
+
 	return changes
 }
 

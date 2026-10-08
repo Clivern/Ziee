@@ -49,11 +49,13 @@ func (c *memCache) Get(key string) (string, *time.Time, error) {
 	if !ok {
 		return "", nil, nil
 	}
+
 	return item.value, item.expiresAt, nil
 }
 
 func (c *memCache) Set(key, value string, expiresAt *time.Time) error {
 	c.items[key] = memItem{value: value, expiresAt: expiresAt}
+
 	return nil
 }
 
@@ -66,6 +68,7 @@ func (c *memCache) DeleteExpired() (int64, error) {
 			n++
 		}
 	}
+
 	return n, nil
 }
 
@@ -75,6 +78,7 @@ func withInstallToken(next http.HandlerFunc) http.HandlerFunc {
 			_ = json.NewEncoder(w).Encode(InstallationToken{Token: "ghs_test", ExpiresAt: "2099-01-01T00:00:00Z"})
 			return
 		}
+
 		next(w, r)
 	}
 }
@@ -271,6 +275,7 @@ func TestUnitAppHTTP(t *testing.T) {
 				http.NotFound(w, r)
 				return
 			}
+
 			assert.Equal(t, "/repos/acme/ziee/contents/.ziee.yml", r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 		}))

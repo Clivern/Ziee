@@ -30,6 +30,7 @@ func fakeBridge(t *testing.T, apiKey string, handle func(cmd Event, reply func(s
 		if err != nil {
 			return
 		}
+
 		defer conn.Close()
 
 		scanner := bufio.NewScanner(conn)
@@ -38,8 +39,10 @@ func fakeBridge(t *testing.T, apiKey string, handle func(cmd Event, reply func(s
 			if !scanner.Scan() {
 				return nil, false
 			}
+
 			cmd := Event{}
 			json.Unmarshal(scanner.Bytes(), &cmd)
+
 			return cmd, true
 		}
 
@@ -48,6 +51,7 @@ func fakeBridge(t *testing.T, apiKey string, handle func(cmd Event, reply func(s
 			reply(`{"type":"auth","success":false,"error":"invalid api key"}`)
 			return
 		}
+
 		reply(`{"type":"auth","success":true}`)
 
 		for {
@@ -55,11 +59,13 @@ func fakeBridge(t *testing.T, apiKey string, handle func(cmd Event, reply func(s
 			if !ok || handle == nil {
 				return
 			}
+
 			handle(cmd, reply)
 		}
 	}()
 
 	addr := listener.Addr().(*net.TCPAddr)
+
 	return addr.IP.String(), addr.Port
 }
 

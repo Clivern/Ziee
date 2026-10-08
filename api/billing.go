@@ -46,6 +46,7 @@ func (a *API) GetBillingStatusAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_get_billing_status"),
 			})
 		}
+
 		return
 	}
 
@@ -80,6 +81,7 @@ func (a *API) GetBillingUsageAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_get_billing_usage"),
 			})
 		}
+
 		return
 	}
 
@@ -142,6 +144,7 @@ func (a *API) CreateBillingCheckoutAction(w http.ResponseWriter, r *http.Request
 				"errorMessage": locale.TR(r, "failed_create_billing_checkout_session"),
 			})
 		}
+
 		return
 	}
 
@@ -190,6 +193,7 @@ func (a *API) CreateBillingPortalAction(w http.ResponseWriter, r *http.Request) 
 				"errorMessage": locale.TR(r, "failed_create_billing_portal_session"),
 			})
 		}
+
 		return
 	}
 
@@ -231,6 +235,7 @@ func (a *API) StripeWebhookAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "invalid_stripe_webhook"),
 			})
 		}
+
 		return
 	}
 

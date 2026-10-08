@@ -39,6 +39,7 @@ func (s *Service) Index(ctx context.Context, documentId db.Id) error {
 			s.MarkAsFailed(document)
 			return ErrDocumentNotFound
 		}
+
 		s.MarkAsFailed(document)
 		return fmt.Errorf("%w: load document: %v", ErrIndexFailed, err)
 	}

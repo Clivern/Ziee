@@ -26,6 +26,7 @@ func Auth() func(http.Handler) http.Handler {
 						Str("path", r.URL.Path).
 						Msg("Skipping auth for public route")
 				}
+
 				next.ServeHTTP(w, r)
 				return
 			}

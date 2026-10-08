@@ -33,6 +33,7 @@ func SelectQueueRule(
 		if len(rule.Allow) > 0 && !eval.MatchAllow(rule.Allow, event.Actor, event.Issue) {
 			continue
 		}
+
 		when := QueueWhenForEntry(rule.QueueWhen, queuedLabel)
 		if !eval.MatchClauses(when, event.Issue, client) {
 			continue

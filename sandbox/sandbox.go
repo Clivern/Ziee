@@ -314,7 +314,6 @@ func (r *Runner) Run(ctx context.Context, runId, token, dir string, port int) er
 		"-e", fmt.Sprintf("PI_MODEL=%s", r.config.Model),
 		r.config.DockerImage,
 	).CombinedOutput()
-
 	if err != nil {
 		return fmt.Errorf("docker run: %w: %s", err, out)
 	}
@@ -370,6 +369,7 @@ func (r *Runner) FreePort(minPort int) (int, error) {
 		if err != nil {
 			continue
 		}
+
 		l.Close()
 
 		reserved, err := r.sandboxes.IsPortReserved(port)

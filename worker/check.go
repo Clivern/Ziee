@@ -85,6 +85,7 @@ func (h *handlers) HandleGitHubCheckRun(ctx context.Context, msg *broker.Msg) er
 			h.Tasks.Fail(taskId, err.Error())
 			return err
 		}
+
 		numbers = lo.Map(pulls, func(pr app.PullRequest, _ int) int {
 			return pr.Number
 		})

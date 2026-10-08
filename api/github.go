@@ -138,6 +138,7 @@ func (a *API) AttachGitHubInstallationAction(w http.ResponseWriter, r *http.Requ
 				"errorMessage": locale.TR(r, "failed_attach_github_installation"),
 			})
 		}
+
 		return
 	}
 

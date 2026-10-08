@@ -35,6 +35,7 @@ func CollectIntentions(clauses v1.Clauses, intentions *[]v1.Intention) {
 		if !lo.IsEmpty(when.Intention.Name) {
 			*intentions = append(*intentions, when.Intention)
 		}
+
 		CollectIntentions(when.And, intentions)
 		CollectIntentions(when.Or, intentions)
 	}

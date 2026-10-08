@@ -60,6 +60,7 @@ func (a *API) UploadDocumentAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_upload_document"),
 			})
 		}
+
 		return
 	}
 
@@ -104,6 +105,7 @@ func (a *API) ListDocumentsAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_list_documents"),
 			})
 		}
+
 		return
 	}
 
@@ -161,6 +163,7 @@ func (a *API) DeleteDocumentAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_delete_document"),
 			})
 		}
+
 		return
 	}
 
@@ -203,6 +206,7 @@ func (a *API) SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
 	defer func() {
 		if err := vdb.Close(); err != nil {
 			log.Error().Err(err).Msg("Failed to close qdrant client")
@@ -243,6 +247,7 @@ func (a *API) SearchDocumentsAction(w http.ResponseWriter, r *http.Request) {
 				"errorMessage": locale.TR(r, "failed_search_documents"),
 			})
 		}
+
 		return
 	}
 

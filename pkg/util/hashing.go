@@ -52,6 +52,7 @@ func MapChecksum(m map[string]any) (string, error) {
 	for k := range m {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
 
 	hasher := sha256.New()
@@ -60,6 +61,7 @@ func MapChecksum(m map[string]any) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to marshal value for key %s: %w", k, err)
 		}
+
 		hasher.Write([]byte(k))
 		hasher.Write(valBytes)
 	}

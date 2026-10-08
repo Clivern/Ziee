@@ -68,6 +68,7 @@ func ParseUploadForm(r *http.Request) (*UploadForm, error) {
 	if err != nil {
 		return nil, fmt.Errorf("File is required")
 	}
+
 	defer file.Close()
 
 	filename := filepath.Base(header.Filename)
@@ -156,6 +157,7 @@ func ParseLabels(raw string) ([]string, error) {
 		if _, ok := seen[label]; ok {
 			continue
 		}
+
 		seen[label] = struct{}{}
 		labels = append(labels, label)
 	}

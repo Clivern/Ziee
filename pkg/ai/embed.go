@@ -63,6 +63,7 @@ func (c *EmbedClient) Generate(ctx context.Context, texts []string, opts ...Embe
 		if item.Embedding.Type != operations.EmbeddingTypeArrayOfNumber {
 			return nil, Usage{}, fmt.Errorf("ai embed: unexpected embedding type %q", item.Embedding.Type)
 		}
+
 		embeddings = append(embeddings, item.Embedding.ArrayOfNumber)
 	}
 

@@ -77,6 +77,7 @@ func (r *AsyncTaskRepositoryPostgres) Create(task *AsyncTask) error {
 		if err != nil {
 			return err
 		}
+
 		task.Id = id
 	}
 	if task.Status == "" {
@@ -184,6 +185,7 @@ func (r *AsyncTaskRepositoryPostgres) ListByStatus(status string) ([]*AsyncTask,
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*AsyncTask
@@ -259,6 +261,7 @@ func (r *AsyncTaskMetaRepositoryPostgres) Create(id Id, key, value string) error
 	if err != nil {
 		return err
 	}
+
 	_, err = r.db.Exec(
 		`INSERT INTO async_tasks_meta (id, async_task_id, key, value)
 		VALUES ($1, $2, $3, to_jsonb($4::text))`,
@@ -326,6 +329,7 @@ func (r *AsyncTaskMetaRepositoryPostgres) ListByAsyncTaskId(id Id) ([]*AsyncTask
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*AsyncTaskMeta
@@ -342,6 +346,7 @@ func (r *AsyncTaskMetaRepositoryPostgres) ListByAsyncTaskId(id Id) ([]*AsyncTask
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

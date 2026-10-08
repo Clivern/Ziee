@@ -67,6 +67,7 @@ func (r *SubscriptionRepositoryPostgres) Create(subscription *Subscription) erro
 	if err != nil {
 		return err
 	}
+
 	subscription.Id = id
 
 	err = r.db.QueryRow(
@@ -191,6 +192,7 @@ func (r *SubscriptionMetaRepositoryPostgres) Create(id Id, key, value string) er
 	if err != nil {
 		return err
 	}
+
 	_, err = r.db.Exec(
 		`INSERT INTO subscriptions_meta (id, subscription_id, key, value)
 		VALUES ($1, $2, $3, to_jsonb($4::text))`,
@@ -259,6 +261,7 @@ func (r *SubscriptionMetaRepositoryPostgres) ListBySubscriptionId(id Id) ([]*Sub
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*SubscriptionMeta
@@ -275,6 +278,7 @@ func (r *SubscriptionMetaRepositoryPostgres) ListBySubscriptionId(id Id) ([]*Sub
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

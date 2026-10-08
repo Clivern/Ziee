@@ -69,6 +69,7 @@ func (r *WorkspaceRepositoryPostgres) Create(workspace *Workspace) error {
 	if err != nil {
 		return err
 	}
+
 	workspace.Id = id
 
 	err = r.db.QueryRow(
@@ -187,6 +188,7 @@ func (r *WorkspaceRepositoryPostgres) List(limit, offset int, userId Id) ([]*Wor
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*Workspace
 	for rows.Next() {
@@ -201,6 +203,7 @@ func (r *WorkspaceRepositoryPostgres) List(limit, offset int, userId Id) ([]*Wor
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, w)
 	}
 
@@ -350,6 +353,7 @@ func (r *WorkspaceMetaRepositoryPostgres) ListByWorkspaceId(id Id) ([]*Workspace
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*WorkspaceMeta
@@ -366,6 +370,7 @@ func (r *WorkspaceMetaRepositoryPostgres) ListByWorkspaceId(id Id) ([]*Workspace
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

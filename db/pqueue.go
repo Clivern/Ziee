@@ -66,6 +66,7 @@ func (r *PQueueRepositoryPostgres) Create(item *PQueue) error {
 	if err != nil {
 		return err
 	}
+
 	item.Id = id
 
 	if item.Priority == "" {
@@ -203,6 +204,7 @@ func (r *PQueueRepositoryPostgres) ListUnmergedByRepoId(repoId Id) ([]*PQueue, e
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*PQueue
@@ -224,6 +226,7 @@ func (r *PQueueRepositoryPostgres) ListUnmergedByRepoId(repoId Id) ([]*PQueue, e
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 
@@ -251,6 +254,7 @@ func (r *PQueueRepositoryPostgres) ListQueuedByRepoId(repoId Id, limit int) ([]*
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*PQueue
@@ -272,6 +276,7 @@ func (r *PQueueRepositoryPostgres) ListQueuedByRepoId(repoId Id, limit int) ([]*
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 

@@ -61,6 +61,7 @@ func (r *SandboxRepositoryPostgres) Create(item *Sandbox) error {
 	if err != nil {
 		return err
 	}
+
 	item.Id = id
 
 	if item.Config == "" {
@@ -236,6 +237,7 @@ func (r *SandboxRepositoryPostgres) ListByRepositoryId(repositoryId Id) ([]*Sand
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	items := make([]*Sandbox, 0)
@@ -260,6 +262,7 @@ func (r *SandboxRepositoryPostgres) ListByRepositoryId(repositoryId Id) ([]*Sand
 		if err != nil {
 			return nil, err
 		}
+
 		items = append(items, item)
 	}
 

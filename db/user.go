@@ -110,6 +110,7 @@ func (r *UserRepositoryPostgres) Create(user *User) error {
 		if err != nil {
 			return err
 		}
+
 		user.Id = id
 	}
 
@@ -363,6 +364,7 @@ func (r *UserRepositoryPostgres) List(limit, offset int) ([]*User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*User
 	for rows.Next() {
@@ -386,6 +388,7 @@ func (r *UserRepositoryPostgres) List(limit, offset int) ([]*User, error) {
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, u)
 	}
 
@@ -491,6 +494,7 @@ func (r *UserMetaRepositoryPostgres) ListByUser(id Id) ([]*UserMeta, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*UserMeta
 	for rows.Next() {
@@ -506,6 +510,7 @@ func (r *UserMetaRepositoryPostgres) ListByUser(id Id) ([]*UserMeta, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, m)
 	}
 

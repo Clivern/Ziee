@@ -53,6 +53,7 @@ func (r *RepositoryConversationRepositoryPostgres) Create(item *RepositoryConver
 	if err != nil {
 		return err
 	}
+
 	item.Id = id
 
 	return r.db.QueryRow(
@@ -117,6 +118,7 @@ func (r *RepositoryConversationRepositoryPostgres) ListByTarget(repositoryId Id,
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var items []*RepositoryConversation
@@ -137,6 +139,7 @@ func (r *RepositoryConversationRepositoryPostgres) ListByTarget(repositoryId Id,
 		if err != nil {
 			return nil, err
 		}
+
 		items = append(items, item)
 	}
 
@@ -252,6 +255,7 @@ func (r *RepositoryConversationMetaRepositoryPostgres) ListByConversationId(id I
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*RepositoryConversationMeta
@@ -261,6 +265,7 @@ func (r *RepositoryConversationMetaRepositoryPostgres) ListByConversationId(id I
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

@@ -163,6 +163,7 @@ func (r *GitHubInstallationRepositoryPostgres) ListPendingByGitHubUserId(githubU
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	list := []*GitHubInstallation{}
@@ -185,6 +186,7 @@ func (r *GitHubInstallationRepositoryPostgres) ListPendingByGitHubUserId(githubU
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 

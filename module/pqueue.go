@@ -398,6 +398,7 @@ func SnapshotWorkingQueue(snapshot []*db.PQueue) []PR {
 				Status:   snapshot[j].Status,
 			})
 		}
+
 		saved = append(saved, PR{
 			Id:       pr.Id,
 			RemoteId: pr.RemoteId,

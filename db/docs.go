@@ -87,12 +87,14 @@ func (r *DocumentRepositoryPostgres) Create(document *Document) error {
 	if err != nil {
 		return err
 	}
+
 	document.Id = id
 
 	internalId, err := NewId()
 	if err != nil {
 		return err
 	}
+
 	document.InternalId = internalId
 
 	if lo.IsEmpty(document.Status) {
@@ -259,6 +261,7 @@ func (r *DocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, of
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*Document
@@ -284,6 +287,7 @@ func (r *DocumentRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, of
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 
@@ -327,6 +331,7 @@ func (r *DocumentMetaRepositoryPostgres) Create(id Id, key, value string) error 
 	if err != nil {
 		return err
 	}
+
 	_, err = r.db.Exec(
 		`INSERT INTO documents_meta (
 			id, document_id, key, value
@@ -400,6 +405,7 @@ func (r *DocumentMetaRepositoryPostgres) ListByDocumentId(id Id) ([]*DocumentMet
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*DocumentMeta
@@ -416,6 +422,7 @@ func (r *DocumentMetaRepositoryPostgres) ListByDocumentId(id Id) ([]*DocumentMet
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

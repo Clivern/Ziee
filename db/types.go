@@ -31,6 +31,7 @@ func (id *Id) Scan(value interface{}) error {
 		*id = ""
 		return nil
 	}
+
 	switch v := value.(type) {
 	case []byte:
 		*id = Id(string(v))

@@ -47,6 +47,7 @@ func (r *AccessKeyRepositoryPostgres) Create(accessKey *AccessKey) error {
 	if err != nil {
 		return err
 	}
+
 	accessKey.Id = id
 
 	return r.db.QueryRow(
@@ -129,6 +130,7 @@ func (r *AccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, o
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*AccessKey
@@ -146,6 +148,7 @@ func (r *AccessKeyRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, o
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 

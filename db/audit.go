@@ -47,6 +47,7 @@ func (r *AuditEventRepositoryPostgres) Create(event *AuditEvent) error {
 	if err != nil {
 		return err
 	}
+
 	event.Id = id
 
 	err = r.db.QueryRow(
@@ -117,6 +118,7 @@ func (r *AuditEventRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var events []*AuditEvent
@@ -136,6 +138,7 @@ func (r *AuditEventRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 		); err != nil {
 			return nil, err
 		}
+
 		events = append(events, event)
 	}
 

@@ -51,6 +51,7 @@ func InitDB(rwConfig DatabaseConfig, roConfigs ...DatabaseConfig) error {
 			CloseConnections(iroConn)
 			return fmt.Errorf("failed to initialize read-only database %d: %w", index, err)
 		}
+
 		iroConn = append(iroConn, roConn)
 	}
 

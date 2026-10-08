@@ -47,6 +47,7 @@ func (r *APIKeyRepositoryPostgres) Create(apiKey *APIKey) error {
 	if err != nil {
 		return err
 	}
+
 	apiKey.Id = id
 
 	err = r.db.QueryRow(
@@ -133,6 +134,7 @@ func (r *APIKeyRepositoryPostgres) ListByUserId(userId Id, limit, offset int) ([
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*APIKey
 	for rows.Next() {
@@ -148,6 +150,7 @@ func (r *APIKeyRepositoryPostgres) ListByUserId(userId Id, limit, offset int) ([
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, k)
 	}
 

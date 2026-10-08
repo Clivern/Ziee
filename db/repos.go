@@ -60,6 +60,7 @@ func (r *RepositoriesRepositoryPostgres) Create(repo *Repository) error {
 	if err != nil {
 		return err
 	}
+
 	repo.Id = id
 
 	return r.db.QueryRow(
@@ -247,6 +248,7 @@ func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*Repository
@@ -269,6 +271,7 @@ func (r *RepositoriesRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 
@@ -287,6 +290,7 @@ func (r *RepositoriesRepositoryPostgres) ListByInstallationId(installationId int
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*Repository
@@ -309,6 +313,7 @@ func (r *RepositoriesRepositoryPostgres) ListByInstallationId(installationId int
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 
@@ -424,6 +429,7 @@ func (r *RepositoryMetaRepositoryPostgres) ListByRepositoryId(id Id) ([]*Reposit
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*RepositoryMeta
@@ -433,6 +439,7 @@ func (r *RepositoryMetaRepositoryPostgres) ListByRepositoryId(id Id) ([]*Reposit
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

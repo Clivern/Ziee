@@ -43,6 +43,7 @@ func (r *PasswordResetTokenRepositoryPostgres) Create(t *PasswordResetToken) err
 	if err != nil {
 		return err
 	}
+
 	t.Id = id
 
 	_, err = r.db.Exec(

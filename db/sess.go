@@ -54,6 +54,7 @@ func (r *SessionRepositoryPostgres) Create(session *Session) error {
 	if err != nil {
 		return err
 	}
+
 	session.Id = id
 
 	_, err = r.db.Exec(
@@ -139,6 +140,7 @@ func (r *SessionRepositoryPostgres) GetByUserId(userId Id) ([]*Session, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*Session
 	for rows.Next() {
@@ -155,6 +157,7 @@ func (r *SessionRepositoryPostgres) GetByUserId(userId Id) ([]*Session, error) {
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, s)
 	}
 

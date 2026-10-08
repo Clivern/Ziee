@@ -71,6 +71,7 @@ func (r *IntegrationRepositoryPostgres) Create(integration *Integration) error {
 	if err != nil {
 		return err
 	}
+
 	integration.Id = id
 
 	err = r.db.QueryRow(
@@ -159,6 +160,7 @@ func (r *IntegrationRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit,
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*Integration
 	for rows.Next() {
@@ -174,6 +176,7 @@ func (r *IntegrationRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit,
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, inv)
 	}
 
@@ -265,6 +268,7 @@ func (r *IntegrationMetaRepositoryPostgres) ListByIntegrationId(id Id) ([]*Integ
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*IntegrationMeta
@@ -274,6 +278,7 @@ func (r *IntegrationMetaRepositoryPostgres) ListByIntegrationId(id Id) ([]*Integ
 		if err != nil {
 			return nil, err
 		}
+
 		list = append(list, meta)
 	}
 

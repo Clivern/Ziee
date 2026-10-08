@@ -64,6 +64,7 @@ func (a *APIKey) CreateAPIKey(req *CreateAPIKeyRequest, user *db.User) (*APIKeyR
 		if err != nil {
 			return nil, ErrInvalidExpiresAt
 		}
+
 		expiresAt = new(t)
 	}
 

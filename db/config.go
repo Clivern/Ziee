@@ -103,6 +103,7 @@ func (r *ConfigRepositoryPostgres) List() ([]*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var options []*Config
@@ -112,6 +113,7 @@ func (r *ConfigRepositoryPostgres) List() ([]*Config, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		options = append(options, o)
 	}
 

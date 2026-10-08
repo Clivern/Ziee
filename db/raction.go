@@ -52,6 +52,7 @@ func (r *RepositoryActionRepositoryPostgres) Create(item *RepositoryAction) erro
 	if err != nil {
 		return err
 	}
+
 	item.Id = id
 
 	if item.Plan == "" {
@@ -124,6 +125,7 @@ func (r *RepositoryActionRepositoryPostgres) ListByRepositoryIssue(repositoryId 
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var items []*RepositoryAction
@@ -146,6 +148,7 @@ func (r *RepositoryActionRepositoryPostgres) ListByRepositoryIssue(repositoryId 
 		if err != nil {
 			return nil, err
 		}
+
 		items = append(items, item)
 	}
 

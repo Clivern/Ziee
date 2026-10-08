@@ -218,6 +218,7 @@ func (b *Billing) CreatePortalSession(ctx context.Context, workspaceId db.Id, re
 	if err != nil {
 		return nil, err
 	}
+
 	subscription, err := b.SubscriptionRepository.GetByWorkspaceId(workspaceId)
 	if err != nil {
 		return nil, err
@@ -225,6 +226,7 @@ func (b *Billing) CreatePortalSession(ctx context.Context, workspaceId db.Id, re
 	if subscription == nil {
 		return nil, ErrBillingSubscriptionNotFound
 	}
+
 	customerId := lo.FromPtr(subscription.ProviderCustomerId)
 	if lo.IsEmpty(customerId) {
 		return nil, ErrBillingPortalUnavailable

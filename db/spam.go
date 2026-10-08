@@ -45,6 +45,7 @@ func (r *RepositorySpamUserRepositoryPostgres) Create(user *RepositorySpamUser) 
 	if err != nil {
 		return err
 	}
+
 	user.Id = id
 
 	return r.db.QueryRow(
@@ -155,6 +156,7 @@ func (r *RepositorySpamUserRepositoryPostgres) ListByRepositoryId(repositoryId I
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*RepositorySpamUser
@@ -172,6 +174,7 @@ func (r *RepositorySpamUserRepositoryPostgres) ListByRepositoryId(repositoryId I
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 

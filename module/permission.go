@@ -115,6 +115,7 @@ func (p *Perm) Can(permission string) (bool, error) {
 	if p.workspace == nil {
 		return false, ErrPermissionWorkspaceMissing
 	}
+
 	switch {
 	case p.user != nil:
 		return p.CanAsUser(permission)

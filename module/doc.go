@@ -115,6 +115,7 @@ func (d *Document) UploadDocument(ctx context.Context, form *util.UploadForm, wo
 		if err != nil {
 			return nil, fmt.Errorf("%w: %v", ErrFailedCreateDocument, err)
 		}
+
 		labels = new(string(raw))
 	}
 
@@ -122,6 +123,7 @@ func (d *Document) UploadDocument(ctx context.Context, form *util.UploadForm, wo
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrFailedCreateDocument, err)
 	}
+
 	chunking := string(raw)
 
 	document := &db.Document{
@@ -151,6 +153,7 @@ func (d *Document) UploadDocument(ctx context.Context, form *util.UploadForm, wo
 				Str("documentId", document.Id.String()).
 				Msg("Failed to rollback document after storage error")
 		}
+
 		return nil, fmt.Errorf("%w: %v", ErrFailedStoreDocument, err)
 	}
 

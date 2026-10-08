@@ -58,6 +58,7 @@ func (r *UserInviteRepositoryPostgres) Create(invite *UserInvite) error {
 	if err != nil {
 		return err
 	}
+
 	invite.Id = id
 
 	_, err = r.db.Exec(
@@ -143,6 +144,7 @@ func (r *UserInviteRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 	if limit <= 0 {
 		limit = 50
 	}
+
 	rows, err := r.db.Query(
 		`SELECT
 			id, email, role, token, status, inviter_user_id, workspace_id,
@@ -158,6 +160,7 @@ func (r *UserInviteRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*UserInvite
 	for rows.Next() {
@@ -177,6 +180,7 @@ func (r *UserInviteRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, 
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, u)
 	}
 
@@ -188,6 +192,7 @@ func (r *UserInviteRepositoryPostgres) ListByEmail(email string, limit, offset i
 	if limit <= 0 {
 		limit = 50
 	}
+
 	rows, err := r.db.Query(
 		`SELECT
 			id, email, role, token, status, inviter_user_id, workspace_id,
@@ -203,6 +208,7 @@ func (r *UserInviteRepositoryPostgres) ListByEmail(email string, limit, offset i
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*UserInvite
 	for rows.Next() {
@@ -222,6 +228,7 @@ func (r *UserInviteRepositoryPostgres) ListByEmail(email string, limit, offset i
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, u)
 	}
 
@@ -243,6 +250,7 @@ func (r *UserInviteRepositoryPostgres) ListPendingByEmail(email string) ([]*User
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	var list []*UserInvite
 	for rows.Next() {
@@ -262,6 +270,7 @@ func (r *UserInviteRepositoryPostgres) ListPendingByEmail(email string) ([]*User
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, u)
 	}
 

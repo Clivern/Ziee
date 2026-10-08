@@ -47,6 +47,7 @@ func (r *UsageRepositoryPostgres) Create(usage *Usage) error {
 	if err != nil {
 		return err
 	}
+
 	usage.Id = id
 
 	err = r.db.QueryRow(
@@ -114,6 +115,7 @@ func (r *UsageRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offse
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var list []*Usage
@@ -133,6 +135,7 @@ func (r *UsageRepositoryPostgres) ListByWorkspaceId(workspaceId Id, limit, offse
 		); err != nil {
 			return nil, err
 		}
+
 		list = append(list, item)
 	}
 

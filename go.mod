@@ -20,7 +20,7 @@ require (
 	github.com/lib/pq v1.12.3
 	github.com/nats-io/nats.go v1.54.0
 	github.com/prometheus/client_golang v1.24.1
-	github.com/qdrant/go-client v1.19.3
+	github.com/qdrant/go-client v1.19.4
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/resend/resend-go/v4 v4.8.1
 	github.com/rs/zerolog v1.35.1

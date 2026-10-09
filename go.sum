@@ -174,8 +174,8 @@ github.com/prometheus/common v0.70.1 h1:1HvjP4D5oL3t8RsPlwxA9onvvStjtIHYE5XuuwOi
 github.com/prometheus/common v0.70.1/go.mod h1:VdFUQDMZK3VLkurFUVhia6uys/0suUp86TJz5qbJRhc=
 github.com/prometheus/procfs v0.21.1 h1:GljZCt+zSTS+NZq88cyQ1LjZ+RCHp3uVuabBWA5+OJI=
 github.com/prometheus/procfs v0.21.1/go.mod h1:aB55Cww9pdSJVHk0hUf0inxWyyjPogFIjmHKYgMKmtY=
-github.com/qdrant/go-client v1.19.3 h1:UOXzRabqlc95dAyQGzSTH/M4BjCixXVSTCBAzRi2MyE=
-github.com/qdrant/go-client v1.19.3/go.mod h1:ZorGclWceflis4Ddp3EIPhYJTgyAqlNmcl1hoW5iCUE=
+github.com/qdrant/go-client v1.19.4 h1:joG93CGJ+ZyIXLCFHQR6YME+jBgUvd0PchrWYThV5Bw=
+github.com/qdrant/go-client v1.19.4/go.mod h1:ZorGclWceflis4Ddp3EIPhYJTgyAqlNmcl1hoW5iCUE=
 github.com/quic-go/go-ossfuzz-seeds v0.1.0 h1:APacT+iIaNF6fd8AGEiN3bT/Jtkd2jz4v4TzM7MFjy0=
 github.com/quic-go/go-ossfuzz-seeds v0.1.0/go.mod h1:3IOHRbJIc+L6YKMwfDtJAM9Vj9k0YY4muhuyUYk5tbk=
 github.com/quic-go/qpack v0.6.0 h1:g7W+BMYynC1LbYLSqRt8PBg5Tgwxn214ZZR34VIOjz8=

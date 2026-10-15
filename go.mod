@@ -1,6 +1,6 @@
 module github.com/clivern/ziee
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/OpenRouterTeam/go-sdk v0.9.56

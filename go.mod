@@ -28,7 +28,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
-	github.com/stripe/stripe-go/v87 v87.0.0
+	github.com/stripe/stripe-go/v87 v87.1.0
 	github.com/tmc/langchaingo v0.1.15
 	golang.org/x/crypto v0.58.0
 	google.golang.org/grpc v1.85.0

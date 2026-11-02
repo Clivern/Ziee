@@ -13,7 +13,7 @@ require (
 	github.com/drone/envsubst v1.0.3
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.19.3
-	github.com/go-playground/validator/v10 v10.30.5
+	github.com/go-playground/validator/v10 v10.30.6
 	github.com/google/uuid v1.6.0
 	github.com/imroc/req/v3 v3.61.0
 	github.com/leonelquinteros/gotext v1.8.0
@@ -60,7 +60,7 @@ require (
 	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.2 // indirect
 	github.com/go-playground/locales v0.14.2 // indirect
